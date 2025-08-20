@@ -46,16 +46,30 @@ public class BeaconOfHope : HierophantCardModel<BeaconOfHope.CardTop, BeaconOfHo
 			new AbilityCardAbility(new UseSlotAbility([new UseSlot(new Vector2(0.5f, 0.9f))],
 				async state =>
 				{
-					ScenarioEvents.AMDTerminalDrawnEvent.Subscribe(state, this,
-						parameters =>
-							state.Performer.AlliedWith(parameters.Performer) &&
-							parameters.AMDCard is BlessAMDCard,
-						async parameters =>
+					ScenarioEvents.AMDCardDrawnEvent.Subscribe(state, this,
+						canApply: canApplyParameters =>
+							state.Performer.AlliedWith(canApplyParameters.Performer) &&
+							canApplyParameters.AMDCard is BlessAMDCard,
+						apply: async applyParameters =>
 						{
-							ActionState actionState = new ActionState(parameters.Performer, [new HealAbility(6, target: Target.Self)]);
-							await actionState.Perform();
+							ScenarioEvents.AfterAttackDamageSufferedEvent.Subscribe(state, this,
+								canApply: canApplyParameters =>
+									canApplyParameters.AbilityState == applyParameters.AbilityState,
+								apply: async parameters =>
+								{
+									ScenarioEvents.AfterAttackDamageSufferedEvent.Unsubscribe(state, this);
 
-							await state.AdvanceUseSlot();
+									ActionState actionState = new ActionState(parameters.Performer, [new HealAbility(6, target: Target.Self)]);
+
+									await actionState.Perform();
+
+									await state.AdvanceUseSlot();
+
+									await GDTask.CompletedTask;
+								}
+							);
+
+							await GDTask.CompletedTask;
 						}
 					);
 
@@ -63,7 +77,7 @@ public class BeaconOfHope : HierophantCardModel<BeaconOfHope.CardTop, BeaconOfHo
 				},
 				async state =>
 				{
-					ScenarioEvents.AMDTerminalDrawnEvent.Unsubscribe(state, this);
+					ScenarioEvents.AMDCardDrawnEvent.Unsubscribe(state, this);
 
 					await GDTask.CompletedTask;
 				}
