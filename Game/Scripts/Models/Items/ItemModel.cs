@@ -126,6 +126,7 @@ public abstract class ItemModel : AbstractModel<ItemModel> //, IEventSubscriber
 	{
 		ScenarioEvents.DuringAttackEvent.Unsubscribe(this, _subscriber);
 		ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(this, _subscriber);
+		ScenarioEvents.AMDCardDrawnEvent.Unsubscribe(this, _subscriber);
 		ScenarioEvents.DuringMovementEvent.Unsubscribe(this, _subscriber);
 		ScenarioEvents.CardSideSelectionEvent.Unsubscribe(this, _subscriber);
 		ScenarioEvents.AfterCardsPlayedEvent.Unsubscribe(this, _subscriber);
@@ -273,6 +274,25 @@ public abstract class ItemModel : AbstractModel<ItemModel> //, IEventSubscriber
 				}
 			},
 			HasUseSlots ? EffectType.SelectableMandatory : EffectType.Selectable,
+			order: order,
+			canApplyMultipleTimesInEffectCollection: canApplyMultipleTimesDuringAbility,
+			effectButtonParameters: _effectButtonParameters,
+			effectInfoViewParameters: _effectInfoViewParameters);
+	}
+	
+	protected void SubscribeAMDCardDrawn(Func<ScenarioEvents.AMDCardDrawn.Parameters, bool> canApply = null, Func<ScenarioEvents.AMDCardDrawn.Parameters, GDTask> apply = null,
+		int order = 0, bool canApplyMultipleTimesDuringAbility = false)
+	{
+		ScenarioEvents.AMDCardDrawnEvent.Subscribe(this, _subscriber,
+			canApplyParameters => canApply == null || canApply(canApplyParameters),
+			async applyParameters =>
+			{
+				if(apply != null)
+				{
+					await apply(applyParameters);
+				}
+			},
+			ItemUseType == ItemUseType.Always ? EffectType.MandatoryBeforeOptionals : (HasUseSlots ? EffectType.SelectableMandatory : EffectType.Selectable),
 			order: order,
 			canApplyMultipleTimesInEffectCollection: canApplyMultipleTimesDuringAbility,
 			effectButtonParameters: _effectButtonParameters,
