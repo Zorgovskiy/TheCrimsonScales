@@ -458,7 +458,7 @@ public static class AbilityCmd
 	public static GDTask InfuseElement(Figure authority, IReadOnlyCollection<Element> possibleElements)
 	{
 		List<ScenarioEvents.GenericChoice.Subscription> subscriptions = new List<ScenarioEvent<ScenarioEvents.GenericChoice.Parameters>.Subscription>();
-		foreach(Element possibleElement in possibleElements)
+		foreach(Element possibleElement in possibleElements.Except(GameController.Instance.ElementManager.GetInfusing()))
 		{
 			subscriptions.Add(ScenarioEvent<ScenarioEvents.GenericChoice.Parameters>.Subscription.New(
 				applyFunction: async parameters =>

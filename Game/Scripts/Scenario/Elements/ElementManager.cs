@@ -10,6 +10,11 @@ public class ElementManager
 		return _states[(int)element];
 	}
 
+	public IReadOnlyList<Element> GetInfusing()
+	{
+		return _infusing.AsReadOnly();
+	}
+
 	public void StartInfuse(Element element)
 	{
 		_infusing.AddIfNew(element);
