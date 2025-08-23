@@ -1,3 +1,5 @@
+using System.Linq;
+
 public class CircletOfElements : GHDesignsItem
 {
 	public override string Name => "Circlet of Elements";
@@ -17,6 +19,11 @@ public class CircletOfElements : GHDesignsItem
 			canApply: character =>
 			{
 				if(character != Owner)
+				{
+					return false;
+				}
+
+				if(GameController.Instance.ElementManager.GetAvailableForInfusion().Count() == 0) 
 				{
 					return false;
 				}

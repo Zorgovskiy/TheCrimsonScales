@@ -1,3 +1,5 @@
+using System.Linq;
+
 public class MinorManaPotion : Prosperity2Item
 {
 	public override string Name => "Minor Mana Potion";
@@ -14,7 +16,7 @@ public class MinorManaPotion : Prosperity2Item
 		base.Subscribe();
 
 		SubscribeDuringTurn(
-			canApply: character => character == Owner,
+			canApply: character => character == Owner && GameController.Instance.ElementManager.GetAvailableForInfusion().Count() > 0,
 			apply: async character =>
 			{
 				await Use(async user =>

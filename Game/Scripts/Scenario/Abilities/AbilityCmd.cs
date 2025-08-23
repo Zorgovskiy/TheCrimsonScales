@@ -452,13 +452,13 @@ public static class AbilityCmd
 
 	public static GDTask InfuseWildElement(Figure authority)
 	{
-		return InfuseElement(authority, Elements.All);
+		return InfuseElement(authority, GameController.Instance.ElementManager.GetAvailableForInfusion());
 	}
 
-	public static GDTask InfuseElement(Figure authority, IReadOnlyCollection<Element> possibleElements)
+	public static GDTask InfuseElement(Figure authority, IEnumerable<Element> possibleElements)
 	{
 		List<ScenarioEvents.GenericChoice.Subscription> subscriptions = new List<ScenarioEvent<ScenarioEvents.GenericChoice.Parameters>.Subscription>();
-		foreach(Element possibleElement in possibleElements.Except(GameController.Instance.ElementManager.GetInfusing()))
+		foreach(Element possibleElement in possibleElements)
 		{
 			subscriptions.Add(ScenarioEvent<ScenarioEvents.GenericChoice.Parameters>.Subscription.New(
 				applyFunction: async parameters =>

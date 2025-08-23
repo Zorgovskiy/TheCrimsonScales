@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 public class ElementManager
 {
@@ -10,9 +11,9 @@ public class ElementManager
 		return _states[(int)element];
 	}
 
-	public IReadOnlyList<Element> GetInfusing()
+	public IEnumerable<Element> GetAvailableForInfusion()
 	{
-		return _infusing.AsReadOnly();
+		return Elements.All.Except(_infusing);
 	}
 
 	public void StartInfuse(Element element)
