@@ -36,6 +36,7 @@ public class ScrollOfCharisma : FireKnightItem
 							if(applyParameters.AMDCardValue.IsNull)
 							{
 								applyParameters.AMDCardValue.IsNull = false;
+								applyParameters.AMDCardValue.Value = 0;
 							}
 
 							await GDTask.CompletedTask;
