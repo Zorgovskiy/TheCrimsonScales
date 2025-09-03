@@ -21,7 +21,6 @@ public class Penitence : HierophantPrayerCardModel<Penitence.CardTop, Penitence.
 							canApplyParameters.AMDCardValue.Value < 0,
 						async applyParameters =>
 						{
-							GD.Print("Penitence, drawn card with Value ", applyParameters.AMDCardValue.Value);
 							applyParameters.AMDCardValue.Value = 0;
 
 							await state.AdvanceUseSlot();
