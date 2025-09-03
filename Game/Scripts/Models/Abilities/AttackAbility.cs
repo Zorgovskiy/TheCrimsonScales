@@ -263,6 +263,7 @@ public class AttackAbility : TargetedAbility<AttackAbility.State, SingleTargetSt
 		abilityState.SingleTargetPierce = abilityState.AbilityPierce;
 		abilityState.SingleTargetHasAdvantage = abilityState.AbilityHasAdvantage;
 		abilityState.SingleTargetHasDisadvantage = abilityState.AbilityHasDisadvantage;
+		abilityState.SingleTargetIgnoresAllShields = abilityState.AbilityIgnoresAllShields;
 	}
 
 	protected override EffectCollection CreateDuringTargetedAbilityEffectCollection(State abilityState)
