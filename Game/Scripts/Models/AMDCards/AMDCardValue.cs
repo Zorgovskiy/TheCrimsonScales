@@ -20,30 +20,30 @@ public class AMDCardValue
 			await ScenarioEvents.AMDCardValueAppliedEvent.CreatePrompt(
 				new ScenarioEvents.AMDCardValueApplied.Parameters(attackAbilityState, this), attackAbilityState);
 
-			int adjustedValue = amdCardValueAppliedParameters.AMDCardValue.GetModifiedAttackValue(attackAbilityState);
+			int adjustedValue = amdCardValueAppliedParameters.AMDCardValue.GetAttackModifierValue(attackAbilityState);
 			attackAbilityState.SingleTargetAdjustAttackValue(adjustedValue);
 	}
 
-	protected int GetModifiedAttackValue(AttackAbility.State attackAbilityState)
+	protected int GetAttackModifierValue(AttackAbility.State attackAbilityState)
 	{
-		int adjustedAttackValue = attackAbilityState.AbilityAttackValue;
+		int attackModifierValue = 0;
 		if(IsCrit)
 		{
-			adjustedAttackValue += attackAbilityState.AbilityAttackValue;
+			attackModifierValue = attackAbilityState.AbilityAttackValue;
 		}
 		else if(IsNull)
 		{
-			adjustedAttackValue = 0;
+			attackModifierValue = -attackAbilityState.AbilityAttackValue;
 		}
 		else if(Value.HasValue)
 		{
-			adjustedAttackValue += Value.Value;
+			attackModifierValue = Value.Value;
 		}
-		return adjustedAttackValue;
+		return attackModifierValue;
 	}
 
 	public (int, bool) GetScore(AttackAbility.State attackAbilityState)
 	{
-		return (GetModifiedAttackValue(attackAbilityState), false);
+		return (GetAttackModifierValue(attackAbilityState), false);
 	}
 }
