@@ -317,8 +317,10 @@ public class ScenarioEvents
 					return;
 				}
 
+				bool ignoresShield = PotentialAttackAbilityState?.SingleTargetIgnoresAllShields ?? false;
+
 				int finalPierce = Mathf.Max(PotentialAttackAbilityState?.SingleTargetPierce ?? 0, 0);
-				int finalShieldValue = Mathf.Max(Shield - finalPierce, 0) + UnpierceableShield;
+				int finalShieldValue = ignoresShield ? 0 : Mathf.Max(Shield - finalPierce, 0) + UnpierceableShield;
 				int finalDamage = Mathf.Max(InitialDamage - finalShieldValue, 0);
 
 				if(HasBrittle)

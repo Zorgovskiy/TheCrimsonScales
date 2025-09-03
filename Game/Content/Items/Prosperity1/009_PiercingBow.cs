@@ -21,7 +21,7 @@ public class PiercingBow : Prosperity1Item
 			{
 				await Use(async user =>
 				{
-					state.AbilityAdjustPierce(999);
+					state.AbilitySetIgnoresAllShields();
 
 					await GDTask.CompletedTask;
 				});

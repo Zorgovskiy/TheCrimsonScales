@@ -18,11 +18,13 @@ public class AttackAbility : TargetedAbility<AttackAbility.State, SingleTargetSt
 		public int AbilityPierce { get; set; }
 		public bool AbilityHasAdvantage { get; set; }
 		public bool AbilityHasDisadvantage { get; set; }
+		public bool AbilityIgnoresAllShields { get; set; }
 
 		public int SingleTargetAttackValue { get; set; }
 		public int SingleTargetPierce { get; set; }
 		public bool SingleTargetHasAdvantage { get; set; }
 		public bool SingleTargetHasDisadvantage { get; set; }
+		public bool SingleTargetIgnoresAllShields { get; set; }
 
 		public void AbilityAdjustAttackValue(int amount)
 		{
@@ -52,6 +54,13 @@ public class AttackAbility : TargetedAbility<AttackAbility.State, SingleTargetSt
 			SingleTargetHasDisadvantage = true;
 		}
 
+		public void AbilitySetIgnoresAllShields()
+		{
+			AbilityIgnoresAllShields = true;
+
+			SingleTargetIgnoresAllShields = true;
+		}
+
 		public void SingleTargetAdjustAttackValue(int amount)
 		{
 			SingleTargetAttackValue += amount;
@@ -70,6 +79,11 @@ public class AttackAbility : TargetedAbility<AttackAbility.State, SingleTargetSt
 		public void SingleTargetSetHasDisadvantage()
 		{
 			SingleTargetHasDisadvantage = true;
+		}
+
+		public void SingleTargetSetIgnoresAllShields()
+		{
+			SingleTargetIgnoresAllShields = true;
 		}
 	}
 
