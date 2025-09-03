@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Fractural.Tasks;
 using Godot;
 using GTweens.Builders;
 using GTweens.Easings;
 using GTweensGodot.Extensions;
 
+/// <summary>
+/// A <see cref="TargetedAbility{T, TSingleTargetState}"/> that allows a figure to attack other figures.
+/// </summary>
 public class AttackAbility : TargetedAbility<AttackAbility.State, SingleTargetState>
 {
 	public class State : TargetedAbilityState<SingleTargetState>
@@ -71,45 +73,132 @@ public class AttackAbility : TargetedAbility<AttackAbility.State, SingleTargetSt
 		}
 	}
 
-	public DynamicInt<State> Damage { get; }
-	public DynamicInt<State> Pierce { get; }
-	public bool HasAdvantage { get; }
-	public bool HasDisadvantage { get; }
+	public DynamicInt<State> Damage { get; protected set; }
+	public DynamicInt<State> Pierce { get; protected set; } = 0;
+	public bool HasAdvantage { get; protected set; }
+	public bool HasDisadvantage { get; protected set; }
 
-	public List<ScenarioEvents.DuringAttack.Subscription> DuringAttackSubscriptions { get; }
-	public List<ScenarioEvents.AttackAfterTargetConfirmed.Subscription> AfterTargetConfirmedSubscriptions { get; }
-	public List<ScenarioEvents.AfterAttackPerformed.Subscription> AfterAttackPerformedSubscriptions { get; }
+	public List<ScenarioEvents.DuringAttack.Subscription> DuringAttackSubscriptions { get; protected set; } = [];
 
-	public AttackAbility(DynamicInt<State> value, int targets = 1, int? range = null, RangeType? rangeType = null,
-		Target target = Target.Enemies,
-		bool requiresLineOfSight = true, bool mandatory = false,
-		Hex targetHex = null,
-		AOEPattern aoePattern = null, int push = 0, int pull = 0, DynamicInt<State> pierce = null, ConditionModel[] conditions = null,
-		bool hasAdvantage = false, bool hasDisadvantage = false,
-		Action<State, List<Figure>> customGetTargets = null,
-		Func<State, GDTask> onAbilityStarted = null, Func<State, GDTask> onAbilityEnded = null, Func<State, GDTask> onAbilityEndedPerformed = null,
-		ConditionalAbilityCheckDelegate conditionalAbilityCheck = null,
-		Func<State, string> getTargetingHintText = null,
-		List<ScenarioEvents.DuringAttack.Subscription> duringAttackSubscriptions = null,
-		List<ScenarioEvents.AttackAfterTargetConfirmed.Subscription> afterTargetConfirmedSubscriptions = null,
-		List<ScenarioEvents.AfterAttackPerformed.Subscription> afterAttackPerformedSubscriptions = null,
-		List<ScenarioEvents.AbilityStarted.Subscription> abilityStartedSubscriptions = null,
-		List<ScenarioEvents.AbilityEnded.Subscription> abilityEndedSubscriptions = null,
-		List<ScenarioEvent<ScenarioEvents.AbilityPerformed.Parameters>.Subscription> abilityPerformedSubscriptions = null)
-		: base(targets, range, rangeType, target,
-			requiresLineOfSight, mandatory, targetHex, aoePattern, push, pull, conditions,
-			customGetTargets, onAbilityStarted, onAbilityEnded, onAbilityEndedPerformed,
-			conditionalAbilityCheck, getTargetingHintText, abilityStartedSubscriptions, abilityEndedSubscriptions, abilityPerformedSubscriptions)
+	public List<ScenarioEvents.AttackAfterTargetConfirmed.Subscription>
+		AfterTargetConfirmedSubscriptions { get; protected set; } = [];
+
+	public List<ScenarioEvents.AfterAttackPerformed.Subscription>
+		AfterAttackPerformedSubscriptions { get; protected set; } = [];
+
+	/// <summary>
+	/// A builder extending <see cref="TargetedAbility{T, TSingleTargetState}.AbstractBuilder{TBuilder, TAbility}"/> with setter methods
+	/// for values defined in AttackAbility. Enables inheritors of AttackAbility to further extend the builder.
+	/// </summary>
+	/// <typeparam name="TBuilder"></typeparam> Any builder extending this AbstractBuilder.
+	/// <typeparam name="TAbility"></typeparam> Any ability extending AttackAbility.
+	public new class AbstractBuilder<TBuilder, TAbility> : TargetedAbility<State, SingleTargetState>.AbstractBuilder<TBuilder, TAbility>,
+		AbstractBuilder<TBuilder, TAbility>.IDamageStep
+		where TBuilder : AbstractBuilder<TBuilder, TAbility>
+		where TAbility : AttackAbility, new()
 	{
-		Damage = value;
-		Pierce = pierce ?? 0;
-		HasAdvantage = hasAdvantage;
-		HasDisadvantage = hasDisadvantage;
+		public interface IDamageStep
+		{
+			TBuilder WithDamage(DynamicInt<State> damage);
+		}
 
-		DuringAttackSubscriptions = duringAttackSubscriptions;
-		AfterTargetConfirmedSubscriptions = afterTargetConfirmedSubscriptions;
-		AfterAttackPerformedSubscriptions = afterAttackPerformedSubscriptions;
+		public TBuilder WithDamage(DynamicInt<State> damage)
+		{
+			Obj.Damage = damage;
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithPierce(DynamicInt<State> pierce)
+		{
+			Obj.Pierce = pierce;
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithAdvantage()
+		{
+			Obj.HasAdvantage = true;
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithHasAdvantage(bool advantage)
+		{
+			Obj.HasAdvantage = advantage;
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithDisadvantage()
+		{
+			Obj.HasDisadvantage = true;
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithHasDisadvantage(bool disadvantage)
+		{
+			Obj.HasDisadvantage = disadvantage;
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithDuringAttackSubscription(ScenarioEvents.DuringAttack.Subscription movementSubscription)
+		{
+			Obj.DuringAttackSubscriptions.Add(movementSubscription);
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithDuringAttackSubscriptions(
+			List<ScenarioEvents.DuringAttack.Subscription> movementSubscriptions)
+		{
+			Obj.DuringAttackSubscriptions = movementSubscriptions;
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithAfterTargetConfirmedSubscription(
+			ScenarioEvents.AttackAfterTargetConfirmed.Subscription afterTargetConfirmedSubscription)
+		{
+			Obj.AfterTargetConfirmedSubscriptions.Add(afterTargetConfirmedSubscription);
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithAfterTargetConfirmedSubscriptions(
+			List<ScenarioEvents.AttackAfterTargetConfirmed.Subscription> afterTargetConfirmedSubscriptions)
+		{
+			Obj.AfterTargetConfirmedSubscriptions = afterTargetConfirmedSubscriptions;
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithAfterAttackPerformedSubscription(
+			ScenarioEvents.AfterAttackPerformed.Subscription afterAttackPerformedSubscription)
+		{
+			Obj.AfterAttackPerformedSubscriptions.Add(afterAttackPerformedSubscription);
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithAfterAttackPerformedSubscriptions(
+			List<ScenarioEvents.AfterAttackPerformed.Subscription> afterAttackPerformedSubscriptions)
+		{
+			Obj.AfterAttackPerformedSubscriptions = afterAttackPerformedSubscriptions;
+			return (TBuilder)this;
+		}
 	}
+
+	/// <summary>
+	/// A concrete implementation of the AbstractBuilder. Required to actually use the builder,
+	/// as abstract builders cannot be instantiated.
+	/// </summary>
+	public class AttackBuilder : AbstractBuilder<AttackBuilder, AttackAbility>
+	{
+		internal AttackBuilder() { }
+	}
+
+	/// <summary>
+	/// A convenience method that returns an instance of AttackBuilder.
+	/// </summary>
+	/// <returns></returns>
+	public static AttackBuilder.IDamageStep Builder()
+	{
+		return new AttackBuilder();
+	}
+
+	public AttackAbility() { }
 
 	protected override void InitializeState(State abilityState)
 	{
@@ -169,7 +258,8 @@ public class AttackAbility : TargetedAbility<AttackAbility.State, SingleTargetSt
 
 	protected override async GDTask AfterTargetConfirmedBeforeConditionsApplied(State abilityState, Figure target)
 	{
-		bool rangeDisadvantage = abilityState.SingleTargetRangeType == RangeType.Range && RangeHelper.Distance(abilityState.Performer.Hex, target.Hex) == 1;
+		bool rangeDisadvantage = abilityState.SingleTargetRangeType == RangeType.Range &&
+		                         RangeHelper.Distance(abilityState.Performer.Hex, target.Hex) == 1;
 		if(rangeDisadvantage)
 		{
 			abilityState.SingleTargetSetHasDisadvantage();

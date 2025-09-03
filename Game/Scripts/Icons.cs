@@ -10,7 +10,7 @@
 	public const string Damage = "res://Art/Icons/Abilities/Damage.svg";
 	public const string Push = "res://Art/Icons/ConditionsAndEffects/Push.svg";
 	public const string Pull = "res://Art/Icons/ConditionsAndEffects/Pull.svg";
-	public const string Shield = "res://Art/Icons/Abilities/ShieldCustom.svg";
+	public const string Shield = "res://Art/Icons/Abilities/Shield.svg";
 	public const string Retaliate = "res://Art/Icons/Abilities/Retaliate.svg";
 	public const string Pierce = "res://Art/Icons/ConditionsAndEffects/Pierce.svg";
 	public const string Targets = "res://Art/Icons/Abilities/Targets.svg";

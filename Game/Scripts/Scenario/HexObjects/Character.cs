@@ -91,6 +91,12 @@ public partial class Character : Figure
 			ItemModel item = Items[i];
 			item.SetOwner(null);
 		}
+
+		for(int i = Cards.Count - 1; i >= 0; i--)
+		{
+			AbilityCard card = Cards[i];
+			await card.RemoveFromActive();
+		}
 	}
 
 	public void OnRoundCardsChanged()
@@ -259,6 +265,11 @@ public partial class Character : Figure
 
 			for(int i = 0; i < cardDatas.Count; i++)
 			{
+				if(IsDead)
+				{
+					break;
+				}
+
 				EffectCollection cardSideSelectionEffectCollection = ScenarioEvents.CardSideSelectionEvent.CreateEffectCollection(new ScenarioEvents.CardSideSelection.Parameters(this));
 
 				AbilityCardSectionSelectionPrompt.Answer cardSectionAnswer = await PromptManager.Prompt(
@@ -325,7 +336,10 @@ public partial class Character : Figure
 				}
 			}
 
-			await ScenarioEvents.AfterCardsPlayedEvent.CreatePrompt(new ScenarioEvents.AfterCardsPlayed.Parameters(this), this, "End turn?");
+			if(!IsDead)
+			{
+				await ScenarioEvents.AfterCardsPlayedEvent.CreatePrompt(new ScenarioEvents.AfterCardsPlayed.Parameters(this), this, "End turn?");
+			}
 		}
 	}
 
@@ -363,7 +377,7 @@ public partial class Character : Figure
 			}
 		}
 
-		ActionState actionState = new ActionState(this, [new HealAbility(2, target: Target.Self)]);
+		ActionState actionState = new ActionState(this, [HealAbility.Builder().WithHealValue(2).WithTarget(Target.Self).Build()]);
 		await actionState.Perform();
 	}
 

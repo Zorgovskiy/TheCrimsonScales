@@ -38,7 +38,7 @@ Included are the following plugins created by various authors, used under the MI
 - [GDTask](https://github.com/Fractural/GDTask)
 - [GTweensGodot](https://github.com/Guillemsc/GTweensGodot)
 
-All other Code and Godot asset files used in this project were made by Bas Hoogeboom. These are licensed as follows:
+Most of the other Code and Godot asset files used in this project were made by Bas Hoogeboom. These are licensed as follows:
 
 MIT License
 
