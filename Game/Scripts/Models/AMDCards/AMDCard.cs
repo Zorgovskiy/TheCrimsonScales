@@ -25,19 +25,18 @@ public abstract class AMDCard : IDeckCard
 		_textureAtlasRowsCount = textureAtlasRowsCount;
 	}
 
-	public async GDTask Apply(AttackAbility.State attackAbilityState)
+	public async GDTask<AMDCardValue> Draw(AttackAbility.State attackAbilityState)
 	{
-		int value = GetValue(attackAbilityState);
 		ScenarioEvents.AMDCardDrawn.Parameters amdCardDrawnParameters =
 			await ScenarioEvents.AMDCardDrawnEvent.CreatePrompt(
-				new ScenarioEvents.AMDCardDrawn.Parameters(attackAbilityState, this, value), attackAbilityState);
-
-		attackAbilityState.SingleTargetAdjustAttackValue(amdCardDrawnParameters.Value);
+				new ScenarioEvents.AMDCardDrawn.Parameters(attackAbilityState, new(IsCrit, IsNull, GetValue())), attackAbilityState);
+		return amdCardDrawnParameters.AMDCardValue;
 	}
 
-	protected abstract int GetValue(AttackAbility.State attackAbilityState);
-
-	public abstract (int, bool) GetScore(AttackAbility.State attackAbilityState);
+	protected virtual int? GetValue()
+	{
+		return null;
+	}
 
 	public Texture2D GetTexture()
 	{

@@ -8,13 +8,8 @@
 		_value = value;
 	}
 
-	protected override int GetValue(AttackAbility.State attackAbilityState)
+	protected override int? GetValue()
 	{
 		return _value;
-	}
-
-	public override (int, bool) GetScore(AttackAbility.State attackAbilityState)
-	{
-		return (_value, false);
 	}
 }

@@ -7,14 +7,4 @@
 		: base(textureAtlasPath, atlasIndex, textureAtlasColumnCount, textureAtlasRowsCount)
 	{
 	}
-
-	protected override int GetValue(AttackAbility.State attackAbilityState)
-	{
-		return -attackAbilityState.SingleTargetAttackValue;
-	}
-
-	public override (int, bool) GetScore(AttackAbility.State attackAbilityState)
-	{
-		return (-attackAbilityState.SingleTargetAttackValue, false);
-	}
 }
