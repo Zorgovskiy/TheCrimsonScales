@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Fractural.Tasks;
 using Godot;
 using GTweens.Builders;
@@ -79,12 +78,12 @@ public class AttackAbility : TargetedAbility<AttackAbility.State, SingleTargetSt
 	public bool HasAdvantage { get; protected set; }
 	public bool HasDisadvantage { get; protected set; }
 
-	public List<ScenarioEvent<ScenarioEvents.DuringAttack.Parameters>.Subscription> DuringAttackSubscriptions { get; protected set; } = [];
+	public List<ScenarioEvents.DuringAttack.Subscription> DuringAttackSubscriptions { get; protected set; } = [];
 
-	public List<ScenarioEvent<ScenarioEvents.AttackAfterTargetConfirmed.Parameters>.Subscription>
+	public List<ScenarioEvents.AttackAfterTargetConfirmed.Subscription>
 		AfterTargetConfirmedSubscriptions { get; protected set; } = [];
 
-	public List<ScenarioEvent<ScenarioEvents.AfterAttackPerformed.Parameters>.Subscription>
+	public List<ScenarioEvents.AfterAttackPerformed.Subscription>
 		AfterAttackPerformedSubscriptions { get; protected set; } = [];
 
 	/// <summary>
@@ -139,42 +138,42 @@ public class AttackAbility : TargetedAbility<AttackAbility.State, SingleTargetSt
 			return (TBuilder)this;
 		}
 
-		public TBuilder WithDuringAttackSubscription(ScenarioEvent<ScenarioEvents.DuringAttack.Parameters>.Subscription movementSubscription)
+		public TBuilder WithDuringAttackSubscription(ScenarioEvents.DuringAttack.Subscription movementSubscription)
 		{
 			Obj.DuringAttackSubscriptions.Add(movementSubscription);
 			return (TBuilder)this;
 		}
 
 		public TBuilder WithDuringAttackSubscriptions(
-			List<ScenarioEvent<ScenarioEvents.DuringAttack.Parameters>.Subscription> movementSubscriptions)
+			List<ScenarioEvents.DuringAttack.Subscription> movementSubscriptions)
 		{
 			Obj.DuringAttackSubscriptions = movementSubscriptions;
 			return (TBuilder)this;
 		}
 
 		public TBuilder WithAfterTargetConfirmedSubscription(
-			ScenarioEvent<ScenarioEvents.AttackAfterTargetConfirmed.Parameters>.Subscription afterTargetConfirmedSubscription)
+			ScenarioEvents.AttackAfterTargetConfirmed.Subscription afterTargetConfirmedSubscription)
 		{
 			Obj.AfterTargetConfirmedSubscriptions.Add(afterTargetConfirmedSubscription);
 			return (TBuilder)this;
 		}
 
 		public TBuilder WithAfterTargetConfirmedSubscriptions(
-			List<ScenarioEvent<ScenarioEvents.AttackAfterTargetConfirmed.Parameters>.Subscription> afterTargetConfirmedSubscriptions)
+			List<ScenarioEvents.AttackAfterTargetConfirmed.Subscription> afterTargetConfirmedSubscriptions)
 		{
 			Obj.AfterTargetConfirmedSubscriptions = afterTargetConfirmedSubscriptions;
 			return (TBuilder)this;
 		}
 
 		public TBuilder WithAfterAttackPerformedSubscription(
-			ScenarioEvent<ScenarioEvents.AfterAttackPerformed.Parameters>.Subscription afterAttackPerformedSubscription)
+			ScenarioEvents.AfterAttackPerformed.Subscription afterAttackPerformedSubscription)
 		{
 			Obj.AfterAttackPerformedSubscriptions.Add(afterAttackPerformedSubscription);
 			return (TBuilder)this;
 		}
 
 		public TBuilder WithAfterAttackPerformedSubscriptions(
-			List<ScenarioEvent<ScenarioEvents.AfterAttackPerformed.Parameters>.Subscription> afterAttackPerformedSubscriptions)
+			List<ScenarioEvents.AfterAttackPerformed.Subscription> afterAttackPerformedSubscriptions)
 		{
 			Obj.AfterAttackPerformedSubscriptions = afterAttackPerformedSubscriptions;
 			return (TBuilder)this;
@@ -194,43 +193,12 @@ public class AttackAbility : TargetedAbility<AttackAbility.State, SingleTargetSt
 	/// A convenience method that returns an instance of AttackBuilder.
 	/// </summary>
 	/// <returns></returns>
-	public static AbstractBuilder<AttackBuilder, AttackAbility>.IDamageStep Builder()
+	public static AttackBuilder.IDamageStep Builder()
 	{
 		return new AttackBuilder();
 	}
 
 	public AttackAbility() { }
-
-	public AttackAbility(DynamicInt<State> value, int targets = 1, int? range = null, RangeType? rangeType = null,
-		Target target = Target.Enemies,
-		bool requiresLineOfSight = true, bool mandatory = false,
-		Hex targetHex = null,
-		AOEPattern aoePattern = null, int push = 0, int pull = 0, DynamicInt<State> pierce = null, ConditionModel[] conditions = null,
-		bool hasAdvantage = false, bool hasDisadvantage = false,
-		Action<State, List<Figure>> customGetTargets = null,
-		Func<State, GDTask> onAbilityStarted = null, Func<State, GDTask> onAbilityEnded = null, Func<State, GDTask> onAbilityEndedPerformed = null,
-		ConditionalAbilityCheckDelegate conditionalAbilityCheck = null,
-		Func<State, string> getTargetingHintText = null,
-		List<ScenarioEvent<ScenarioEvents.DuringAttack.Parameters>.Subscription> duringAttackSubscriptions = null,
-		List<ScenarioEvent<ScenarioEvents.AttackAfterTargetConfirmed.Parameters>.Subscription> afterTargetConfirmedSubscriptions = null,
-		List<ScenarioEvent<ScenarioEvents.AfterAttackPerformed.Parameters>.Subscription> afterAttackPerformedSubscriptions = null,
-		List<ScenarioEvent<ScenarioEvents.AbilityStarted.Parameters>.Subscription> abilityStartedSubscriptions = null,
-		List<ScenarioEvent<ScenarioEvents.AbilityEnded.Parameters>.Subscription> abilityEndedSubscriptions = null,
-		List<ScenarioEvent<ScenarioEvents.AbilityPerformed.Parameters>.Subscription> abilityPerformedSubscriptions = null)
-		: base(targets, range, rangeType, target,
-			requiresLineOfSight, mandatory, targetHex, aoePattern, push, pull, conditions,
-			customGetTargets, onAbilityStarted, onAbilityEnded, onAbilityEndedPerformed,
-			conditionalAbilityCheck, getTargetingHintText, abilityStartedSubscriptions, abilityEndedSubscriptions, abilityPerformedSubscriptions)
-	{
-		Damage = value;
-		Pierce = pierce ?? 0;
-		HasAdvantage = hasAdvantage;
-		HasDisadvantage = hasDisadvantage;
-
-		DuringAttackSubscriptions = duringAttackSubscriptions;
-		AfterTargetConfirmedSubscriptions = afterTargetConfirmedSubscriptions;
-		AfterAttackPerformedSubscriptions = afterAttackPerformedSubscriptions;
-	}
 
 	protected override void InitializeState(State abilityState)
 	{

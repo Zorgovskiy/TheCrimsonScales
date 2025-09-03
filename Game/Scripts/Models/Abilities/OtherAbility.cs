@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Fractural.Tasks;
 
 /// <summary>
@@ -55,18 +54,6 @@ public class OtherAbility : Ability<OtherAbility.State>
 	}
 
 	public OtherAbility() { }
-
-	public OtherAbility(Func<State, GDTask> performAbility,
-		Func<State, GDTask> onAbilityStarted = null, Func<State, GDTask> onAbilityEnded = null, Func<State, GDTask> onAbilityEndedPerformed = null,
-		ConditionalAbilityCheckDelegate conditionalAbilityCheck = null,
-		List<ScenarioEvent<ScenarioEvents.AbilityStarted.Parameters>.Subscription> abilityStartedSubscriptions = null,
-		List<ScenarioEvent<ScenarioEvents.AbilityEnded.Parameters>.Subscription> abilityEndedSubscriptions = null,
-		List<ScenarioEvent<ScenarioEvents.AbilityPerformed.Parameters>.Subscription> abilityPerformedSubscriptions = null)
-		: base(onAbilityStarted, onAbilityEnded, onAbilityEndedPerformed, conditionalAbilityCheck, abilityStartedSubscriptions,
-			abilityEndedSubscriptions, abilityPerformedSubscriptions)
-	{
-		_performAbility = performAbility;
-	}
 
 	protected override async GDTask Perform(State abilityState)
 	{

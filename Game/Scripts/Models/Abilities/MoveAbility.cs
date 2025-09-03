@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Fractural.Tasks;
 using Godot;
 using GTweens.Easings;
@@ -39,7 +38,7 @@ public class MoveAbility : Ability<MoveAbility.State>
 
 	public int Distance { get; private set; }
 	public MoveType MoveType { get; private set; }
-	public List<ScenarioEvent<ScenarioEvents.DuringMovement.Parameters>.Subscription> DuringMovementSubscriptions { get; private set; } = [];
+	public List<ScenarioEvents.DuringMovement.Subscription> DuringMovementSubscriptions { get; private set; } = [];
 	//public List<ScenarioEvent<ScenarioEvents.FigureEnteredHex.Parameters>.Subscription> FigureEnteredHexSubscriptions { get; }
 
 	/// <summary>
@@ -70,14 +69,14 @@ public class MoveAbility : Ability<MoveAbility.State>
 			return (TBuilder)this;
 		}
 
-		public TBuilder WithDuringMovementSubscription(ScenarioEvent<ScenarioEvents.DuringMovement.Parameters>.Subscription movementSubscription)
+		public TBuilder WithDuringMovementSubscription(ScenarioEvents.DuringMovement.Subscription movementSubscription)
 		{
 			Obj.DuringMovementSubscriptions.Add(movementSubscription);
 			return (TBuilder)this;
 		}
 
 		public TBuilder WithDuringMovementSubscriptions(
-			List<ScenarioEvent<ScenarioEvents.DuringMovement.Parameters>.Subscription> movementSubscriptions)
+			List<ScenarioEvents.DuringMovement.Subscription> movementSubscriptions)
 		{
 			Obj.DuringMovementSubscriptions = movementSubscriptions;
 			return (TBuilder)this;
@@ -103,24 +102,6 @@ public class MoveAbility : Ability<MoveAbility.State>
 	}
 
 	public MoveAbility() { }
-
-	public MoveAbility(int distance, MoveType moveType = MoveType.Regular,
-		Func<State, GDTask> onAbilityStarted = null, Func<State, GDTask> onAbilityEnded = null,
-		Func<State, GDTask> onAbilityEndedPerformed = null,
-		ConditionalAbilityCheckDelegate conditionalAbilityCheck = null,
-		List<ScenarioEvent<ScenarioEvents.DuringMovement.Parameters>.Subscription> duringMovementSubscriptions = null,
-		//List<ScenarioEvents.FigureEnteredHex.Subscription> figureEnteredHexSubscriptions = null,
-		List<ScenarioEvent<ScenarioEvents.AbilityStarted.Parameters>.Subscription> abilityStartedSubscriptions = null,
-		List<ScenarioEvent<ScenarioEvents.AbilityEnded.Parameters>.Subscription> abilityEndedSubscriptions = null,
-		List<ScenarioEvent<ScenarioEvents.AbilityPerformed.Parameters>.Subscription> abilityPerformedSubscriptions = null)
-		: base(onAbilityStarted, onAbilityEnded, onAbilityEndedPerformed, conditionalAbilityCheck,
-			abilityStartedSubscriptions, abilityEndedSubscriptions, abilityPerformedSubscriptions)
-	{
-		Distance = distance;
-		MoveType = moveType;
-		DuringMovementSubscriptions = duringMovementSubscriptions;
-		//FigureEnteredHexSubscriptions = figureEnteredHexSubscriptions;
-	}
 
 	protected override void InitializeState(State abilityState)
 	{

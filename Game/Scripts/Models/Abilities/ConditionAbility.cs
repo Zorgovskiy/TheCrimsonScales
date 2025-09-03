@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Fractural.Tasks;
 
 /// <summary>
@@ -11,7 +10,7 @@ public class ConditionAbility : TargetedAbility<ConditionAbility.State, SingleTa
 	{
 	}
 
-	public List<ScenarioEvent<ScenarioEvents.ConditionAfterTargetConfirmed.Parameters>.Subscription>
+	public List<ScenarioEvents.ConditionAfterTargetConfirmed.Subscription>
 		AfterTargetConfirmedSubscriptions { get; private set; } = [];
 
 	/// <summary>
@@ -31,14 +30,14 @@ public class ConditionAbility : TargetedAbility<ConditionAbility.State, SingleTa
 		}
 
 		public TBuilder WithAfterTargetConfirmedSubscription(
-			ScenarioEvent<ScenarioEvents.ConditionAfterTargetConfirmed.Parameters>.Subscription afterTargetConfirmedSubscription)
+			ScenarioEvents.ConditionAfterTargetConfirmed.Subscription afterTargetConfirmedSubscription)
 		{
 			Obj.AfterTargetConfirmedSubscriptions.Add(afterTargetConfirmedSubscription);
 			return (TBuilder)this;
 		}
 
 		public TBuilder WithAfterTargetConfirmedSubscriptions(
-			List<ScenarioEvent<ScenarioEvents.ConditionAfterTargetConfirmed.Parameters>.Subscription> afterTargetConfirmedSubscriptions)
+			List<ScenarioEvents.ConditionAfterTargetConfirmed.Subscription> afterTargetConfirmedSubscriptions)
 		{
 			Obj.AfterTargetConfirmedSubscriptions = afterTargetConfirmedSubscriptions;
 			return (TBuilder)this;
@@ -74,27 +73,6 @@ public class ConditionAbility : TargetedAbility<ConditionAbility.State, SingleTa
 	}
 
 	public ConditionAbility() { }
-
-	public ConditionAbility(ConditionModel[] conditions, int targets = 1, int? range = null, RangeType? rangeType = null,
-		Target? target = null,
-		bool requiresLineOfSight = true, bool mandatory = false,
-		Hex targetHex = null,
-		AOEPattern aoePattern = null, int push = 0, int pull = 0,
-		Action<State, List<Figure>> customGetTargets = null,
-		Func<State, GDTask> onAbilityStarted = null, Func<State, GDTask> onAbilityEnded = null, Func<State, GDTask> onAbilityEndedPerformed = null,
-		ConditionalAbilityCheckDelegate conditionalAbilityCheck = null,
-		Func<State, string> getTargetingHintText = null,
-		List<ScenarioEvents.ConditionAfterTargetConfirmed.Subscription> afterTargetConfirmedSubscriptions = null,
-		List<ScenarioEvents.AbilityStarted.Subscription> abilityStartedSubscriptions = null,
-		List<ScenarioEvents.AbilityEnded.Subscription> abilityEndedSubscriptions = null,
-		List<ScenarioEvent<ScenarioEvents.AbilityPerformed.Parameters>.Subscription> abilityPerformedSubscriptions = null)
-		: base(targets, range, rangeType, target ?? ((conditions.Length > 0 && conditions[0].IsPositive) ? Target.SelfOrAllies : Target.Enemies),
-			requiresLineOfSight, mandatory, targetHex, aoePattern, push, pull, conditions,
-			customGetTargets, onAbilityStarted, onAbilityEnded, onAbilityEndedPerformed,
-			conditionalAbilityCheck, getTargetingHintText, abilityStartedSubscriptions, abilityEndedSubscriptions, abilityPerformedSubscriptions)
-	{
-		AfterTargetConfirmedSubscriptions = afterTargetConfirmedSubscriptions;
-	}
 
 	protected override async GDTask StartPerform(State abilityState)
 	{
