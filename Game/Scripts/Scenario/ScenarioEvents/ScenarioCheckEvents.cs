@@ -128,6 +128,7 @@ public class ScenarioCheckEvents
 
 			public int Shield { get; private set; } = 0;
 			public bool ExtraValue { get; private set; } = false;
+			public bool Prevented { get; private set; } = false;
 
 			public void AdjustShield(int amount)
 			{
@@ -137,6 +138,11 @@ public class ScenarioCheckEvents
 			public void SetExtraValue()
 			{
 				ExtraValue = true;
+			}
+
+			public void SetPrevented()
+			{
+				Prevented = true;
 			}
 		}
 	}

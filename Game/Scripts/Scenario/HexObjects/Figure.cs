@@ -360,7 +360,10 @@ public abstract partial class Figure : HexObject
 		ScenarioCheckEvents.ShieldCheck.Parameters parameters =
 			ScenarioCheckEvents.ShieldCheckEvent.Fire(new ScenarioCheckEvents.ShieldCheck.Parameters(this));
 
-		SetShield(parameters.Shield, parameters.ExtraValue);
+		if(!parameters.Prevented)
+		{
+			SetShield(parameters.Shield, parameters.ExtraValue);
+		}
 	}
 
 	private void OnRetaliateSubscriptionsChanged()

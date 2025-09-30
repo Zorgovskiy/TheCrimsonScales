@@ -260,6 +260,7 @@ public class ScenarioEvents
 
 			public int Shield { get; private set; } = 0;
 			public int UnpierceableShield { get; private set; } = 0;
+			public bool ShieldPrevented { get; private set; } = false;
 
 			public bool DamagePrevented { get; private set; }
 
@@ -293,6 +294,11 @@ public class ScenarioEvents
 				CalculateCurrentDamage();
 			}
 
+			public void SetShieldPrevented()
+			{
+				ShieldPrevented = true;
+			}
+
 			public void SetDamagePrevented()
 			{
 				DamagePrevented = true;
@@ -322,10 +328,10 @@ public class ScenarioEvents
 					return;
 				}
 
-				bool ignoresShield = PotentialAttackAbilityState?.SingleTargetIgnoresAllShields ?? false;
+				bool shieldIgnoredOrPrevented = PotentialAttackAbilityState?.SingleTargetIgnoresAllShields ?? ShieldPrevented;
 
 				int finalPierce = Mathf.Max(PotentialAttackAbilityState?.SingleTargetPierce ?? 0, 0);
-				int finalShieldValue = ignoresShield ? 0 : Mathf.Max(Shield - finalPierce, 0) + UnpierceableShield;
+				int finalShieldValue = shieldIgnoredOrPrevented ? 0 : Mathf.Max(Shield - finalPierce, 0) + UnpierceableShield;
 				int finalDamage = Mathf.Max(InitialDamage - finalShieldValue, 0);
 
 				if(HasBrittle)
