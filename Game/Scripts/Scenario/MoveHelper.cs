@@ -379,7 +379,14 @@ public static class MoveHelper
 		Figure otherFigure = hex.GetHexObjectOfType<Figure>();
 		if(otherFigure != null && otherFigure != performer)
 		{
-			return false;
+			ScenarioCheckEvents.CanEnterHexWithFigureCheck.Parameters canEnterHexWithFigureCheckParameters =
+				ScenarioCheckEvents.CanEnterHexWithFigureCheckEvent.Fire(
+					new ScenarioCheckEvents.CanEnterHexWithFigureCheck.Parameters(performer, hex, otherFigure, true));
+
+			if(!canEnterHexWithFigureCheckParameters.CanEnter)
+			{
+				return false;
+			}
 		}
 
 		return true;

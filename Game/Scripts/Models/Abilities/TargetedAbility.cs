@@ -447,8 +447,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 					remove = true;
 				}
 
-				if(Target.HasFlag(Target.Enemies) && abilityState.Authority == figure && 
-					abilityState.Authority.EnemiesWith(abilityState.Performer))
+				if(Target.HasFlag(Target.Enemies) && abilityState.Authority == figure)
 				{
 					remove = true;
 				}
@@ -704,6 +703,15 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 
 				await target.TweenGlobalPosition(hex.GlobalPosition, 0.2f).PlayFastForwardableAsync();
 				await AbilityCmd.EnterHex(abilityState, target, abilityState.Authority, hex, true);
+
+				ScenarioEvents.MoveTogetherCheck.Parameters moveTogetherCheckParameters =
+					await ScenarioEvents.MoveTogetherCheckEvent.CreatePrompt(new ScenarioEvents.MoveTogetherCheck.Parameters(target));
+
+				if(moveTogetherCheckParameters.OtherFigure != null)
+				{
+					await target.TweenGlobalPosition(hex.GlobalPosition, 0.2f).PlayFastForwardableAsync();
+					await AbilityCmd.EnterHex(abilityState, moveTogetherCheckParameters.OtherFigure, abilityState.Authority, hex, true);
+				}
 			}
 
 			target.ZIndex = target.DefaultZIndex;

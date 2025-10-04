@@ -76,6 +76,28 @@ public class ScenarioCheckEvents
 	private readonly CanEnterObstacleCheck _canEnterObstacleCheck = new CanEnterObstacleCheck();
 	public static CanEnterObstacleCheck CanEnterObstacleCheckEvent => GameController.Instance.ScenarioCheckEvents._canEnterObstacleCheck;
 
+	public class CanEnterHexWithFigureCheck : ScenarioCheckEvent<CanEnterHexWithFigureCheck.Parameters>
+	{
+		public class Parameters(Figure figure, Hex hex, Figure otherFigure, bool tryingToStopAt)
+			: ParametersBase
+		{
+			public Figure Figure { get; } = figure;
+			public Hex Hex { get; } = hex;
+			public Figure OtherFigure { get; } = otherFigure;
+			public bool TryingToStopAt { get; } = tryingToStopAt;
+
+			public bool CanEnter { get; private set; } = false;
+
+			public void SetCanEnter()
+			{
+				CanEnter = true;
+			}
+		}
+	}
+
+	private readonly CanEnterHexWithFigureCheck _canEnterHexWithFigureCheck = new CanEnterHexWithFigureCheck();
+	public static CanEnterHexWithFigureCheck CanEnterHexWithFigureCheckEvent => GameController.Instance.ScenarioCheckEvents._canEnterHexWithFigureCheck;
+
 	public class CanPassEnemyCheck : ScenarioCheckEvent<CanPassEnemyCheck.Parameters>
 	{
 		public class Parameters(AbilityState abilityState, Figure figure, Figure enemyFigure)
@@ -361,4 +383,23 @@ public class ScenarioCheckEvents
 
 	private readonly InitiativeCheck _initiativeCheck = new InitiativeCheck();
 	public static InitiativeCheck InitiativeCheckEvent => GameController.Instance.ScenarioCheckEvents._initiativeCheck;
+
+	public class IsSummonControlledCheck : ScenarioCheckEvent<IsSummonControlledCheck.Parameters>
+	{
+		public class Parameters(Figure summon)
+			: ParametersBase
+		{
+			public Figure Summon { get; } = summon;
+
+			public bool IsControlled { get; private set; } = false;
+
+			public void SetIsControlled()
+			{
+				IsControlled = true;
+			}
+		}
+	}
+
+	private readonly IsSummonControlledCheck _isSummonControlledCheck = new IsSummonControlledCheck();
+	public static IsSummonControlledCheck IsSummonControlledCheckEvent => GameController.Instance.ScenarioCheckEvents._isSummonControlledCheck;
 }

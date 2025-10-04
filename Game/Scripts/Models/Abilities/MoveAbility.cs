@@ -170,11 +170,21 @@ public class MoveAbility : Ability<MoveAbility.State>
 
 				abilityState.Hexes.Add(hex);
 
+				ScenarioEvents.MoveTogetherCheck.Parameters moveTogetherCheckParameters =
+					await ScenarioEvents.MoveTogetherCheckEvent.CreatePrompt(new ScenarioEvents.MoveTogetherCheck.Parameters(performer));
+
 				await performer.TweenGlobalPosition(hex.GlobalPosition, 0.3f).SetEasing(Easing.OutSine)
 					.PlayFastForwardableAsync();
+				
 				await GDTask.DelayFastForwardable(0.03f);
 				bool triggerHexEffects = abilityState.MoveType == MoveType.Regular || (abilityState.MoveType == MoveType.Jump && i == path.Count - 1);
 				await AbilityCmd.EnterHex(abilityState, performer, abilityState.Authority, hex, triggerHexEffects);
+
+				if(moveTogetherCheckParameters.OtherFigure != null)
+				{
+					await moveTogetherCheckParameters.OtherFigure.TweenGlobalPosition(hex.GlobalPosition, 0.3f).SetEasing(Easing.OutSine).PlayFastForwardableAsync();
+					await AbilityCmd.EnterHex(abilityState, moveTogetherCheckParameters.OtherFigure, abilityState.Authority, hex, triggerHexEffects);
+				}
 			}
 
 			if(abilityState.MoveType == MoveType.Jump && !playedLandSound)
