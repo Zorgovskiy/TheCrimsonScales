@@ -14,7 +14,7 @@ public partial class Chieftain : Character
 			parameters => parameters.Figure == this,
 			async parameters =>
 			{
-				if (Hex.GetHexObjectsOfType<Figure>().Any(figure => figure is Summon && Summons.Contains(figure)))
+				if(Hex.GetHexObjectsOfType<Summon>().Any(summon => summon.Stats.Traits.Any(trait => trait is MountTrait)))
 				{
 					parameters.SetIsMounted();
 				}
