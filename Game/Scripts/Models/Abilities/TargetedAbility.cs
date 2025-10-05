@@ -7,7 +7,8 @@ using GTweensGodot.Extensions;
 
 public class SingleTargetState
 {
-	public Figure Target;
+	public Figure Target { get; init; }
+	public List<Hex> ForcedMovementHexes { get; } = new List<Hex>();
 }
 
 public abstract class TargetedAbilityState<TSingleTargetState> : TargetedAbilityState
@@ -309,6 +310,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 		/// </summary>
 		public override TAbility Build()
 		{
+			Obj.Target = _target ?? Target.Enemies;
 			Obj.RangeType = _rangeType ?? (Obj.Range == 1 ? RangeType.Melee : RangeType.Range);
 			Obj._getTargetingHintText = GetTargetingHintText ?? Obj.DefaultTargetingHintText;
 			return base.Build();
@@ -575,21 +577,21 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 			// Pull
 			if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetPull > 0)
 			{
-				await PushPullSwing(abilityState, performer.Hex, target, abilityState.SingleTargetPull, ForcedMovementType.Pull,
+				await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetPull, ForcedMovementType.Pull,
 					() => $"Select a path to {Icons.HintText(Icons.Pull)}{abilityState.SingleTargetPull} target");
 			}
 
 			// Push
 			if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetPush > 0)
 			{
-				await PushPullSwing(abilityState, performer.Hex, target, abilityState.SingleTargetPush, ForcedMovementType.Push,
+				await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetPush, ForcedMovementType.Push,
 					() => $"Select a path to {Icons.HintText(Icons.Push)}{abilityState.SingleTargetPush} target");
 			}
 
 			// Swing
 			if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetSwing > 0)
 			{
-				await PushPullSwing(abilityState, performer.Hex, target, abilityState.SingleTargetSwing, ForcedMovementType.Swing,
+				await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetSwing, ForcedMovementType.Swing,
 					() => $"Select a path to {Icons.HintText(Icons.Swing)}{abilityState.SingleTargetSwing} target");
 			}
 
@@ -668,13 +670,23 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 		await GDTask.CompletedTask;
 	}
 
-	protected async GDTask PushPullSwing(T abilityState, Hex origin, Figure target, int distance, ForcedMovementType type, Func<string> hintText)
+	protected async GDTask ForcedMovement(T abilityState, Hex origin, Figure target, int distance, ForcedMovementType type, Func<string> hintText)
 	{
 		List<Vector2I> path = null;
+		SwingDirectionType? requiredDirection = null;
+
+		if(type == ForcedMovementType.Swing)
+		{
+			ScenarioEvents.SwingDirectionCheck.Parameters parameters =
+				await ScenarioEvents.SwingDirectionCheckEvent.CreatePrompt(
+					new ScenarioEvents.SwingDirectionCheck.Parameters(abilityState));
+			requiredDirection = parameters.RequiredDirection;
+		}
+
 		if(abilityState.Authority is Character)
 		{
 			ForcedMovementPrompt.Answer forcedMovementAnswer = await PromptManager.Prompt(
-				new ForcedMovementPrompt(abilityState, origin, target, distance, type, null, hintText), abilityState.Authority);
+				new ForcedMovementPrompt(abilityState, origin, target, distance, type, null, hintText, requiredDirection), abilityState.Authority);
 
 			if(!forcedMovementAnswer.Skipped)
 			{
@@ -684,7 +696,8 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 		else
 		{
 			MonsterForcedMovementPrompt.Answer answer = await PromptManager.Prompt(
-				new MonsterForcedMovementPrompt(abilityState, origin, target, distance, type, null, hintText), abilityState.Authority);
+				new MonsterForcedMovementPrompt(abilityState, origin, target, distance, type, null, hintText, requiredDirection),
+				abilityState.Authority);
 
 			if(!answer.Skipped)
 			{
@@ -700,6 +713,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 			{
 				Vector2I coords = path[i];
 				Hex hex = GameController.Instance.Map.GetHex(coords);
+				abilityState.SingleTargetState.ForcedMovementHexes.Add(hex);
 
 				await target.TweenGlobalPosition(hex.GlobalPosition, 0.2f).PlayFastForwardableAsync();
 				await AbilityCmd.EnterHex(abilityState, target, abilityState.Authority, hex, true);

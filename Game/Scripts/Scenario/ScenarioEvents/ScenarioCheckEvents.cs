@@ -194,9 +194,9 @@ public class ScenarioCheckEvents
 
 			public bool HasFlying { get; private set; }
 
-			public void SetFlying()
+			public void SetFlying(bool hasFlying)
 			{
-				HasFlying = true;
+				HasFlying = hasFlying;
 			}
 		}
 	}
