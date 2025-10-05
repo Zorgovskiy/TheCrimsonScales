@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Linq;
 using Fractural.Tasks;
 
 public partial class Chieftain : Character
@@ -6,6 +8,19 @@ public partial class Chieftain : Character
 	{
 		await base.OnScenarioSetupCompleted();
 
-		//object subscriber = new();
+		object subscriber = new();
+
+		ScenarioEvents.IsMountedCheckEvent.Subscribe(this, subscriber,
+			parameters => parameters.Performer == this,
+			async parameters =>
+			{
+				if (Hex.GetHexObjectsOfType<Figure>().Any(figure => figure is Summon && Summons.Contains(figure)))
+				{
+					parameters.SetIsMounted();
+				}
+
+				await GDTask.CompletedTask;
+			}
+		);
 	}
 }

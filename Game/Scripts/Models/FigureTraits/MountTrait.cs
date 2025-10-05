@@ -1,12 +1,10 @@
-using System.Linq;
 using Fractural.Tasks;
 using System;
-using Godot;
 
 public class MountTrait() : FigureTrait
 {
 	public class AbstractBuilder<TBuilder, TTrait> :
-		AbstractBuilder<TBuilder, TTrait>.IMountOwnerStep,
+		AbstractBuilder<TBuilder, TTrait>.ICharacterOwnerStep,
 		AbstractBuilder<TBuilder, TTrait>.IOnMountedStep,
 		AbstractBuilder<TBuilder, TTrait>.IOnUnmountedStep
 		where TBuilder : AbstractBuilder<TBuilder, TTrait>
@@ -14,9 +12,9 @@ public class MountTrait() : FigureTrait
 	{
 		protected readonly TTrait Obj = new();
 
-		public interface IMountOwnerStep
+		public interface ICharacterOwnerStep
 		{
-			TBuilder WithMountOwner(Figure characterOwner);
+			TBuilder WithCharacterOwner(Character characterOwner);
 		}
 
 		public interface IOnMountedStep
@@ -29,7 +27,7 @@ public class MountTrait() : FigureTrait
 			TBuilder WithOnUnmounted(Func<Figure, GDTask> onUnmounted);
 		}
 
-		public TBuilder WithMountOwner(Figure characterOwner)
+		public TBuilder WithCharacterOwner(Character characterOwner)
 		{
 			Obj._characterOwner = characterOwner;
 			return (TBuilder)this;
@@ -66,7 +64,7 @@ public class MountTrait() : FigureTrait
 	/// A convenience method that returns an instance of SummonBuilder.
 	/// </summary>
 	/// <returns></returns>
-	public static MountBuilder.IMountOwnerStep Builder()
+	public static MountBuilder.ICharacterOwnerStep Builder()
 	{
 		return new MountBuilder();
 	}
@@ -115,12 +113,12 @@ public class MountTrait() : FigureTrait
 			parameters => parameters.Figure == _characterOwner,
 			async parameters =>
 			{
-				if(_onMounted != null && parameters.Hex == figure.Hex)
+				if(!_mounted && _onMounted != null && parameters.Hex == figure.Hex)
 				{
 					await _onMounted(_characterOwner);
 					_mounted = true;
 				}
-				else if (_onUnmounted != null && _mounted && parameters.Hex != figure.Hex)
+				else if (_mounted && _onUnmounted != null && parameters.Hex != figure.Hex)
 				{
 					await _onUnmounted(_characterOwner);
 					_mounted = false;
@@ -137,9 +135,4 @@ public class MountTrait() : FigureTrait
 		ScenarioCheckEvents.IsSummonControlledCheckEvent.Unsubscribe(figure, this);
 		ScenarioEvents.MoveTogetherCheckEvent.Unsubscribe(figure, this);
 	}
-
-	//private bool IsMounted(Figure figure, Figure owner)
-	//{
-	//    return figure.Hex.GetHexObjectsOfType<Figure>().Contains(owner);
-	//}
 }

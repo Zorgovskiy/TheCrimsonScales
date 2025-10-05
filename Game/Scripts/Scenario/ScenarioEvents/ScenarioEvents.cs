@@ -897,4 +897,20 @@ public class ScenarioEvents
 
 	private readonly SwingDirectionCheck _swingDirectionCheck = new SwingDirectionCheck();
 	public static SwingDirectionCheck SwingDirectionCheckEvent => GameController.Instance.ScenarioEvents._swingDirectionCheck;
+
+	public class IsMountedCheck : ScenarioEvent<IsMountedCheck.Parameters>
+	{
+		public class Parameters(AbilityState abilityState) : ParametersBase<AbilityState>(abilityState)
+		{
+			public bool IsMounted { get; private set; } = false;
+
+			public void SetIsMounted()
+			{
+				IsMounted = true;
+			}
+		}
+	}
+
+	private readonly IsMountedCheck _isMountedCheck = new IsMountedCheck();
+	public static IsMountedCheck IsMountedCheckEvent => GameController.Instance.ScenarioEvents._isMountedCheck;
 }
