@@ -402,4 +402,23 @@ public class ScenarioCheckEvents
 
 	private readonly IsSummonControlledCheck _isSummonControlledCheck = new IsSummonControlledCheck();
 	public static IsSummonControlledCheck IsSummonControlledCheckEvent => GameController.Instance.ScenarioCheckEvents._isSummonControlledCheck;
+
+	public class IsMountedCheck : ScenarioCheckEvent<IsMountedCheck.Parameters>
+	{
+		public class Parameters(Figure figure)
+			: ParametersBase
+		{
+			public Figure Figure { get; } = figure;
+
+			public bool IsMounted { get; private set; } = false;
+
+			public void SetIsMounted()
+			{
+				IsMounted = true;
+			}
+		}
+	}
+
+	private readonly IsMountedCheck _isMountedCheck = new IsMountedCheck();
+	public static IsMountedCheck IsMountedCheckEvent => GameController.Instance.ScenarioCheckEvents._isMountedCheck;
 }

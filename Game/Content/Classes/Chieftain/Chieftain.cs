@@ -10,8 +10,8 @@ public partial class Chieftain : Character
 
 		object subscriber = new();
 
-		ScenarioEvents.IsMountedCheckEvent.Subscribe(this, subscriber,
-			parameters => parameters.Performer == this,
+		ScenarioCheckEvents.IsMountedCheckEvent.Subscribe(this, subscriber,
+			parameters => parameters.Figure == this,
 			async parameters =>
 			{
 				if (Hex.GetHexObjectsOfType<Figure>().Any(figure => figure is Summon && Summons.Contains(figure)))

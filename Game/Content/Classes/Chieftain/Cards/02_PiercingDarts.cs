@@ -39,24 +39,24 @@ public class PiercingDarts : ChieftainCardModel<PiercingDarts.CardTop, PiercingD
 			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async state => 
 				{
-					ScenarioEvents.IsMountedCheck.Parameters isMountedCheckParameters =
-						await ScenarioEvents.IsMountedCheckEvent.CreatePrompt(
-							new ScenarioEvents.IsMountedCheck.Parameters(state));
+					ScenarioEvents.DuringAttackEvent.Subscribe(state, this,
+						parameters => parameters.Performer == state.Performer,
+						async parameters =>
+						{
+							ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
+								ScenarioCheckEvents.IsMountedCheckEvent.Fire(
+									new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer));
 
-					if (isMountedCheckParameters.IsMounted)
-					{
-						ScenarioEvents.DuringAttackEvent.Subscribe(state, this,
-							parameters => parameters.Performer == state.Performer,
-							async parameters =>
+							if(isMountedCheckParameters.IsMounted)
 							{
 								parameters.AbilityState.SingleTargetAdjustAttackValue(1);
 								parameters.AbilityState.SingleTargetAdjustPierce(1);
-
-								await GDTask.CompletedTask;
 							}
-						);
-					}
 
+							await GDTask.CompletedTask;
+						}
+					);
+					
 					await GDTask.CompletedTask;
 				})
 				.WithOnDeactivate(async state => 
