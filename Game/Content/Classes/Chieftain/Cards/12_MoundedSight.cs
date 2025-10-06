@@ -20,7 +20,7 @@ public class MoundedSight : ChieftainCardModel<MoundedSight.CardTop, MoundedSigh
 					Traits = 
 					[
 						new IgnoreDifficultAndHazardousTerrainTrait(),
-						new MountTrait(AbilityCard.OriginalOwner),
+						new MountTrait(),
 					]
 				})
 				.WithName("Cavalry Camel")

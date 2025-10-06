@@ -20,14 +20,14 @@ public class PreparedRations : ChieftainCardModel<PreparedRations.CardTop, Prepa
 					Traits = 
 					[
 						new RetaliateTrait(1),
-						new MountTrait(AbilityCard.OriginalOwner,
-							async mountSummon => 
+						new MountTrait(
+							async (owner, mount) => 
 							{
-								ScenarioEvents.RoundEndedEvent.Subscribe(mountSummon, this,
+								ScenarioEvents.RoundEndedEvent.Subscribe(owner, this,
 									parameters => true,
 									async parameters => 
 									{
-										ActionState actionState = new ActionState(AbilityCard.OriginalOwner, [HealAbility.Builder().WithHealValue(2).WithTarget(Target.Self).Build()]);
+										ActionState actionState = new ActionState(owner, [HealAbility.Builder().WithHealValue(2).WithTarget(Target.Self).Build()]);
 										await actionState.Perform();
 
 										await GDTask.CompletedTask;
@@ -35,9 +35,9 @@ public class PreparedRations : ChieftainCardModel<PreparedRations.CardTop, Prepa
 								);
 								await GDTask.CompletedTask;
 							},
-							async mountSummon => 
+							async (owner, mount) => 
 							{ 
-								ScenarioEvents.RoundEndedEvent.Unsubscribe(mountSummon, this);
+								ScenarioEvents.RoundEndedEvent.Unsubscribe(owner, this);
 
 								await GDTask.CompletedTask;
 							}

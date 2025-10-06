@@ -14,26 +14,15 @@ public class ChieftainModel : ClassModel
 
 	public override IList<AbilityCardModel> AbilityCards { get; } =
 	[
-		//ModelDB.Card<Chokehold>(),
-		//ModelDB.Card<DragThroughDirt>(),
-		//ModelDB.Card<FollowTheChains>(),
-		//ModelDB.Card<LockingLinks>(),
-		//ModelDB.Card<MercilessBeatdown>(),
-		//ModelDB.Card<RustySpikes>(),
-		//ModelDB.Card<SlammingShove>(),
-		//ModelDB.Card<SpikeKnuckles>(),
-		//ModelDB.Card<UntouchableKeeper>(),
-		//ModelDB.Card<WrappedInMetal>(),
-
-		//ModelDB.Card<GangingUp>(),
-		//ModelDB.Card<RoundhouseSwing>(),
-		//ModelDB.Card<VigorousSway>(),
-
-		//ModelDB.Card<AgonizingClamp>(),
-		//ModelDB.Card<IronThrust>(),
-		//ModelDB.Card<LatchAndTow>(),
-		//ModelDB.Card<SweepingCollision>(),
-		//ModelDB.Card<DizzyingRelease>(),
-		//ModelDB.Card<DoubleKO>(),
+		//ModelDB.Card<CatastrophicCattle>(),
+		//ModelDB.Card<OutrunTheEnemy>(),
+		//ModelDB.Card<PiercingDarts>(),
+		//ModelDB.Card<SlowAndSteady>(),
+		//ModelDB.Card<PreparedRations>(),
+		//ModelDB.Card<MoundedSight>(),
+		//ModelDB.Card<AgilePredator>(),
+		//ModelDB.Card<ChestThumper>(),
+		//ModelDB.Card<ImperviousArmor>(),
+		//ModelDB.Card<MajesticMass>(),
 	];
 }

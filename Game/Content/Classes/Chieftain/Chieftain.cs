@@ -16,7 +16,7 @@ public partial class Chieftain : Character
 			async parameters =>
 			{	
 				Summon summon = Hex.GetHexObjectsOfType<Summon>()
-					.FirstOrDefault(summon => summon.Stats.Traits.Any(trait => trait is MountTrait), null);
+					.FirstOrDefault(summon => summon.CharacterOwner == this && summon.Stats.Traits.Any(trait => trait is MountTrait), null);
 				if(summon != null)
 				{
 					parameters.SetIsMounted();

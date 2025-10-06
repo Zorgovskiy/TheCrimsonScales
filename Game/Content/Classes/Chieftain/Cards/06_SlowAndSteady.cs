@@ -21,13 +21,13 @@ public class SlowAndSteady : ChieftainCardModel<SlowAndSteady.CardTop, SlowAndSt
 					Traits = 
 					[
 						new ShieldTrait(1),
-						new MountTrait(AbilityCard.OriginalOwner,
-							async mountSummon => 
+						new MountTrait(
+							async (owner, mount) => 
 							{
-								ScenarioEvents.ForcedMovementCheckEvent.Subscribe(mountSummon, this,
+								ScenarioEvents.ForcedMovementCheckEvent.Subscribe(mount, this,
 									canApply: parameters => 
-										parameters.AbilityState.Target == AbilityCard.OriginalOwner ||
-										parameters.AbilityState.Target == mountSummon,
+										parameters.AbilityState.Target == owner ||
+										parameters.AbilityState.Target == mount,
 									async parameters => 
 									{
 										parameters.SetPrevented();
@@ -37,9 +37,9 @@ public class SlowAndSteady : ChieftainCardModel<SlowAndSteady.CardTop, SlowAndSt
 								);
 								await GDTask.CompletedTask;
 							},
-							async mountSummon => 
+							async (owner, mount) => 
 							{ 
-								ScenarioEvents.ForcedMovementCheckEvent.Unsubscribe(mountSummon, this);
+								ScenarioEvents.ForcedMovementCheckEvent.Unsubscribe(mount, this);
 
 								await GDTask.CompletedTask;
 							}

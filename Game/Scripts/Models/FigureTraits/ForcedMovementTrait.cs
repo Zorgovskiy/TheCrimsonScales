@@ -12,7 +12,7 @@ public class ForcedMovementTrait(ForcedMovementType type, int amount) : FigureTr
 				parameters.AbilityState.Performer == figure,
 			async parameters =>
 			{
-				AttackAbility.State attackAbilityState = ((AttackAbility.State)parameters.AbilityState);
+				AttackAbility.State attackAbilityState = (AttackAbility.State)parameters.AbilityState;
 
 				if(type == ForcedMovementType.Push)
 				{

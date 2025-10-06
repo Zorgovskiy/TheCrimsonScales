@@ -1,13 +1,15 @@
 using Fractural.Tasks;
 using System;
 
-public class MountTrait(Figure characterOwner, Func<Figure, GDTask> onMounted = null, Func<Figure, GDTask> onDismounted = null) : FigureTrait
+public class MountTrait(Func<Figure, Figure, GDTask> onMounted = null, Func<Figure, Figure, GDTask> onDismounted = null) : FigureTrait
 {
 	private bool _mounted = false;
 
 	public override void Activate(Figure figure)
 	{
 		base.Activate(figure);
+
+		Figure characterOwner = ((Summon)figure).CharacterOwner;
 
 		// Allow entering the same hex to mount
 		ScenarioCheckEvents.CanEnterHexWithFigureCheckEvent.Subscribe(figure, this,
@@ -47,7 +49,7 @@ public class MountTrait(Figure characterOwner, Func<Figure, GDTask> onMounted = 
 				{
 					if(onMounted != null)
 					{
-						await onMounted(figure);
+						await onMounted(characterOwner, figure);
 					}
 					_mounted = true;
 				}
@@ -55,7 +57,7 @@ public class MountTrait(Figure characterOwner, Func<Figure, GDTask> onMounted = 
 				{
 					if(onDismounted != null)
 					{
-						await onDismounted(figure);
+						await onDismounted(characterOwner, figure);
 					}
 					_mounted = false;
 				}

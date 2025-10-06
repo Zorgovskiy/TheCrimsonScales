@@ -19,7 +19,7 @@ public class CatastrophicCattle : ChieftainCardModel<CatastrophicCattle.CardTop,
 					Attack = 2,
 					Traits = 
 					[
-						new MountTrait(AbilityCard.OriginalOwner),
+						new MountTrait(),
 						new ForcedMovementTrait(ForcedMovementType.Push, 1)
 					]
 				})

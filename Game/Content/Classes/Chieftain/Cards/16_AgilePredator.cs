@@ -22,7 +22,7 @@ public class AgilePredator : ChieftainCardModel<AgilePredator.CardTop, AgilePred
 					[
 						new RetaliateTrait(1),
 						new AllAttacksGainDisadvantageTrait(),
-						new MountTrait(AbilityCard.OriginalOwner),
+						new MountTrait(),
 					]
 				})
 				.WithName("Black Panther")
@@ -47,7 +47,7 @@ public class AgilePredator : ChieftainCardModel<AgilePredator.CardTop, AgilePred
 						.WithDistance(1)
 						.WithOnAbilityStarted(async moveState =>
 						{
-							Summon summonToMove = AbilityCard.OriginalOwner.Summons.Find(summon => moveState.Performer == summon);
+							Summon summonToMove = ((Character)grantState.Performer).Summons.Find(summon => moveState.Performer == summon);
 							moveState.AdjustMoveValue(summonToMove?.Stats.Move ?? 0);
 
 							await GDTask.CompletedTask;
@@ -56,7 +56,7 @@ public class AgilePredator : ChieftainCardModel<AgilePredator.CardTop, AgilePred
 				])				
 				.WithCustomGetTargets((grantState, figures) =>
 				{
-					figures.AddRange(AbilityCard.OriginalOwner.Summons);
+					figures.AddRange(((Character)grantState.Performer).Summons);
 				})
 				.WithTarget(Target.Allies)
 				.WithRange(3)
