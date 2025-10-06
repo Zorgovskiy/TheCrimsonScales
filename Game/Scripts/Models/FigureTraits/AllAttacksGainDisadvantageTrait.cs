@@ -7,7 +7,7 @@ public class AllAttacksGainDisadvantageTrait() : FigureTrait
 		base.Activate(figure);
 
 		ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(figure, this,
-			parameters => figure == parameters.Performer,
+			parameters => parameters.AbilityState.Target == figure,
 			async parameters =>
 			{
 				parameters.AbilityState.SingleTargetSetHasDisadvantage();

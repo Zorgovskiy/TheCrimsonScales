@@ -43,14 +43,20 @@ public class MountTrait(Figure characterOwner, Func<Figure, GDTask> onMounted = 
 			parameters => parameters.Figure == characterOwner,
 			async parameters =>
 			{
-				if(!_mounted && onMounted != null && parameters.Hex == figure.Hex)
+				if(!_mounted && parameters.Hex == figure.Hex)
 				{
-					await onMounted(figure);
+					if(onMounted != null)
+					{
+						await onMounted(figure);
+					}
 					_mounted = true;
 				}
-				else if (_mounted && onDismounted != null && parameters.Hex != figure.Hex)
+				else if(_mounted && parameters.Hex != figure.Hex)
 				{
-					await onDismounted(figure);
+					if(onDismounted != null)
+					{
+						await onDismounted(figure);
+					}
 					_mounted = false;
 				}
 			}
