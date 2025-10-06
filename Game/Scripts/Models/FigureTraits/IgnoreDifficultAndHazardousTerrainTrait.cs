@@ -1,6 +1,6 @@
 ﻿using Fractural.Tasks;
 
-public class IgnoreTerrainTrait() : FigureTrait
+public class IgnoreDifficultAndHazardousTerrainTrait() : FigureTrait
 {
 	public override void Activate(Figure figure)
 	{

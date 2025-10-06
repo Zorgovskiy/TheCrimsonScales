@@ -20,22 +20,21 @@ public class OutrunTheEnemy : ChieftainCardModel<OutrunTheEnemy.CardTop, OutrunT
 					Attack = 1,
 					Traits = 
 					[
-						MountTrait.Builder()
-							.WithCharacterOwner(AbilityCard.OriginalOwner)
-							.WithOnMounted(async mountSummon => 
-							{ 
+						new MountTrait(AbilityCard.OriginalOwner, 
+							async mountSummon => 
+							{
 								ScenarioCheckEvents.InitiativeCheckEvent.Subscribe(mountSummon, this,
 									parameters => parameters.Figure == mountSummon,
 									parameters => parameters.AdjustInitiative(-10)
 								);
 								await GDTask.CompletedTask;
-							})
-							.WithOnUnmounted(async mountSummon => 
+							},
+							async mountSummon => 
 							{ 
 								ScenarioCheckEvents.InitiativeCheckEvent.Unsubscribe(mountSummon, this);
 								await GDTask.CompletedTask;
-							})
-							.Build(),
+							}
+						)
 					]
 				})
 				.WithName("Speedy Ostrich")
@@ -62,23 +61,26 @@ public class OutrunTheEnemy : ChieftainCardModel<OutrunTheEnemy.CardTop, OutrunT
 						{
 							Summon summonToMove = AbilityCard.OriginalOwner.Summons.Find(summon => moveState.Performer == summon);
 							moveState.AdjustMoveValue(summonToMove?.Stats.Move ?? 0);
-							
-							if(await AbilityCmd.AskConsumeElement(grantState.Performer, Element.Earth,
-						   		$"+2{Icons.Inline(Icons.Move)}"))
-							{
-								moveState.AdjustMoveValue(2);
-								await AbilityCmd.GainXP(grantState.Performer, 1);
-							}
 
 							await GDTask.CompletedTask;
 						})
+						.WithDuringMovementSubscription(
+							ScenarioEvents.DuringMovement.Subscription.ConsumeElement(Element.Earth,
+								applyFunction: async applyParameters =>
+								{
+									applyParameters.AbilityState.AdjustMoveValue(2);
+
+									await AbilityCmd.GainXP(applyParameters.Performer, 1);
+								},
+								effectInfoViewParameters: new TextEffectInfoView.Parameters($"+2{Icons.Inline(Icons.Move)}")
+							)
+						)
 						.Build()
 				])				
 				.WithCustomGetTargets((grantState, figures) =>
 				{
 					figures.AddRange(AbilityCard.OriginalOwner.Summons);
 				})
-				.WithTarget(Target.Allies)
 				.Build()
 			),
 		];

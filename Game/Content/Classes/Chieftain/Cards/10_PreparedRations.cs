@@ -20,9 +20,8 @@ public class PreparedRations : ChieftainCardModel<PreparedRations.CardTop, Prepa
 					Traits = 
 					[
 						new RetaliateTrait(1),
-						MountTrait.Builder()
-							.WithCharacterOwner(AbilityCard.OriginalOwner)
-							.WithOnMounted(async mountSummon => 
+						new MountTrait(AbilityCard.OriginalOwner,
+							async mountSummon => 
 							{
 								ScenarioEvents.RoundEndedEvent.Subscribe(mountSummon, this,
 									parameters => true,
@@ -35,14 +34,14 @@ public class PreparedRations : ChieftainCardModel<PreparedRations.CardTop, Prepa
 									}
 								);
 								await GDTask.CompletedTask;
-							})
-							.WithOnUnmounted(async mountSummon => 
+							},
+							async mountSummon => 
 							{ 
 								ScenarioEvents.RoundEndedEvent.Unsubscribe(mountSummon, this);
 
 								await GDTask.CompletedTask;
-							})
-							.Build(),
+							}
+						)
 					]
 				})
 				.WithName("Pack Mule")

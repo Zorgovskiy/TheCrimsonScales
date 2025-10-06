@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Fractural.Tasks;
 
 public class MoundedSight : ChieftainCardModel<MoundedSight.CardTop, MoundedSight.CardBottom>
 {
@@ -20,8 +19,8 @@ public class MoundedSight : ChieftainCardModel<MoundedSight.CardTop, MoundedSigh
 					Attack = 1,
 					Traits = 
 					[
-						new IgnoreTerrainTrait(),
-						MountTrait.Builder().WithCharacterOwner(AbilityCard.OriginalOwner).Build(),
+						new IgnoreDifficultAndHazardousTerrainTrait(),
+						new MountTrait(AbilityCard.OriginalOwner),
 					]
 				})
 				.WithName("Cavalry Camel")

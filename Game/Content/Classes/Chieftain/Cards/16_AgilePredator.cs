@@ -22,7 +22,7 @@ public class AgilePredator : ChieftainCardModel<AgilePredator.CardTop, AgilePred
 					[
 						new RetaliateTrait(1),
 						new AllAttacksGainDisadvantageTrait(),
-						MountTrait.Builder().WithCharacterOwner(AbilityCard.OriginalOwner).Build(),
+						new MountTrait(AbilityCard.OriginalOwner),
 					]
 				})
 				.WithName("Black Panther")

@@ -574,25 +574,32 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 
 			await AfterConditionsApplied(abilityState, target);
 
-			// Pull
-			if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetPull > 0)
-			{
-				await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetPull, ForcedMovementType.Pull,
-					() => $"Select a path to {Icons.HintText(Icons.Pull)}{abilityState.SingleTargetPull} target");
-			}
+			ScenarioEvents.ForcedMovementCheck.Parameters forcedMovementCheckParameters = 
+				await ScenarioEvents.ForcedMovementCheckEvent.CreatePrompt(
+					new ScenarioEvents.ForcedMovementCheck.Parameters(abilityState));
 
-			// Push
-			if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetPush > 0)
+			if(!forcedMovementCheckParameters.IsPrevented)
 			{
-				await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetPush, ForcedMovementType.Push,
-					() => $"Select a path to {Icons.HintText(Icons.Push)}{abilityState.SingleTargetPush} target");
-			}
+				// Pull
+				if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetPull > 0)
+				{
+					await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetPull, ForcedMovementType.Pull,
+						() => $"Select a path to {Icons.HintText(Icons.Pull)}{abilityState.SingleTargetPull} target");
+				}
 
-			// Swing
-			if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetSwing > 0)
-			{
-				await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetSwing, ForcedMovementType.Swing,
-					() => $"Select a path to {Icons.HintText(Icons.Swing)}{abilityState.SingleTargetSwing} target");
+				// Push
+				if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetPush > 0)
+				{
+					await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetPush, ForcedMovementType.Push,
+						() => $"Select a path to {Icons.HintText(Icons.Push)}{abilityState.SingleTargetPush} target");
+				}
+
+				// Swing
+				if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetSwing > 0)
+				{
+					await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetSwing, ForcedMovementType.Swing,
+						() => $"Select a path to {Icons.HintText(Icons.Swing)}{abilityState.SingleTargetSwing} target");
+				}
 			}
 
 			await AfterEffects(abilityState, target);

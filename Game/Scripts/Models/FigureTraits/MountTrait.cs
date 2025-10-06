@@ -1,78 +1,8 @@
 using Fractural.Tasks;
 using System;
 
-public class MountTrait() : FigureTrait
+public class MountTrait(Figure characterOwner, Func<Figure, GDTask> onMounted = null, Func<Figure, GDTask> onDismounted = null) : FigureTrait
 {
-	public class AbstractBuilder<TBuilder, TTrait> :
-		AbstractBuilder<TBuilder, TTrait>.ICharacterOwnerStep,
-		AbstractBuilder<TBuilder, TTrait>.IOnMountedStep,
-		AbstractBuilder<TBuilder, TTrait>.IOnUnmountedStep
-		where TBuilder : AbstractBuilder<TBuilder, TTrait>
-		where TTrait : MountTrait, new()
-	{
-		protected readonly TTrait Obj = new();
-
-		public interface ICharacterOwnerStep
-		{
-			TBuilder WithCharacterOwner(Character characterOwner);
-		}
-
-		public interface IOnMountedStep
-		{
-			IOnUnmountedStep WithOnMounted(Func<Figure, GDTask> onMounted);
-		}
-
-		public interface IOnUnmountedStep
-		{
-			TBuilder WithOnUnmounted(Func<Figure, GDTask> onUnmounted);
-		}
-
-		public TBuilder WithCharacterOwner(Character characterOwner)
-		{
-			Obj._characterOwner = characterOwner;
-			return (TBuilder)this;
-		}
-
-		public IOnUnmountedStep WithOnMounted(Func<Figure, GDTask> onMounted)
-		{
-			Obj._onMounted = onMounted;
-			return (TBuilder)this;
-		}
-
-		public TBuilder WithOnUnmounted(Func<Figure, GDTask> onUnmounted)
-		{
-			Obj._onUnmounted = onUnmounted;
-			return (TBuilder)this;
-		}
-
-		public virtual TTrait Build()
-		{
-			return Obj;
-		}
-	}
-
-	/// <summary>
-	/// A concrete implementation of the AbstractBuilder. Required to actually use the builder,
-	/// as abstract builders cannot be instantiated.
-	/// </summary>
-	public class MountBuilder : AbstractBuilder<MountBuilder, MountTrait>
-	{
-		internal MountBuilder() { }
-	}
-
-	/// <summary>
-	/// A convenience method that returns an instance of SummonBuilder.
-	/// </summary>
-	/// <returns></returns>
-	public static MountBuilder.ICharacterOwnerStep Builder()
-	{
-		return new MountBuilder();
-	}
-
-	private Figure _characterOwner;
-	private Func<Figure, GDTask> _onMounted;
-	private Func<Figure, GDTask> _onUnmounted;
-
 	private bool _mounted = false;
 
 	public override void Activate(Figure figure)
@@ -81,7 +11,7 @@ public class MountTrait() : FigureTrait
 
 		// Allow entering the same hex to mount
 		ScenarioCheckEvents.CanEnterHexWithFigureCheckEvent.Subscribe(figure, this,
-			parameters => parameters.OtherFigure == figure && parameters.Figure == _characterOwner,
+			parameters => parameters.OtherFigure == figure && parameters.Figure == characterOwner,
 			parameters =>
 			{
 				parameters.SetCanEnter();
@@ -102,7 +32,7 @@ public class MountTrait() : FigureTrait
 			parameters => parameters.Performer == figure && _mounted,
 			parameters =>
 			{
-				parameters.SetOtherFigure(_characterOwner);
+				parameters.SetOtherFigure(characterOwner);
 
 				return GDTask.CompletedTask;
 			}
@@ -110,17 +40,17 @@ public class MountTrait() : FigureTrait
 
 		// Trigger mounted effect
 		ScenarioEvents.FigureEnteredHexEvent.Subscribe(figure, this,
-			parameters => parameters.Figure == _characterOwner,
+			parameters => parameters.Figure == characterOwner,
 			async parameters =>
 			{
-				if(!_mounted && _onMounted != null && parameters.Hex == figure.Hex)
+				if(!_mounted && onMounted != null && parameters.Hex == figure.Hex)
 				{
-					await _onMounted(figure);
+					await onMounted(figure);
 					_mounted = true;
 				}
-				else if (_mounted && _onUnmounted != null && parameters.Hex != figure.Hex)
+				else if (_mounted && onDismounted != null && parameters.Hex != figure.Hex)
 				{
-					await _onUnmounted(figure);
+					await onDismounted(figure);
 					_mounted = false;
 				}
 			}

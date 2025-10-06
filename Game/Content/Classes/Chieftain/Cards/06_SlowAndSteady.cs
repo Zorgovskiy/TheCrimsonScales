@@ -21,32 +21,29 @@ public class SlowAndSteady : ChieftainCardModel<SlowAndSteady.CardTop, SlowAndSt
 					Traits = 
 					[
 						new ShieldTrait(1),
-						MountTrait.Builder()
-							.WithCharacterOwner(AbilityCard.OriginalOwner)
-							.WithOnMounted(async mountSummon => 
+						new MountTrait(AbilityCard.OriginalOwner,
+							async mountSummon => 
 							{
-								ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(mountSummon, this,
+								ScenarioEvents.ForcedMovementCheckEvent.Subscribe(mountSummon, this,
 									canApply: parameters => 
 										parameters.AbilityState.Target == AbilityCard.OriginalOwner ||
 										parameters.AbilityState.Target == mountSummon,
 									async parameters => 
 									{
-										// Make immunity
-										parameters.AbilityState.SingleTargetAdjustPull(-parameters.AbilityState.SingleTargetPull);
-										parameters.AbilityState.SingleTargetAdjustPush(-parameters.AbilityState.SingleTargetPush);
-										parameters.AbilityState.SingleTargetAdjustSwing(-parameters.AbilityState.SingleTargetSwing);
+										parameters.SetPrevented();
 
 										await GDTask.CompletedTask;
 									}
 								);
 								await GDTask.CompletedTask;
-							})
-							.WithOnUnmounted(async mountSummon => 
+							},
+							async mountSummon => 
 							{ 
-								ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(mountSummon, this);
+								ScenarioEvents.ForcedMovementCheckEvent.Unsubscribe(mountSummon, this);
+
 								await GDTask.CompletedTask;
-							})
-							.Build(),
+							}
+						)
 					]
 				})
 				.WithName("Giant Tortoise")
