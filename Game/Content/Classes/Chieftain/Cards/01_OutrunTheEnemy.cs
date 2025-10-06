@@ -22,17 +22,17 @@ public class OutrunTheEnemy : ChieftainCardModel<OutrunTheEnemy.CardTop, OutrunT
 					[
 						MountTrait.Builder()
 							.WithCharacterOwner(AbilityCard.OriginalOwner)
-							.WithOnMounted(async characterOwner => 
+							.WithOnMounted(async mountSummon => 
 							{ 
-								ScenarioCheckEvents.InitiativeCheckEvent.Subscribe(characterOwner, this,
-									parameters => parameters.Figure == characterOwner,
+								ScenarioCheckEvents.InitiativeCheckEvent.Subscribe(mountSummon, this,
+									parameters => parameters.Figure == mountSummon,
 									parameters => parameters.AdjustInitiative(-10)
 								);
 								await GDTask.CompletedTask;
 							})
-							.WithOnUnmounted(async characterOwner => 
+							.WithOnUnmounted(async mountSummon => 
 							{ 
-								ScenarioCheckEvents.InitiativeCheckEvent.Unsubscribe(characterOwner, this);
+								ScenarioCheckEvents.InitiativeCheckEvent.Unsubscribe(mountSummon, this);
 								await GDTask.CompletedTask;
 							})
 							.Build(),

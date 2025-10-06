@@ -115,12 +115,12 @@ public class MountTrait() : FigureTrait
 			{
 				if(!_mounted && _onMounted != null && parameters.Hex == figure.Hex)
 				{
-					await _onMounted(_characterOwner);
+					await _onMounted(figure);
 					_mounted = true;
 				}
 				else if (_mounted && _onUnmounted != null && parameters.Hex != figure.Hex)
 				{
-					await _onUnmounted(_characterOwner);
+					await _onUnmounted(figure);
 					_mounted = false;
 				}
 			}
