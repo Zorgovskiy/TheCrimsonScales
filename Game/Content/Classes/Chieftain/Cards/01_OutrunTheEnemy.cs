@@ -23,15 +23,27 @@ public class OutrunTheEnemy : ChieftainCardModel<OutrunTheEnemy.CardTop, OutrunT
 						new MountTrait(
 							async (owner, mount) => 
 							{
-								ScenarioCheckEvents.InitiativeCheckEvent.Subscribe(owner, this,
-									parameters => parameters.Figure == owner,
-									parameters => parameters.AdjustInitiative(-10)
-								);
+								ScenarioEvents.RoundStartedBeforeInitiativesSortedEvent.Subscribe(owner, this,
+									canApplyParameters => true,
+									async applyParameters =>
+								{
+									ScenarioCheckEvents.InitiativeCheckEvent.Subscribe(owner, this,
+										parameters => parameters.Figure == owner,
+										parameters => parameters.AdjustInitiative(-10)
+									);
+
+									owner.UpdateInitiative();
+									ScenarioCheckEvents.InitiativeCheckEvent.Unsubscribe(owner, this);
+
+									await GDTask.CompletedTask;
+								});
+
 								await GDTask.CompletedTask;
 							},
 							async (owner, mount) => 
-							{ 
-								ScenarioCheckEvents.InitiativeCheckEvent.Unsubscribe(owner, this);
+							{
+								ScenarioEvents.RoundStartedBeforeInitiativesSortedEvent.Unsubscribe(owner, this);
+
 								await GDTask.CompletedTask;
 							}
 						)
@@ -59,8 +71,7 @@ public class OutrunTheEnemy : ChieftainCardModel<OutrunTheEnemy.CardTop, OutrunT
 						.WithDistance(0)
 						.WithOnAbilityStarted(async moveState =>
 						{
-							Summon summonToMove = ((Character)grantState.Performer).Summons.Find(summon => moveState.Performer == summon);
-							moveState.AdjustMoveValue(summonToMove?.Stats.Move ?? 0);
+							moveState.AdjustMoveValue(((Summon)moveState.Performer).Stats.Move ?? 0);
 
 							await GDTask.CompletedTask;
 						})
@@ -81,6 +92,7 @@ public class OutrunTheEnemy : ChieftainCardModel<OutrunTheEnemy.CardTop, OutrunT
 				{
 					figures.AddRange(((Character)grantState.Performer).Summons);
 				})
+				.WithTarget(Target.Allies)
 				.Build()
 			),
 		];

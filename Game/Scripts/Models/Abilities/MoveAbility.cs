@@ -173,6 +173,11 @@ public class MoveAbility : Ability<MoveAbility.State>
 				ScenarioEvents.MoveTogetherCheck.Parameters moveTogetherCheckParameters =
 					await ScenarioEvents.MoveTogetherCheckEvent.CreatePrompt(new ScenarioEvents.MoveTogetherCheck.Parameters(performer));
 
+				if(moveTogetherCheckParameters.OtherFigure != null)
+				{
+					moveTogetherCheckParameters.OtherFigure.TweenGlobalPosition(hex.GlobalPosition, 0.3f).SetEasing(Easing.OutSine).PlayFastForwardable();
+				}
+
 				await performer.TweenGlobalPosition(hex.GlobalPosition, 0.3f).SetEasing(Easing.OutSine)
 					.PlayFastForwardableAsync();
 				
@@ -182,7 +187,6 @@ public class MoveAbility : Ability<MoveAbility.State>
 
 				if(moveTogetherCheckParameters.OtherFigure != null)
 				{
-					await moveTogetherCheckParameters.OtherFigure.TweenGlobalPosition(hex.GlobalPosition, 0.3f).SetEasing(Easing.OutSine).PlayFastForwardableAsync();
 					await AbilityCmd.EnterHex(abilityState, moveTogetherCheckParameters.OtherFigure, abilityState.Authority, hex, triggerHexEffects);
 				}
 			}
