@@ -63,14 +63,34 @@ public class MountTrait(Func<Figure, Figure, GDTask> onMounted = null, Func<Figu
 				}
 			}
 		);
+
+		ScenarioCheckEvents.IsMountedCheckEvent.Subscribe(figure, this,
+			parameters => parameters.Figure == characterOwner,
+			async parameters =>
+			{	
+				if(_mounted) 
+				{
+					parameters.SetIsMounted();
+					parameters.SetMount(figure);
+				}
+
+				await GDTask.CompletedTask;
+			}
+		);
 	}
 
 	public override void Deactivate(Figure figure)
 	{
 		base.Deactivate(figure);
 
+		Figure characterOwner = ((Summon)figure).CharacterOwner;
+
 		ScenarioCheckEvents.CanEnterHexWithFigureCheckEvent.Unsubscribe(figure, this);
 		ScenarioCheckEvents.IsSummonControlledCheckEvent.Unsubscribe(figure, this);
 		ScenarioEvents.MoveTogetherCheckEvent.Unsubscribe(figure, this);
+		ScenarioEvents.FigureEnteredHexEvent.Unsubscribe(figure, this);
+		ScenarioCheckEvents.IsMountedCheckEvent.Unsubscribe(figure, this);
+
+		onDismounted?.Invoke(characterOwner, figure);
 	}
 }
