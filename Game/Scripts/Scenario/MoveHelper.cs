@@ -338,7 +338,14 @@ public static class MoveHelper
 
 		if(hex.TryGetHexObjectOfType(out Door door) && (performer is not Character || door.Locked || forcedMovement))
 		{
-			return false;
+			ScenarioCheckEvents.CanOpenDoorsCheck.Parameters canOpenDoorsCheckParameters =
+				ScenarioCheckEvents.CanOpenDoorsCheckEvent.Fire(
+					new ScenarioCheckEvents.CanOpenDoorsCheck.Parameters(performer));
+
+			if(!canOpenDoorsCheckParameters.CanOpenDoors)
+			{
+				return false;
+			}
 		}
 
 		if(moveType == MoveType.Regular)

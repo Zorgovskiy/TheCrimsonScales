@@ -21,7 +21,7 @@ public class PiercingDarts : ChieftainCardModel<PiercingDarts.CardTop, PiercingD
 					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.ConsumeElement(Element.Earth,
 						applyFunction: async applyParameters =>
 						{
-							applyParameters.AbilityState.SingleTargetAddCondition(Conditions.Poison1);
+							applyParameters.AbilityState.AbilityAddCondition(Conditions.Poison1);
 
 							await AbilityCmd.GainXP(applyParameters.Performer, 1);
 						},

@@ -456,4 +456,23 @@ public class ScenarioCheckEvents
 
 	private readonly PotentialTargetCheck _potentialTargetCheck = new PotentialTargetCheck();
 	public static PotentialTargetCheck PotentialTargetCheckEvent => GameController.Instance.ScenarioCheckEvents._potentialTargetCheck;
+
+	public class CanOpenDoorsCheck : ScenarioCheckEvent<CanOpenDoorsCheck.Parameters>
+	{
+		public class Parameters(Figure figure)
+			: ParametersBase
+		{
+			public Figure Figure { get; } = figure;
+
+			public bool CanOpenDoors { get; private set; } = false;
+
+			public void SetCanOpenDoors()
+			{
+				CanOpenDoors = true;
+			}
+		}
+	}
+
+	private readonly CanOpenDoorsCheck _canOpenDoorsCheck = new CanOpenDoorsCheck();
+	public static CanOpenDoorsCheck CanOpenDoorsCheckEvent => GameController.Instance.ScenarioCheckEvents._canOpenDoorsCheck;
 }

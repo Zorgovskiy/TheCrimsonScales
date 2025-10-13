@@ -74,6 +74,7 @@ public class MountTrait(Func<Figure, Figure, GDTask> onMounted = null, Func<Figu
 			}
 		);
 
+		// Returning mounted status for other effects and abilities
 		ScenarioCheckEvents.IsMountedCheckEvent.Subscribe(figure, this,
 			parameters => parameters.Figure == characterOwner,
 			async parameters =>
@@ -82,6 +83,20 @@ public class MountTrait(Func<Figure, Figure, GDTask> onMounted = null, Func<Figu
 				{
 					parameters.SetIsMounted();
 					parameters.SetMount(figure);
+				}
+
+				await GDTask.CompletedTask;
+			}
+		);
+
+		// Mounted summon can open doors
+		ScenarioCheckEvents.CanOpenDoorsCheckEvent.Subscribe(figure, this,
+			parameters => parameters.Figure == figure,
+			async parameters =>
+			{	
+				if(_mounted) 
+				{
+					parameters.SetCanOpenDoors();
 				}
 
 				await GDTask.CompletedTask;
@@ -100,9 +115,10 @@ public class MountTrait(Func<Figure, Figure, GDTask> onMounted = null, Func<Figu
 		ScenarioCheckEvents.CanEnterHexWithFigureCheckEvent.Unsubscribe(figure, this);
 		ScenarioCheckEvents.IsSummonControlledCheckEvent.Unsubscribe(figure, this);
 		ScenarioEvents.MoveTogetherCheckEvent.Unsubscribe(figure, this);
+		ScenarioCheckEvents.InitiativeCheckEvent.Unsubscribe(figure, this);
 		ScenarioEvents.FigureEnteredHexEvent.Unsubscribe(figure, this);
 		ScenarioCheckEvents.IsMountedCheckEvent.Unsubscribe(figure, this);
-		ScenarioCheckEvents.InitiativeCheckEvent.Unsubscribe(figure, this);
+		ScenarioCheckEvents.CanOpenDoorsCheckEvent.Unsubscribe(figure, this);
 
 		onDismounted?.Invoke(characterOwner, figure);
 	}
