@@ -27,7 +27,8 @@ public class PreparedRations : ChieftainCardModel<PreparedRations.CardTop, Prepa
 									parameters => true,
 									async parameters => 
 									{
-										ActionState actionState = new ActionState(owner, [HealAbility.Builder().WithHealValue(2).WithTarget(Target.Self).Build()]);
+										ActionState actionState = new ActionState(owner, 
+											[HealAbility.Builder().WithHealValue(2).WithTarget(Target.Self).Build()]);
 										await actionState.Perform();
 
 										await GDTask.CompletedTask;

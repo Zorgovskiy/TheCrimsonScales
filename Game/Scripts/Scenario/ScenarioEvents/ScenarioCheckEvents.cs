@@ -378,6 +378,15 @@ public class ScenarioCheckEvents
 					SortingInitiative = Initiative.SortingInitiative + amount * 10000000
 				};
 			}
+
+			public void SetSortingInitiative(int sortingInitiative)
+			{
+				Initiative = new Initiative
+				{
+					MainInitiative = Initiative.MainInitiative,
+					SortingInitiative = sortingInitiative
+				};
+			}
 		}
 	}
 
@@ -411,14 +420,14 @@ public class ScenarioCheckEvents
 			public Figure Figure { get; } = figure;
 
 			public bool IsMounted { get; private set; } = false;
-			public Summon Mount { get; private set; } = null;
+			public Figure Mount { get; private set; } = null;
 
 			public void SetIsMounted()
 			{
 				IsMounted = true;
 			}
 
-			public void SetMount(Summon mount)
+			public void SetMount(Figure mount)
 			{
 				Mount = mount;
 			}
@@ -427,4 +436,24 @@ public class ScenarioCheckEvents
 
 	private readonly IsMountedCheck _isMountedCheck = new IsMountedCheck();
 	public static IsMountedCheck IsMountedCheckEvent => GameController.Instance.ScenarioCheckEvents._isMountedCheck;
+
+	public class PotentialTargetCheck : ScenarioCheckEvent<PotentialTargetCheck.Parameters>
+	{
+		public class Parameters(Figure figure, Figure potentialTarget)
+			: ParametersBase
+		{
+			public Figure Figure { get; } = figure;
+			public Figure PotentialTarget { get; } = potentialTarget;
+
+			public int SortingInitiativeAdjustment { get; private set; } = 0;
+
+			public void AdjustSortingInitiative(int adjutstment)
+			{
+				SortingInitiativeAdjustment = adjutstment;
+			}
+		}
+	}
+
+	private readonly PotentialTargetCheck _potentialTargetCheck = new PotentialTargetCheck();
+	public static PotentialTargetCheck PotentialTargetCheckEvent => GameController.Instance.ScenarioCheckEvents._potentialTargetCheck;
 }

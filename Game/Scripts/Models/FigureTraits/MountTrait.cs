@@ -39,6 +39,12 @@ public class MountTrait(Func<Figure, Figure, GDTask> onMounted = null, Func<Figu
 				return GDTask.CompletedTask;
 			}
 		);
+		
+		// Mounted summon goes just before the character
+		ScenarioCheckEvents.InitiativeCheckEvent.Subscribe(figure, this,
+			parameters => parameters.Figure == figure && _mounted,
+			parameters => parameters.SetSortingInitiative(characterOwner.Initiative.SortingInitiative - 1)
+		);
 
 		// Trigger mounted effect
 		ScenarioEvents.FigureEnteredHexEvent.Subscribe(figure, this,
@@ -47,19 +53,23 @@ public class MountTrait(Func<Figure, Figure, GDTask> onMounted = null, Func<Figu
 			{
 				if(!_mounted && parameters.Hex == figure.Hex)
 				{
+					_mounted = true;
+					figure.UpdateInitiative();
+
 					if(onMounted != null)
 					{
 						await onMounted(characterOwner, figure);
 					}
-					_mounted = true;
 				}
 				else if(_mounted && parameters.Hex != figure.Hex)
 				{
+					_mounted = false;
+					figure.UpdateInitiative();
+
 					if(onDismounted != null)
 					{
 						await onDismounted(characterOwner, figure);
 					}
-					_mounted = false;
 				}
 			}
 		);
@@ -90,6 +100,7 @@ public class MountTrait(Func<Figure, Figure, GDTask> onMounted = null, Func<Figu
 		ScenarioEvents.MoveTogetherCheckEvent.Unsubscribe(figure, this);
 		ScenarioEvents.FigureEnteredHexEvent.Unsubscribe(figure, this);
 		ScenarioCheckEvents.IsMountedCheckEvent.Unsubscribe(figure, this);
+		ScenarioCheckEvents.InitiativeCheckEvent.Unsubscribe(figure, this);
 
 		onDismounted?.Invoke(characterOwner, figure);
 	}

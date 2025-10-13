@@ -150,7 +150,7 @@ public partial class Summon : Figure
 		return new Initiative()
 		{
 			MainInitiative = ownerInitiative.MainInitiative,
-			SortingInitiative = ownerInitiative.SortingInitiative - 10 + SummonIndex
+			SortingInitiative = ownerInitiative.SortingInitiative - 100 + SummonIndex
 		};
 	}
 

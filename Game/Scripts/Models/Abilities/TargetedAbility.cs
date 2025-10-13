@@ -37,6 +37,7 @@ public abstract class TargetedAbilityState : AbilityState
 	public List<Hex> TargetedHexes { get; } = new List<Hex>();
 	public Dictionary<Vector2I, AOEHexType> AOEHexes { get; set; }
 
+	public Target AbilityTarget { get; set; }
 	public int AbilityTargets { get; set; }
 
 	public RangeType AbilityRangeType { get; set; }
@@ -71,6 +72,11 @@ public abstract class TargetedAbilityState : AbilityState
 				yield return hex;
 			}
 		}
+	}
+
+	public void AdjustTarget(Target target)
+	{
+		AbilityTarget |= target;
 	}
 
 	public void AdjustTargets(int amount)
@@ -323,8 +329,9 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 	{
 		base.InitializeState(abilityState);
 
+		abilityState.AbilityTarget = Target;
 		abilityState.AbilityTargets = Targets;
-		if(Target.HasFlag(Target.TargetAll))
+		if(abilityState.AbilityTarget.HasFlag(Target.TargetAll))
 		{
 			abilityState.AbilityTargets = int.MaxValue;
 		}
@@ -444,44 +451,45 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 					}
 				}
 
-				if(!Target.HasFlag(Target.Allies) && abilityState.Authority.AlliedWith(figure, false))
+				if(!abilityState.AbilityTarget.HasFlag(Target.Allies) && abilityState.Authority.AlliedWith(figure, false))
 				{
 					remove = true;
 				}
 
-				if(Target.HasFlag(Target.Enemies) && abilityState.Authority == figure)
+				if(abilityState.AbilityTarget.HasFlag(Target.Enemies) && abilityState.Authority == figure)
 				{
 					remove = true;
 				}
 
-				if(!Target.HasFlag(Target.Enemies) && abilityState.Authority.EnemiesWith(figure))
+				if(!abilityState.AbilityTarget.HasFlag(Target.Enemies) && abilityState.Authority.EnemiesWith(figure))
 				{
 					remove = true;
 				}
 
-				if(!Target.HasFlag(Target.Self) && abilityState.Performer == figure)
+				if(!abilityState.AbilityTarget.HasFlag(Target.Self) && abilityState.Performer == figure)
 				{
 					remove = true;
 				}
 
-				if(Target.HasFlag(Target.SelfCountsForTargets) && abilityState.SingleTargetStates.Count + 1 == abilityState.AbilityTargets &&
-				   !abilityState.UniqueTargetedFigures.Contains(performer) && abilityState.Performer != figure)
+				if(abilityState.AbilityTarget.HasFlag(Target.SelfCountsForTargets) && 
+					abilityState.SingleTargetStates.Count + 1 == abilityState.AbilityTargets &&
+				   	!abilityState.UniqueTargetedFigures.Contains(performer) && abilityState.Performer != figure)
 				{
 					remove = true;
 				}
 
-				if(!Target.HasFlag(Target.MustTargetSameWithAllTargets) && abilityState.UniqueTargetedFigures.Contains(figure))
+				if(!abilityState.AbilityTarget.HasFlag(Target.MustTargetSameWithAllTargets) && abilityState.UniqueTargetedFigures.Contains(figure))
 				{
 					remove = true;
 				}
 
-				if(Target.HasFlag(Target.MustTargetSameWithAllTargets) && abilityState.UniqueTargetedFigures.Count > 0 &&
+				if(abilityState.AbilityTarget.HasFlag(Target.MustTargetSameWithAllTargets) && abilityState.UniqueTargetedFigures.Count > 0 &&
 				   abilityState.UniqueTargetedFigures[0] != figure)
 				{
 					remove = true;
 				}
 
-				if(Target.HasFlag(Target.MustTargetCharacters) && figure is not Character)
+				if(abilityState.AbilityTarget.HasFlag(Target.MustTargetCharacters) && figure is not Character)
 				{
 					remove = true;
 				}
@@ -609,7 +617,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 				break;
 			}
 
-			if(customTargets != null && Target.HasFlag(Target.TargetAll))
+			if(customTargets != null && abilityState.AbilityTarget.HasFlag(Target.TargetAll))
 			{
 				if(abilityState.SingleTargetStates.Count == customTargets.Count)
 				{

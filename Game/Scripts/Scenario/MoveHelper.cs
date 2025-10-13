@@ -341,16 +341,21 @@ public static class MoveHelper
 			return false;
 		}
 
-		Figure otherFigure = hex.GetHexObjectOfType<Figure>();
-		if(otherFigure != null && performer.EnemiesWith(otherFigure) && !otherFigure.HasCondition(Conditions.Invisible) && moveType == MoveType.Regular)
+		if(moveType == MoveType.Regular)
 		{
-			ScenarioCheckEvents.CanPassEnemyCheck.Parameters canPassEnemyParameters =
-				ScenarioCheckEvents.CanPassEnemyCheckEvent.Fire(
-					new ScenarioCheckEvents.CanPassEnemyCheck.Parameters(abilityState, performer, otherFigure));
-
-			if(!canPassEnemyParameters.CanPass)
+			foreach(Figure otherFigure in hex.GetHexObjectsOfType<Figure>())
 			{
-				return false;
+				if(performer.EnemiesWith(otherFigure))
+				{
+					ScenarioCheckEvents.CanPassEnemyCheck.Parameters canPassEnemyParameters =
+					ScenarioCheckEvents.CanPassEnemyCheckEvent.Fire(
+						new ScenarioCheckEvents.CanPassEnemyCheck.Parameters(abilityState, performer, otherFigure));
+
+					if(!canPassEnemyParameters.CanPass)
+					{
+						return false;
+					}
+				}
 			}
 		}
 

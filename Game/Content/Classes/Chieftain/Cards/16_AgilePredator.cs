@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Fractural.Tasks;
 
 public class AgilePredator : ChieftainCardModel<AgilePredator.CardTop, AgilePredator.CardBottom>
@@ -47,8 +48,7 @@ public class AgilePredator : ChieftainCardModel<AgilePredator.CardTop, AgilePred
 						.WithDistance(1)
 						.WithOnAbilityStarted(async moveState =>
 						{
-							Summon summonToMove = ((Character)grantState.Performer).Summons.Find(summon => moveState.Performer == summon);
-							moveState.AdjustMoveValue(summonToMove?.Stats.Move ?? 0);
+							moveState.AdjustMoveValue(((Summon)moveState.Performer).Stats.Move ?? 0);
 
 							await GDTask.CompletedTask;
 						})
@@ -56,10 +56,10 @@ public class AgilePredator : ChieftainCardModel<AgilePredator.CardTop, AgilePred
 				])				
 				.WithCustomGetTargets((grantState, figures) =>
 				{
-					figures.AddRange(((Character)grantState.Performer).Summons);
+					figures.AddRange(((Character)grantState.Performer).Summons
+						.Where(summon => RangeHelper.Distance(grantState.Performer.Hex, summon.Hex) <= 3));
 				})
 				.WithTarget(Target.Allies)
-				.WithRange(3)
 				.Build()
 			),
 		];
