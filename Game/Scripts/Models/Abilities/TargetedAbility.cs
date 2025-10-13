@@ -348,17 +348,6 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 	{
 		Figure performer = abilityState.Performer;
 
-		List<Figure> customTargets = null; // = CustomTargets?.ToList();
-
-		// if(MustTargetSelf && customTargets == null)
-		// {
-		// 	customTargets = [performer];
-		// }
-		if(Target == Target.Self)
-		{
-			customTargets = [performer];
-		}
-
 		//await InitAbilityState(abilityState);
 
 		if(AOEPattern != null)
@@ -406,9 +395,9 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 
 		Action<List<Figure>> getValidTargets = figures =>
 		{
-			if(customTargets != null)
+			if(abilityState.AbilityTarget == Target.Self)
 			{
-				figures.AddRange(customTargets);
+				figures.Add(performer);
 			}
 			else if(CustomGetTargets != null)
 			{
@@ -534,7 +523,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 
 			if(abilityState.Authority is Character)
 			{
-				bool autoSelectIfOne = Mandatory || (customTargets != null && customTargets.Count == 1) || (TargetHex != null && AOEPattern == null);
+				bool autoSelectIfOne = Mandatory || abilityState.AbilityTarget == Target.Self || (TargetHex != null && AOEPattern == null);
 				TargetSelectionPrompt.Answer targetAnswer = await PromptManager.Prompt(
 					new TargetSelectionPrompt(getValidTargets, autoSelectIfOne, Mandatory, duringTargetedAbilityEffectCollection,
 						() => _getTargetingHintText(abilityState)), abilityState.Authority);
@@ -617,14 +606,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 				break;
 			}
 
-			if(customTargets != null && abilityState.AbilityTarget.HasFlag(Target.TargetAll))
-			{
-				if(abilityState.SingleTargetStates.Count == customTargets.Count)
-				{
-					break;
-				}
-			}
-			else if(AOEPattern != null)
+			if(AOEPattern != null)
 			{
 				if(abilityState.TargetedHexes.Count == AOEPattern.Hexes.Count)
 				{
