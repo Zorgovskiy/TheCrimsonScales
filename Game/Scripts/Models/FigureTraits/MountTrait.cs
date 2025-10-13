@@ -93,6 +93,8 @@ public class MountTrait(Func<Figure, Figure, GDTask> onMounted = null, Func<Figu
 	{
 		base.Deactivate(figure);
 
+		_mounted = false;
+
 		Figure characterOwner = ((Summon)figure).CharacterOwner;
 
 		ScenarioCheckEvents.CanEnterHexWithFigureCheckEvent.Unsubscribe(figure, this);
