@@ -68,8 +68,14 @@ public class ScenarioEvents
 	public class AttackAfterTargetConfirmed : ScenarioEvent<AttackAfterTargetConfirmed.Parameters>
 	{
 		public class Parameters(AttackAbility.State abilityState) : ParametersBase<AttackAbility.State>(abilityState)
-		{
-		}
+        {
+        	public bool CannotGainDisadvantage { get; private set; } = false;
+
+			public void SetCannotGainDisadvantage()
+			{
+				CannotGainDisadvantage = true;
+			}
+        }
 	}
 
 	private readonly AttackAfterTargetConfirmed _attackAfterTargetConfirmed = new AttackAfterTargetConfirmed();

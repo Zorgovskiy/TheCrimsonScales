@@ -58,7 +58,7 @@ public static class AbilityCmd
 
 				ScenarioCheckEvents.DisadvantageCheckEvent.Subscribe(state, subscriber,
 					parameters => parameters.Target == state.Performer,
-					parameters => parameters.SetDisadvantage()
+					parameters => parameters.SetDisadvantage(true)
 				);
 
 				ScenarioCheckEvents.FigureInfoItemExtraEffectsCheckEvent.Subscribe(state, subscriber,
