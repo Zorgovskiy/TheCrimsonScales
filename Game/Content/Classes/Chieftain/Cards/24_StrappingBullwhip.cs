@@ -60,8 +60,8 @@ public class StrappingBullwhip : ChieftainCardModel<StrappingBullwhip.CardTop, S
 
 							if(isMountedCheckParameters.IsMounted)
 							{
-								applyParameters.AbilityState.AbilityAdjustAttackValue(2);
-								applyParameters.AbilityState.AbilityAdjustPierce(2);
+								applyParameters.AbilityState.SingleTargetAdjustAttackValue(2);
+								applyParameters.AbilityState.SingleTargetAdjustPierce(2);
 
 								await state.ActionState.RequestDiscardOrLose();
 							}

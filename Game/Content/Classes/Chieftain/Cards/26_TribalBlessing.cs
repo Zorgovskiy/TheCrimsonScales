@@ -21,7 +21,7 @@ public class TribalBlessing : ChieftainCardModel<TribalBlessing.CardTop, TribalB
 					ScenarioEvents.DuringHeal.Subscription.ConsumeElement(Element.Earth,
 						applyFunction: async applyParameters =>
 						{
-							applyParameters.AbilityState.AdjustTarget(Target.Allies | Target.MustTargetCharacters);
+							applyParameters.AbilityState.AdjustTarget(Target.Allies | Target.MustTargetCharacters | Target.SelfCountsForTargets);
 							applyParameters.AbilityState.AdjustTargets(1);
 
 							await GDTask.CompletedTask;
@@ -32,14 +32,8 @@ public class TribalBlessing : ChieftainCardModel<TribalBlessing.CardTop, TribalB
 				.WithCustomGetTargets((state, figures) => 
 				{
 					figures.Add(state.Performer);
-
-					if(state.UniqueTargetedFigures.Contains(state.Performer) || state.AbilityTargets > state.SingleTargetStates.Count + 1)
-					{
-						// The performer of the Heal ability has not been targeted yet, or there is more than 1 target remaining
-						// This means an ally can still be targeted
-						figures.AddRange(RangeHelper.GetFiguresInRange(state.Performer.Hex, 3, false)
+					figures.AddRange(RangeHelper.GetFiguresInRange(state.Performer.Hex, 3, false)
 							.Where(figure => figure.AlliedWith(state.Performer)));
-					}
 				})
 				.Build())
 		];

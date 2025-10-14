@@ -15,7 +15,7 @@ public class WarPaint : ChieftainCardModel<WarPaint.CardTop, WarPaint.CardBottom
 			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async state =>
 				{
-					await state.Performer.AddCondition(Conditions.Invisible);
+					await AbilityCmd.AddCondition(state, state.Performer, Conditions.Invisible);
 
 					ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
 						ScenarioCheckEvents.IsMountedCheckEvent.Fire(
@@ -23,21 +23,20 @@ public class WarPaint : ChieftainCardModel<WarPaint.CardTop, WarPaint.CardBottom
 
 					if(isMountedCheckParameters.IsMounted)
 					{
-						await isMountedCheckParameters.Mount.AddCondition(Conditions.Invisible);
+						await AbilityCmd.AddCondition(state, isMountedCheckParameters.Mount, Conditions.Invisible);
+						state.SetCustomValue(this, "Mount", isMountedCheckParameters.Mount);
 					}
+
+					state.SetCustomValue(this, "IsMounted", isMountedCheckParameters.IsMounted);
 				})
 				.WithOnDeactivate(async state => 
 				{
 					await AbilityCmd.RemoveCondition(state.Performer, Conditions.Invisible);
-					
-					ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
-						ScenarioCheckEvents.IsMountedCheckEvent.Fire(
-							new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer));
 
-					if(isMountedCheckParameters.IsMounted)
-					{
-						await AbilityCmd.RemoveCondition(isMountedCheckParameters.Mount, Conditions.Invisible);
-					}
+					if(state.GetCustomValue<bool>(this, "IsMounted"))
+                    {
+                        await AbilityCmd.RemoveCondition(state.GetCustomValue<Figure>(this, "Mount"), Conditions.Invisible);
+                    }
 				})
 				.Build())
 		];
@@ -55,23 +54,8 @@ public class WarPaint : ChieftainCardModel<WarPaint.CardTop, WarPaint.CardBottom
 				.WithOnActivate(async state =>
 				{
 					ScenarioCheckEvents.PotentialTargetCheckEvent.Subscribe(state, this,
-						parameters => true,
+						parameters => parameters.PotentialTarget == state.Performer,
 						parameters => 
-						{
-							ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
-								ScenarioCheckEvents.IsMountedCheckEvent.Fire(
-									new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer));
-
-							if(isMountedCheckParameters.IsMounted && isMountedCheckParameters.Mount == parameters.PotentialTarget)
-							{
-								parameters.AdjustSortingInitiative(10);
-							}
-						}
-					);
-
-					ScenarioEvents.InitiativesSortedEvent.Subscribe(state, this,
-						parameters => true,
-						async parameters => 
 						{
 							ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
 								ScenarioCheckEvents.IsMountedCheckEvent.Fire(
@@ -79,17 +63,30 @@ public class WarPaint : ChieftainCardModel<WarPaint.CardTop, WarPaint.CardBottom
 
 							if(isMountedCheckParameters.IsMounted)
 							{
-								ScenarioCheckEvents.InitiativeCheckEvent.Subscribe(state, this,
-									parameters => parameters.Figure == state.Performer,
-									parameters => parameters.SetSortingInitiative(state.Performer.Initiative.SortingInitiative - 10)
-								);
-
-								state.Performer.UpdateInitiative();
-								ScenarioCheckEvents.InitiativeCheckEvent.Unsubscribe(state, this);
+								parameters.AdjustTargetSortingInitiative(-10);
 							}
+						}
+					);
+
+					ScenarioEvents.InitiativesSortedEvent.Subscribe(state, this,
+						parameters => ScenarioCheckEvents.IsMountedCheckEvent.Fire(
+									new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer)).IsMounted,
+						async parameters => 
+						{
+							Figure mount = ScenarioCheckEvents.IsMountedCheckEvent.Fire(
+									new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer)).Mount;
+
+							ScenarioCheckEvents.InitiativeCheckEvent.Subscribe(state, this,
+								parameters => parameters.Figure == mount,
+								parameters => parameters.SetSortingInitiative(state.Performer.Initiative.SortingInitiative + 1),
+								order: 10
+							);
+
+							mount.UpdateInitiative();
+							ScenarioCheckEvents.InitiativeCheckEvent.Unsubscribe(state, this);
 
 							await GDTask.CompletedTask;
-						}, 
+						},
 						effectType: EffectType.Selectable,
 						effectButtonParameters: new IconEffectButton.Parameters(Icons.Active),
 						effectInfoViewParameters: new TextEffectInfoView.Parameters($"Act before your mounted summon.")

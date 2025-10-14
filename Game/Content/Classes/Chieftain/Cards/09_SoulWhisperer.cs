@@ -28,12 +28,15 @@ public class SoulWhisperer : ChieftainCardModel<SoulWhisperer.CardTop, SoulWhisp
 
 					AttackAbility.Builder()
 						.WithDamage(0)
-						.WithOnAbilityStarted(async attackState =>
-						{
-							attackState.AbilityAdjustAttackValue(((Summon)attackState.Performer).Stats.Attack ?? 0);
+						.WithDuringAttackSubscription(ScenarioEvents.DuringAttack.Subscription.New(
+							parameters => parameters.Performer == grantState.Target,
+							async parameters =>
+							{
+								parameters.AbilityState.SingleTargetAdjustAttackValue(((Summon)parameters.Performer).Stats.Attack ?? 0);
 
-							await GDTask.CompletedTask;
-						})
+								await GDTask.CompletedTask;
+							}
+						))
 						.Build()
 				])
 				.WithCustomGetTargets((grantState, figures) =>

@@ -26,7 +26,7 @@ public class PositiveReinforcement : ChieftainCardModel<PositiveReinforcement.Ca
 
 							if(isMountedCheckParameters.IsMounted)
 							{
-								applyParameters.AbilityState.AbilityAdjustAttackValue(1);
+								applyParameters.AbilityState.SingleTargetAdjustAttackValue(1);
 							}
 
 							await GDTask.CompletedTask;
@@ -67,13 +67,14 @@ public class PositiveReinforcement : ChieftainCardModel<PositiveReinforcement.Ca
 						.Build(),
 					AttackAbility.Builder()
 						.WithDamage(0)
-						.WithOnAbilityStarted(async attackState =>
-						{
-							attackState.AbilityAdjustAttackValue(((Summon)attackState.Performer).Stats.Attack ?? 0);
-
-							await GDTask.CompletedTask;
-						})
-						.WithDuringAttackSubscription(
+						.WithDuringAttackSubscriptions([
+							ScenarioEvents.DuringAttack.Subscription.New(
+								parameters => parameters.Performer == grantState.Target,
+								async parameters =>
+								{
+									parameters.AbilityState.SingleTargetAdjustAttackValue(((Summon)parameters.Performer).Stats.Attack ?? 0);
+								}
+							),
 							ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Earth,
 								applyFunction: async applyParameters =>
 								{
@@ -82,7 +83,7 @@ public class PositiveReinforcement : ChieftainCardModel<PositiveReinforcement.Ca
 									await AbilityCmd.GainXP(applyParameters.Performer, 1);
 								},
 								effectInfoViewParameters: new TextEffectInfoView.Parameters($"+1{Icons.Inline(Icons.Attack)}")
-							)
+							)]
 						)
 						.Build()
 				])				

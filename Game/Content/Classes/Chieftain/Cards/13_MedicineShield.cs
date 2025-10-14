@@ -45,7 +45,7 @@ public class MedicineShield : ChieftainCardModel<MedicineShield.CardTop, Medicin
 		];
 
 		protected override int XP => 2;
-		protected override bool Persistent => true;
+		protected override bool Round => true;
 		protected override bool Loss => true;
 	}
 }

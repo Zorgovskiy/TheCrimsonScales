@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Fractural.Tasks;
+using Godot;
 
 public class HuntersMark : ChieftainCardModel<HuntersMark.CardTop, HuntersMark.CardBottom>
 {
@@ -33,16 +34,16 @@ public class HuntersMark : ChieftainCardModel<HuntersMark.CardTop, HuntersMark.C
 					}
 
 					ScenarioCheckEvents.PotentialTargetCheckEvent.Subscribe(state, this,
-						parameters => parameters.Figure == chosenFigure,
+						parameters => parameters.Performer == chosenFigure && state.Performer == parameters.PotentialTarget,
 						parameters => 
 						{
 							ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
 								ScenarioCheckEvents.IsMountedCheckEvent.Fire(
 									new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer));
 
-							if(isMountedCheckParameters.IsMounted && isMountedCheckParameters.Mount == parameters.PotentialTarget)
+							if(isMountedCheckParameters.IsMounted)
 							{
-								parameters.AdjustSortingInitiative(10);
+								parameters.AdjustTargetSortingInitiative(-10);
 							}
 						}
 					);

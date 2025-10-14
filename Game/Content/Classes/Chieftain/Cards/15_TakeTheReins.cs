@@ -18,21 +18,24 @@ public class TakeTheReins : ChieftainCardModel<TakeTheReins.CardTop, TakeTheRein
 				[
 					AttackAbility.Builder()
 						.WithDamage(1)
-						.WithOnAbilityStarted(async attackState =>
-						{
-							attackState.AbilityAdjustAttackValue(((Summon)attackState.Performer).Stats.Attack ?? 0);
-
-							ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
-								ScenarioCheckEvents.IsMountedCheckEvent.Fire(
-									new ScenarioCheckEvents.IsMountedCheck.Parameters(grantState.Performer));
-
-							if(isMountedCheckParameters.IsMounted && isMountedCheckParameters.Mount == attackState.Performer)
+						.WithDuringAttackSubscription(ScenarioEvents.DuringAttack.Subscription.New(
+							parameters => parameters.Performer == grantState.Target,
+							async parameters =>
 							{
-								attackState.SingleTargetAdjustAttackValue(2);
-							}
+								parameters.AbilityState.SingleTargetAdjustAttackValue(((Summon)parameters.Performer).Stats.Attack ?? 0);
 
-							await GDTask.CompletedTask;
-						})
+								ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
+									ScenarioCheckEvents.IsMountedCheckEvent.Fire(
+										new ScenarioCheckEvents.IsMountedCheck.Parameters(grantState.Performer));
+
+								if(isMountedCheckParameters.IsMounted && isMountedCheckParameters.Mount == parameters.Performer)
+								{
+									parameters.AbilityState.SingleTargetAdjustAttackValue(2);
+								}
+
+								await GDTask.CompletedTask;
+							})
+						)
 						.Build()
 				])				
 				.WithCustomGetTargets((grantState, figures) =>
