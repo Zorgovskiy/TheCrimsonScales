@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Godot;
 
 public class MajesticMass : ChieftainCardModel<MajesticMass.CardTop, MajesticMass.CardBottom>
 {
@@ -20,7 +21,12 @@ public class MajesticMass : ChieftainCardModel<MajesticMass.CardTop, MajesticMas
 					Traits = 
 					[
 						new DestroyAdjacentObstacleTrait(),
-						//new AOEAttackTrait(),
+						new AOEAttackTrait(new AOEPattern(
+						[
+							new AOEHex(Vector2I.Zero, AOEHexType.Gray),
+							new AOEHex(Vector2I.Zero.Add(Direction.NorthWest), AOEHexType.Red),
+							new AOEHex(Vector2I.Zero.Add(Direction.East), AOEHexType.Red),
+						])),
 						new MountTrait(),
 					]
 				})

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Fractural.Tasks;
 
 public class RegalBeast : ChieftainCardModel<RegalBeast.CardTop, RegalBeast.CardBottom>
 {
@@ -22,30 +23,37 @@ public class RegalBeast : ChieftainCardModel<RegalBeast.CardTop, RegalBeast.Card
 					[
 						new AllAttacksGainDisadvantageTrait(),
 						new MountTrait(
-							//async (owner, mount) => 
-							//{
-							//	ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(owner, this,
-							//		parameters => parameters.AbilityState.Performer == owner,
-							//		async parameters =>
-							//		{
-							//			parameters.AbilityState.SingleTargetSetHasAdvantage();
-//
-							//			await GDTask.CompletedTask;
-							//		}
-							//	);
-//
-							//	await GDTask.CompletedTask;
-							//},
-							//async (owner, mount) => 
-							//{ 
-							//	ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(owner, this);
-//
-							//	await GDTask.CompletedTask;
-							//}
+							async (owner, mount) => 
+							{
+								ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(owner, this,
+									parameters => parameters.AbilityState.Performer == owner,
+									async parameters =>
+									{
+										parameters.SetCannotGainDisadvantage();
+
+										await GDTask.CompletedTask;
+									}
+								);
+
+								ScenarioCheckEvents.DisadvantageCheckEvent.Subscribe(owner, this,
+									parameters => parameters.Attacker == owner,
+									parameters => parameters.SetDisadvantage(false),
+									order: 100
+								);
+
+								await GDTask.CompletedTask;
+							},
+							async (owner, mount) => 
+							{ 
+								ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(owner, this);
+								ScenarioCheckEvents.DisadvantageCheckEvent.Unsubscribe(owner, this);
+
+								await GDTask.CompletedTask;
+							}
 						),
 					]
 				})
-				.WithName("Sabertooth Tiger")
+				.WithName("Sabretooth Tiger")
 				.WithTexturePath("res://Content/Classes/Chieftain/Summons/sabretooth_tiger_AI.png")
 				.Build()
 			),

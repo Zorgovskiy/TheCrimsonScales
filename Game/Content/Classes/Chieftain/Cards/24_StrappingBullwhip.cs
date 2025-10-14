@@ -17,9 +17,10 @@ public class StrappingBullwhip : ChieftainCardModel<StrappingBullwhip.CardTop, S
 				.WithDamage(2)
 				.WithAOEPattern(new AOEPattern(
 					[
-						new AOEHex(Vector2I.Zero, AOEHexType.Red),
-						new AOEHex(Vector2I.Zero.Add(Direction.NorthWest), AOEHexType.Red),
-						new AOEHex(Vector2I.Zero.Add(Direction.NorthEast), AOEHexType.Red)
+						new AOEHex(Vector2I.Zero, AOEHexType.Gray),
+						new AOEHex(Vector2I.Zero.Add(Direction.NorthEast), AOEHexType.Red),
+						new AOEHex(Vector2I.Zero.Add(Direction.NorthEast).Add(Direction.NorthWest), AOEHexType.Red),
+						new AOEHex(Vector2I.Zero.Add(Direction.NorthEast).Add(Direction.NorthWest).Add(Direction.NorthEast), AOEHexType.Red)
 					]
 				))
 				.WithAfterTargetConfirmedSubscription(
