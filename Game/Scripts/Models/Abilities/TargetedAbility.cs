@@ -37,6 +37,7 @@ public abstract class TargetedAbilityState : AbilityState
 	public List<Hex> TargetedHexes { get; } = new List<Hex>();
 	public Dictionary<Vector2I, AOEHexType> AOEHexes { get; set; }
 
+	public Target AbilityTarget { get; set; }
 	public int AbilityTargets { get; set; }
 
 	public RangeType AbilityRangeType { get; set; }
@@ -71,6 +72,11 @@ public abstract class TargetedAbilityState : AbilityState
 				yield return hex;
 			}
 		}
+	}
+
+	public void AdjustTarget(Target target)
+	{
+		AbilityTarget |= target;
 	}
 
 	public void AdjustTargets(int amount)
@@ -323,8 +329,9 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 	{
 		base.InitializeState(abilityState);
 
+		abilityState.AbilityTarget = Target;
 		abilityState.AbilityTargets = Targets;
-		if(Target.HasFlag(Target.TargetAll))
+		if(abilityState.AbilityTarget.HasFlag(Target.TargetAll))
 		{
 			abilityState.AbilityTargets = int.MaxValue;
 		}
@@ -340,17 +347,6 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 	protected override async GDTask Perform(T abilityState)
 	{
 		Figure performer = abilityState.Performer;
-
-		List<Figure> customTargets = null; // = CustomTargets?.ToList();
-
-		// if(MustTargetSelf && customTargets == null)
-		// {
-		// 	customTargets = [performer];
-		// }
-		if(Target == Target.Self)
-		{
-			customTargets = [performer];
-		}
 
 		//await InitAbilityState(abilityState);
 
@@ -399,9 +395,9 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 
 		Action<List<Figure>> getValidTargets = figures =>
 		{
-			if(customTargets != null)
+			if(abilityState.AbilityTarget == Target.Self)
 			{
-				figures.AddRange(customTargets);
+				figures.Add(performer);
 			}
 			else if(CustomGetTargets != null)
 			{
@@ -444,45 +440,45 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 					}
 				}
 
-				if(!Target.HasFlag(Target.Allies) && abilityState.Authority.AlliedWith(figure, false))
+				if(!abilityState.AbilityTarget.HasFlag(Target.Allies) && abilityState.Authority.AlliedWith(figure, false))
 				{
 					remove = true;
 				}
 
-				if(Target.HasFlag(Target.Enemies) && abilityState.Authority == figure &&
-				   abilityState.Authority.EnemiesWith(abilityState.Performer))
+				if(abilityState.AbilityTarget.HasFlag(Target.Enemies) && abilityState.Authority == figure)
 				{
 					remove = true;
 				}
 
-				if(!Target.HasFlag(Target.Enemies) && abilityState.Authority.EnemiesWith(figure))
+				if(!abilityState.AbilityTarget.HasFlag(Target.Enemies) && abilityState.Authority.EnemiesWith(figure))
 				{
 					remove = true;
 				}
 
-				if(!Target.HasFlag(Target.Self) && abilityState.Performer == figure)
+				if(!abilityState.AbilityTarget.HasFlag(Target.Self) && abilityState.Performer == figure)
 				{
 					remove = true;
 				}
 
-				if(Target.HasFlag(Target.SelfCountsForTargets) && abilityState.SingleTargetStates.Count + 1 == abilityState.AbilityTargets &&
-				   !abilityState.UniqueTargetedFigures.Contains(performer) && abilityState.Performer != figure)
+				if(abilityState.AbilityTarget.HasFlag(Target.SelfCountsForTargets) && 
+					abilityState.SingleTargetStates.Count + 1 == abilityState.AbilityTargets &&
+				   	!abilityState.UniqueTargetedFigures.Contains(performer) && abilityState.Performer != figure)
 				{
 					remove = true;
 				}
 
-				if(!Target.HasFlag(Target.MustTargetSameWithAllTargets) && abilityState.UniqueTargetedFigures.Contains(figure))
+				if(!abilityState.AbilityTarget.HasFlag(Target.MustTargetSameWithAllTargets) && abilityState.UniqueTargetedFigures.Contains(figure))
 				{
 					remove = true;
 				}
 
-				if(Target.HasFlag(Target.MustTargetSameWithAllTargets) && abilityState.UniqueTargetedFigures.Count > 0 &&
+				if(abilityState.AbilityTarget.HasFlag(Target.MustTargetSameWithAllTargets) && abilityState.UniqueTargetedFigures.Count > 0 &&
 				   abilityState.UniqueTargetedFigures[0] != figure)
 				{
 					remove = true;
 				}
 
-				if(Target.HasFlag(Target.MustTargetCharacters) && figure is not Character)
+				if(abilityState.AbilityTarget.HasFlag(Target.MustTargetCharacters) && figure is not Character)
 				{
 					remove = true;
 				}
@@ -528,7 +524,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 
 			if(abilityState.Authority is Character)
 			{
-				bool autoSelectIfOne = Mandatory || (customTargets != null && customTargets.Count == 1) || (TargetHex != null && AOEPattern == null);
+				bool autoSelectIfOne = Mandatory || abilityState.AbilityTarget == Target.Self || (TargetHex != null && AOEPattern == null);
 				TargetSelectionPrompt.Answer targetAnswer = await PromptManager.Prompt(
 					new TargetSelectionPrompt(getValidTargets, autoSelectIfOne, Mandatory, duringTargetedAbilityEffectCollection,
 						() => _getTargetingHintText(abilityState)), abilityState.Authority);
@@ -576,25 +572,32 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 
 			await AfterConditionsApplied(abilityState, target);
 
-			// Pull
-			if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetPull > 0)
-			{
-				await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetPull, ForcedMovementType.Pull,
-					() => $"Select a path to {Icons.HintText(Icons.Pull)}{abilityState.SingleTargetPull} target");
-			}
+			ScenarioEvents.ForcedMovementCheck.Parameters forcedMovementCheckParameters = 
+				await ScenarioEvents.ForcedMovementCheckEvent.CreatePrompt(
+					new ScenarioEvents.ForcedMovementCheck.Parameters(abilityState));
 
-			// Push
-			if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetPush > 0)
+			if(!forcedMovementCheckParameters.IsPrevented)
 			{
-				await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetPush, ForcedMovementType.Push,
-					() => $"Select a path to {Icons.HintText(Icons.Push)}{abilityState.SingleTargetPush} target");
-			}
+				// Pull
+				if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetPull > 0)
+				{
+					await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetPull, ForcedMovementType.Pull,
+						() => $"Select a path to {Icons.HintText(Icons.Pull)}{abilityState.SingleTargetPull} target");
+				}
 
-			// Swing
-			if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetSwing > 0)
-			{
-				await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetSwing, ForcedMovementType.Swing,
-					() => $"Select a path to {Icons.HintText(Icons.Swing)}{abilityState.SingleTargetSwing} target");
+				// Push
+				if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetPush > 0)
+				{
+					await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetPush, ForcedMovementType.Push,
+						() => $"Select a path to {Icons.HintText(Icons.Push)}{abilityState.SingleTargetPush} target");
+				}
+
+				// Swing
+				if(!performer.IsDestroyed && !target.IsDestroyed && abilityState.SingleTargetSwing > 0)
+				{
+					await ForcedMovement(abilityState, performer.Hex, target, abilityState.SingleTargetSwing, ForcedMovementType.Swing,
+						() => $"Select a path to {Icons.HintText(Icons.Swing)}{abilityState.SingleTargetSwing} target");
+				}
 			}
 
 			await AfterEffects(abilityState, target);
@@ -604,14 +607,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 				break;
 			}
 
-			if(customTargets != null && Target.HasFlag(Target.TargetAll))
-			{
-				if(abilityState.SingleTargetStates.Count == customTargets.Count)
-				{
-					break;
-				}
-			}
-			else if(AOEPattern != null)
+			if(AOEPattern != null)
 			{
 				if(abilityState.TargetedHexes.Count == AOEPattern.Hexes.Count)
 				{
@@ -728,6 +724,15 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 
 				await target.TweenGlobalPosition(hex.GlobalPosition, 0.2f).PlayFastForwardableAsync();
 				await AbilityCmd.EnterHex(abilityState, target, abilityState.Authority, hex, true);
+
+				ScenarioEvents.MoveTogetherCheck.Parameters moveTogetherCheckParameters =
+					await ScenarioEvents.MoveTogetherCheckEvent.CreatePrompt(new ScenarioEvents.MoveTogetherCheck.Parameters(target));
+
+				if(moveTogetherCheckParameters.OtherFigure != null)
+				{
+					await target.TweenGlobalPosition(hex.GlobalPosition, 0.2f).PlayFastForwardableAsync();
+					await AbilityCmd.EnterHex(abilityState, moveTogetherCheckParameters.OtherFigure, abilityState.Authority, hex, true);
+				}
 			}
 
 			target.ZIndex = target.DefaultZIndex;

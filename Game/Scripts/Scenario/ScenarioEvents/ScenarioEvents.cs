@@ -470,6 +470,25 @@ public class ScenarioEvents
 	private readonly FigureEnteredHex _figureEnteredHex = new FigureEnteredHex();
 	public static FigureEnteredHex FigureEnteredHexEvent => GameController.Instance.ScenarioEvents._figureEnteredHex;
 
+	public class MoveTogetherCheck : ScenarioEvent<MoveTogetherCheck.Parameters>
+	{
+		public class Parameters(Figure performer)
+			: ParametersBase
+		{
+			public Figure Performer { get; } = performer;
+
+			public Figure OtherFigure { get; private set; } = null;
+
+			public void SetOtherFigure(Figure otherFigure)
+			{
+				OtherFigure = otherFigure;
+			}
+		}
+	}
+
+	private readonly MoveTogetherCheck _moveTogetherCheck = new MoveTogetherCheck();
+	public static MoveTogetherCheck MoveTogetherCheckEvent => GameController.Instance.ScenarioEvents._moveTogetherCheck;
+
 	public class HazardousTerrainTriggered : ScenarioEvent<HazardousTerrainTriggered.Parameters>
 	{
 		public class Parameters(AbilityState abilityState, Hex hex, HazardousTerrain hazardousTerrain, bool affectedByHazardousTerrain)
@@ -888,4 +907,20 @@ public class ScenarioEvents
 
 	private readonly SwingDirectionCheck _swingDirectionCheck = new SwingDirectionCheck();
 	public static SwingDirectionCheck SwingDirectionCheckEvent => GameController.Instance.ScenarioEvents._swingDirectionCheck;
+
+	public class ForcedMovementCheck : ScenarioEvent<ForcedMovementCheck.Parameters>
+	{
+		public class Parameters(TargetedAbilityState abilityState) : ParametersBase<TargetedAbilityState>(abilityState)
+		{
+			public bool IsPrevented { get; private set; } = false;
+
+			public void SetPrevented()
+			{
+				IsPrevented = true;
+			}
+		}
+	}
+
+	private readonly ForcedMovementCheck _forcedMovementCheck = new ForcedMovementCheck();
+	public static ForcedMovementCheck ForcedMovementCheckEvent => GameController.Instance.ScenarioEvents._forcedMovementCheck;
 }
