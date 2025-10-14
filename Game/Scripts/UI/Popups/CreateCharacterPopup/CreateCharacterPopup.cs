@@ -52,6 +52,7 @@ public partial class CreateCharacterPopup : Popup<CreateCharacterPopup.Request>
 			ModelDB.Class<HierophantModel>(),
 			ModelDB.Class<FireKnightModel>(),
 			ModelDB.Class<ChainguardModel>(),
+			ModelDB.Class<ChieftainModel>(),
 		];
 
 		IEnumerable<ClassModel> usableClassModels = classModels.Where(classModel => PopupRequest.SavedCampaign.Characters.All(character => character.ClassModel != classModel));
