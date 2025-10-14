@@ -351,9 +351,9 @@ public class ScenarioCheckEvents
 
 			public bool HasDisadvantage { get; private set; } = hasDisadvantage;
 
-			public void SetDisadvantage()
+			public void SetDisadvantage(bool hasDisadvantage)
 			{
-				HasDisadvantage = true;
+				HasDisadvantage = hasDisadvantage;
 			}
 		}
 	}
