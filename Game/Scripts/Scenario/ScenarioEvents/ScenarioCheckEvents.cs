@@ -463,15 +463,15 @@ public class ScenarioCheckEvents
 
 	public class PotentialTargetCheck : ScenarioCheckEvent<PotentialTargetCheck.Parameters>
 	{
-		public class Parameters(Figure figure, Figure potentialTarget)
+		public class Parameters(Figure performer, Figure potentialTarget)
 			: ParametersBase
 		{
-			public Figure Figure { get; } = figure;
+			public Figure Performer { get; } = performer;
 			public Figure PotentialTarget { get; } = potentialTarget;
 
 			public int SortingInitiativeAdjustment { get; private set; } = 0;
 
-			public void AdjustSortingInitiative(int adjutstment)
+			public void AdjustTargetSortingInitiative(int adjutstment)
 			{
 				SortingInitiativeAdjustment = adjutstment;
 			}

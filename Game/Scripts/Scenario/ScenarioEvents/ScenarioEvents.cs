@@ -929,4 +929,25 @@ public class ScenarioEvents
 
 	private readonly ForcedMovementCheck _forcedMovementCheck = new ForcedMovementCheck();
 	public static ForcedMovementCheck ForcedMovementCheckEvent => GameController.Instance.ScenarioEvents._forcedMovementCheck;
+
+	public class NextActiveFigure : ScenarioEvent<NextActiveFigure.Parameters>
+	{
+		public class Parameters(Figure previousActiveFigure, Figure nextActiveFigure)
+			: ParametersBase
+		{
+			public Figure PreviousActiveFigure { get; private set; } = previousActiveFigure;
+			public Figure NextActiveFigure { get; private set; } = nextActiveFigure;
+
+			public bool SortingRequired { get; private set; } = false;
+
+			public void SetSortingRequired()
+			{
+				SortingRequired = true;
+			}
+		}
+	}
+
+	private readonly NextActiveFigure _nextActiveFigure = new NextActiveFigure();
+	public static NextActiveFigure NextActiveFigureEvent => GameController.Instance.ScenarioEvents._nextActiveFigure;
+	
 }
