@@ -21,14 +21,14 @@ public class MajesticMass : ChieftainCardModel<MajesticMass.CardTop, MajesticMas
 					Traits = 
 					[
 						new DestroyAdjacentObstacleTrait(),
+						new AOEAttackTrait(new AOEPattern(
+						[
+							new AOEHex(Vector2I.Zero, AOEHexType.Gray),
+							new AOEHex(Vector2I.Zero.Add(Direction.NorthWest), AOEHexType.Red),
+							new AOEHex(Vector2I.Zero.Add(Direction.East), AOEHexType.Red),
+						])),
 						new MountTrait(),
 					],
-					AOEPattern = new AOEPattern(
-					[
-						new AOEHex(Vector2I.Zero, AOEHexType.Gray),
-						new AOEHex(Vector2I.Zero.Add(Direction.NorthWest), AOEHexType.Red),
-						new AOEHex(Vector2I.Zero.Add(Direction.East), AOEHexType.Red),
-					])
 				})
 				.WithName("War Elephant")
 				.WithTexturePath("res://Content/Classes/Chieftain/Summons/war_elephant_AI.png")
