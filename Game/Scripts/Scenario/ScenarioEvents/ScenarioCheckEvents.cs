@@ -19,6 +19,11 @@ public class ScenarioCheckEvents
 			{
 				AIMoveParameters.Range += amount;
 			}
+
+			public void AddAOEPattern(AOEPattern aoePattern)
+			{
+				AIMoveParameters.AOEPattern = aoePattern;
+			}
 		}
 	}
 

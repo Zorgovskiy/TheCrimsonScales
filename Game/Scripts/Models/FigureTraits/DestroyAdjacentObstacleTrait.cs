@@ -16,20 +16,18 @@ public class DestroyAdjacentObstacleTrait() : FigureTrait
 				RangeHelper.FindHexesInRange(parameters.AbilityState.Target.Hex, 1, true, adjacentHexList);
 
 				// Select hexes that have a 1-hex obstacle
-				List<Hex> selectedHexes =
-					await AbilityCmd.SelectHexes(parameters.AbilityState, 
+				Hex selectedHex =
+					await AbilityCmd.SelectHex(parameters.AbilityState, 
 						list => list.AddRange(adjacentHexList
 							.Where(hex => hex.GetHexObjectsOfType<Obstacle>()
 								.Any(obstacle => obstacle.Hexes.Length == 1))),
-						0, 1, true,	"Select a 1-hex obstacle to destroy");
+						false, "Select a 1-hex obstacle to destroy");
 
-				foreach(Hex selectedHex in selectedHexes)
-				{
-					await AbilityCmd.DestroyObstacle(selectedHex.GetHexObjectsOfType<Obstacle>()
+				if(selectedHex != null)
+                {
+                    await AbilityCmd.DestroyObstacle(selectedHex.GetHexObjectsOfType<Obstacle>()
 						.FirstOrDefault(obstacle => obstacle.Hexes.Length == 1));
-				}
-
-				await GDTask.CompletedTask;
+                }
 			}
 		);
 	}

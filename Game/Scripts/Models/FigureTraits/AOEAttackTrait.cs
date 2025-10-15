@@ -10,10 +10,21 @@ public class AOEAttackTrait(AOEPattern aoePattern) : FigureTrait
 			parameters => parameters.Performer == figure && parameters.AbilityState is AttackAbility.State,
 			async parameters =>
 			{
-				//add aoe
+				AttackAbility.State attackAbilityState = (AttackAbility.State)parameters.AbilityState;
+				attackAbilityState.AbilityAddAOEPattern(aoePattern);
+
 				await GDTask.CompletedTask;
 			}
 		);
+
+		ScenarioCheckEvents.AIMoveParametersCheckEvent.Subscribe(figure, this,
+			parameters => parameters.Performer == figure,
+			parameters =>
+			{
+				parameters.AddAOEPattern(aoePattern);
+			}
+		);
+		
 	}
 
 	public override void Deactivate(Figure figure)

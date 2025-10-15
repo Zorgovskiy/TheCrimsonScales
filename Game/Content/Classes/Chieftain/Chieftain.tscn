@@ -5,7 +5,6 @@
 [ext_resource type="Texture2D" uid="uid://dhoes3577idrw" path="res://Content/Classes/Chieftain/Animation.jpg" id="3_pebit"]
 
 [node name="Chieftain" instance=ExtResource("1_q7cyt")]
-script = ExtResource("2_7s24i")
 
 [node name="Hexagon" parent="." index="1"]
 self_modulate = Color(0.866667, 0.870588, 0.541176, 1)
