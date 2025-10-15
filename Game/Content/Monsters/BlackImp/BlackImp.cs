@@ -7,49 +7,66 @@ public class BlackImp : MonsterModel
 		new MonsterStats()
 		{
 			Health = 3,
-			Attack = 2,
+			Move = 1,
+			Attack = 1,
+			Range = 3,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
 		},
 		new MonsterStats()
 		{
 			Health = 4,
-			Attack = 2,
-			Traits = [new RetaliateTrait(1)]
-		},
-		new MonsterStats()
-		{
-			Health = 4,
-			Attack = 3,
-			Traits = [new RetaliateTrait(1)]
+			Move = 1,
+			Attack = 1,
+			Range = 3,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
 		},
 		new MonsterStats()
 		{
 			Health = 5,
-			Attack = 3,
-			Traits = [new RetaliateTrait(2)]
+			Move = 1,
+			Attack = 1,
+			Range = 4,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
 		},
 		new MonsterStats()
 		{
-			Health = 6,
-			Attack = 4,
-			Traits = [new RetaliateTrait(2)]
+			Health = 5,
+			Move = 1,
+			Attack = 2,
+			Range = 4,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
 		},
 		new MonsterStats()
 		{
 			Health = 7,
-			Attack = 4,
-			Traits = [new RetaliateTrait(3)]
-		},
-		new MonsterStats()
-		{
-			Health = 8,
-			Attack = 5,
-			Traits = [new RetaliateTrait(3)]
+			Move = 1,
+			Attack = 2,
+			Range = 4,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
 		},
 		new MonsterStats()
 		{
 			Health = 9,
-			Attack = 5,
-			Traits = [new RetaliateTrait(4)]
+			Move = 1,
+			Attack = 2,
+			Range = 4,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
+		},
+		new MonsterStats()
+		{
+			Health = 10,
+			Move = 1,
+			Attack = 3,
+			Range = 4,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
+		},
+		new MonsterStats()
+		{
+			Health = 12,
+			Move = 1,
+			Attack = 3,
+			Range = 4,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
 		},
 	];
 
@@ -57,50 +74,67 @@ public class BlackImp : MonsterModel
 	[
 		new MonsterStats()
 		{
-			Health = 5,
-			Attack = 3,
+			Health = 4,
+			Move = 1,
+			Attack = 2,
+			Range = 3,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
 		},
 		new MonsterStats()
 		{
 			Health = 6,
-			Attack = 3,
-			Traits = [new RetaliateTrait(1)]
-		},
-		new MonsterStats()
-		{
-			Health = 7,
-			Attack = 4,
-			Traits = [new RetaliateTrait(1)]
+			Move = 1,
+			Attack = 2,
+			Range = 3,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
 		},
 		new MonsterStats()
 		{
 			Health = 8,
-			Attack = 4,
-			Traits = [new RetaliateTrait(2)]
+			Move = 1,
+			Attack = 2,
+			Range = 4,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
 		},
 		new MonsterStats()
 		{
-			Health = 9,
-			Attack = 5,
-			Traits = [new RetaliateTrait(2)]
+			Health = 8,
+			Move = 1,
+			Attack = 3,
+			Range = 4,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1), new AttackersGainDisadvantageTrait()]
 		},
 		new MonsterStats()
 		{
 			Health = 11,
-			Attack = 5,
-			Traits = [new RetaliateTrait(3)]
+			Move = 1,
+			Attack = 3,
+			Range = 4,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1), new AttackersGainDisadvantageTrait()]
 		},
 		new MonsterStats()
 		{
-			Health = 13,
-			Attack = 6,
-			Traits = [new RetaliateTrait(3)]
+			Health = 12,
+			Move = 1,
+			Attack = 3,
+			Range = 5,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1), new AttackersGainDisadvantageTrait()]
 		},
 		new MonsterStats()
 		{
-			Health = 15,
-			Attack = 6,
-			Traits = [new RetaliateTrait(4)]
+			Health = 14,
+			Move = 1,
+			Attack = 4,
+			Range = 5,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1), new AttackersGainDisadvantageTrait()]
+		},
+		new MonsterStats()
+		{
+			Health = 17,
+			Move = 1,
+			Attack = 4,
+			Range = 5,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1), new AttackersGainDisadvantageTrait()]
 		},
 	];
 

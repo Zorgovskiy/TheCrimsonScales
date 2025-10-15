@@ -6,50 +6,59 @@ public class LivingBones : MonsterModel
 	[
 		new MonsterStats()
 		{
-			Health = 3,
-			Attack = 2,
-		},
-		new MonsterStats()
-		{
-			Health = 4,
-			Attack = 2,
-			Traits = [new RetaliateTrait(1)]
-		},
-		new MonsterStats()
-		{
-			Health = 4,
-			Attack = 3,
-			Traits = [new RetaliateTrait(1)]
+			Health = 5,
+			Move = 2,
+			Attack = 1,
+			Traits = [new TargetsTrait(2)]
 		},
 		new MonsterStats()
 		{
 			Health = 5,
-			Attack = 3,
-			Traits = [new RetaliateTrait(2)]
+			Move = 3,
+			Attack = 1,
+			Traits = [new TargetsTrait(2), new ShieldTrait(1)]
 		},
 		new MonsterStats()
 		{
-			Health = 6,
-			Attack = 4,
-			Traits = [new RetaliateTrait(2)]
+			Health = 5,
+			Move = 3,
+			Attack = 2,
+			Traits = [new TargetsTrait(2), new ShieldTrait(1)]
 		},
 		new MonsterStats()
 		{
 			Health = 7,
-			Attack = 4,
-			Traits = [new RetaliateTrait(3)]
+			Move = 3,
+			Attack = 2,
+			Traits = [new TargetsTrait(2), new ShieldTrait(1)]
 		},
 		new MonsterStats()
 		{
-			Health = 8,
-			Attack = 5,
-			Traits = [new RetaliateTrait(3)]
+			Health = 7,
+			Move = 3,
+			Attack = 3,
+			Traits = [new TargetsTrait(2), new ShieldTrait(1)]
 		},
 		new MonsterStats()
 		{
 			Health = 9,
-			Attack = 5,
-			Traits = [new RetaliateTrait(4)]
+			Move = 3,
+			Attack = 3,
+			Traits = [new TargetsTrait(2), new ShieldTrait(1)]
+		},
+		new MonsterStats()
+		{
+			Health = 10,
+			Move = 4,
+			Attack = 3,
+			Traits = [new TargetsTrait(2), new ShieldTrait(1)]
+		},
+		new MonsterStats()
+		{
+			Health = 13,
+			Move = 4,
+			Attack = 3,
+			Traits = [new TargetsTrait(2), new ShieldTrait(1)]
 		},
 	];
 
@@ -57,50 +66,59 @@ public class LivingBones : MonsterModel
 	[
 		new MonsterStats()
 		{
-			Health = 5,
-			Attack = 3,
+			Health = 6,
+			Move = 4,
+			Attack = 2,
+			Traits = [new TargetsTrait(2)]
 		},
 		new MonsterStats()
 		{
 			Health = 6,
-			Attack = 3,
-			Traits = [new RetaliateTrait(1)]
+			Move = 4,
+			Attack = 2,
+			Traits = [new TargetsTrait(3), new ShieldTrait(1)]
 		},
 		new MonsterStats()
 		{
 			Health = 7,
-			Attack = 4,
-			Traits = [new RetaliateTrait(1)]
+			Move = 4,
+			Attack = 3,
+			Traits = [new TargetsTrait(3), new ShieldTrait(1)]
 		},
 		new MonsterStats()
 		{
-			Health = 8,
-			Attack = 4,
-			Traits = [new RetaliateTrait(2)]
-		},
-		new MonsterStats()
-		{
-			Health = 9,
-			Attack = 5,
-			Traits = [new RetaliateTrait(2)]
+			Health = 10,
+			Move = 4,
+			Attack = 3,
+			Traits = [new TargetsTrait(3), new ShieldTrait(1)]
 		},
 		new MonsterStats()
 		{
 			Health = 11,
-			Attack = 5,
-			Traits = [new RetaliateTrait(3)]
+			Move = 4,
+			Attack = 4,
+			Traits = [new TargetsTrait(3), new ShieldTrait(1)]
 		},
 		new MonsterStats()
 		{
-			Health = 13,
-			Attack = 6,
-			Traits = [new RetaliateTrait(3)]
+			Health = 11,
+			Move = 4,
+			Attack = 4,
+			Traits = [new TargetsTrait(3), new ShieldTrait(2)]
 		},
 		new MonsterStats()
 		{
-			Health = 15,
-			Attack = 6,
-			Traits = [new RetaliateTrait(4)]
+			Health = 11,
+			Move = 6,
+			Attack = 4,
+			Traits = [new TargetsTrait(3), new ShieldTrait(2)]
+		},
+		new MonsterStats()
+		{
+			Health = 14,
+			Move = 6,
+			Attack = 4,
+			Traits = [new TargetsTrait(3), new ShieldTrait(2)]
 		},
 	];
 

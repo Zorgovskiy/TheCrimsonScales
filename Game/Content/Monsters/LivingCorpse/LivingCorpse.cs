@@ -6,50 +6,53 @@ public class LivingCorpse : MonsterModel
 	[
 		new MonsterStats()
 		{
-			Health = 3,
-			Attack = 2,
-		},
-		new MonsterStats()
-		{
-			Health = 4,
-			Attack = 2,
-			Traits = [new RetaliateTrait(1)]
-		},
-		new MonsterStats()
-		{
-			Health = 4,
-			Attack = 3,
-			Traits = [new RetaliateTrait(1)]
-		},
-		new MonsterStats()
-		{
 			Health = 5,
-			Attack = 3,
-			Traits = [new RetaliateTrait(2)]
-		},
-		new MonsterStats()
-		{
-			Health = 6,
-			Attack = 4,
-			Traits = [new RetaliateTrait(2)]
+			Move = 1,
+			Attack = 2,
 		},
 		new MonsterStats()
 		{
 			Health = 7,
-			Attack = 4,
-			Traits = [new RetaliateTrait(3)]
-		},
-		new MonsterStats()
-		{
-			Health = 8,
-			Attack = 5,
-			Traits = [new RetaliateTrait(3)]
+			Move = 1,
+			Attack = 3,
 		},
 		new MonsterStats()
 		{
 			Health = 9,
+			Move = 1,
+			Attack = 3,
+		},
+		new MonsterStats()
+		{
+			Health = 10,
+			Move = 1,
+			Attack = 4,
+		},
+		new MonsterStats()
+		{
+			Health = 11,
+			Move = 2,
+			Attack = 4,
+		},
+		new MonsterStats()
+		{
+			Health = 13,
+			Move = 2,
+			Attack = 4
+		},
+		new MonsterStats()
+		{
+			Health = 14,
+			Move = 2,
+			Attack = 4,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
+		},
+		new MonsterStats()
+		{
+			Health = 15,
+			Move = 2,
 			Attack = 5,
-			Traits = [new RetaliateTrait(4)]
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
 		},
 	];
 
@@ -57,50 +60,55 @@ public class LivingCorpse : MonsterModel
 	[
 		new MonsterStats()
 		{
-			Health = 5,
+			Health = 10,
+			Move = 1,
 			Attack = 3,
 		},
 		new MonsterStats()
 		{
-			Health = 6,
-			Attack = 3,
-			Traits = [new RetaliateTrait(1)]
-		},
-		new MonsterStats()
-		{
-			Health = 7,
+			Health = 10,
+			Move = 1,
 			Attack = 4,
-			Traits = [new RetaliateTrait(1)]
-		},
-		new MonsterStats()
-		{
-			Health = 8,
-			Attack = 4,
-			Traits = [new RetaliateTrait(2)]
-		},
-		new MonsterStats()
-		{
-			Health = 9,
-			Attack = 5,
-			Traits = [new RetaliateTrait(2)]
-		},
-		new MonsterStats()
-		{
-			Health = 11,
-			Attack = 5,
-			Traits = [new RetaliateTrait(3)]
 		},
 		new MonsterStats()
 		{
 			Health = 13,
-			Attack = 6,
-			Traits = [new RetaliateTrait(3)]
+			Move = 1,
+			Attack = 4,
+		},
+		new MonsterStats()
+		{
+			Health = 13,
+			Move = 2,
+			Attack = 5,
 		},
 		new MonsterStats()
 		{
 			Health = 15,
+			Move = 2,
+			Attack = 5,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
+		},
+		new MonsterStats()
+		{
+			Health = 17,
+			Move = 2,
 			Attack = 6,
-			Traits = [new RetaliateTrait(4)]
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
+		},
+		new MonsterStats()
+		{
+			Health = 21,
+			Move = 2,
+			Attack = 6,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
+		},
+		new MonsterStats()
+		{
+			Health = 25,
+			Move = 2,
+			Attack = 6,
+			Traits = [new ApplyConditionTrait(Conditions.Poison1)]
 		},
 	];
 
@@ -108,7 +116,7 @@ public class LivingCorpse : MonsterModel
 
 	public override string AssetPath => "res://Content/Monsters/LivingCorpse";
 
-	public override int MaxStandeeCount => 10;
+	public override int MaxStandeeCount => 6;
 
 	public override IEnumerable<MonsterAbilityCardModel> Deck => LivingCorpseAbilityCard.Deck;
 }

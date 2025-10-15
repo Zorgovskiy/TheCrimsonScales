@@ -123,7 +123,8 @@ public class MonsterMovePrompt(
 						}
 
 						ScenarioCheckEvents.CanBeTargetedCheck.Parameters canBeTargetedParameters =
-							ScenarioCheckEvents.CanBeTargetedCheckEvent.Fire(new ScenarioCheckEvents.CanBeTargetedCheck.Parameters(performer, potentialTarget));
+							ScenarioCheckEvents.CanBeTargetedCheckEvent.Fire(
+								new ScenarioCheckEvents.CanBeTargetedCheck.Parameters(null, performer, potentialTarget));
 
 						if(!canBeTargetedParameters.CanBeTargeted)
 						{
@@ -148,7 +149,9 @@ public class MonsterMovePrompt(
 					}
 				}
 
-				int finalTargetCount = aiMoveParameters.TargetAll ? attackableFigureCount : Mathf.Min(attackableFigureCount, aiMoveParameters.Targets);
+				int finalTargetCount = aiMoveParameters.TargetAll
+					? attackableFigureCount
+					: Mathf.Min(attackableFigureCount, aiMoveParameters.Targets);
 				int finalDisadvantageCount = aiMoveParameters.TargetAll ? disadvantageCount : Mathf.Min(disadvantageCount, aiMoveParameters.Targets);
 				AIAttackNode newAIAttackNode = new AIAttackNode(node, attackableFocus, finalTargetCount, finalDisadvantageCount, node.MoveSpent);
 
@@ -200,7 +203,8 @@ public class MonsterMovePrompt(
 									}
 
 									ScenarioCheckEvents.CanBeTargetedCheck.Parameters canBeTargetedParameters =
-										ScenarioCheckEvents.CanBeTargetedCheckEvent.Fire(new ScenarioCheckEvents.CanBeTargetedCheck.Parameters(performer, potentialTarget));
+										ScenarioCheckEvents.CanBeTargetedCheckEvent.Fire(
+											new ScenarioCheckEvents.CanBeTargetedCheck.Parameters(null, performer, potentialTarget));
 
 									if(!canBeTargetedParameters.CanBeTargeted)
 									{
@@ -214,9 +218,11 @@ public class MonsterMovePrompt(
 
 									attackableFigureCount++;
 
-									ScenarioCheckEvents.DisadvantageCheck.Parameters disadvantageCheck = ScenarioCheckEvents.DisadvantageCheckEvent.Fire(
-										new ScenarioCheckEvents.DisadvantageCheck.Parameters(potentialTarget, moveAbilityState.Performer, moveHex,
-											aiMoveParameters.RangeType == RangeType.Range && RangeHelper.Distance(moveHex, potentialTargetHex) == 1));
+									ScenarioCheckEvents.DisadvantageCheck.Parameters disadvantageCheck =
+										ScenarioCheckEvents.DisadvantageCheckEvent.Fire(
+											new ScenarioCheckEvents.DisadvantageCheck.Parameters(potentialTarget, moveAbilityState.Performer, moveHex,
+												aiMoveParameters.RangeType == RangeType.Range &&
+												RangeHelper.Distance(moveHex, potentialTargetHex) == 1));
 
 									if(disadvantageCheck.HasDisadvantage)
 									{
@@ -230,7 +236,8 @@ public class MonsterMovePrompt(
 							int finalTargetCount = attackableFigureCount;
 							//int finalTargetCount = Mathf.Min(attackableFigureCount, focusParameters.Targets);
 							//int finalDisadvantageCount = Mathf.Min(disadvantageCount, focusParameters.Targets);
-							AIAttackNode newAIAttackNode = new AIAttackNode(node, attackableFocus, finalTargetCount, disadvantageCount, node.MoveSpent);
+							AIAttackNode newAIAttackNode =
+								new AIAttackNode(node, attackableFocus, finalTargetCount, disadvantageCount, node.MoveSpent);
 
 							CompareAttackNode(newAIAttackNode);
 						}
@@ -391,7 +398,8 @@ public class MonsterMovePrompt(
 						if(toBestFocusFromMoveCloserNodeHex == hex)
 						{
 							// If the path with this stop results in more negative hexes, just don't bother
-							int totalNegativeHexCount = moveNode.NegativeHexEncounteredCount + toBestFocusFromMoveCloserNode.NegativeHexEncounteredCount;
+							int totalNegativeHexCount =
+								moveNode.NegativeHexEncounteredCount + toBestFocusFromMoveCloserNode.NegativeHexEncounteredCount;
 							if(totalNegativeHexCount > focusNode.NegativeHexEncounteredCount)
 							{
 								continue;
@@ -406,7 +414,8 @@ public class MonsterMovePrompt(
 							else
 							{
 								MoveCloserNode previousBestMoveCloserNode = moveCloserNodes[0];
-								CompareResult compareResult = newMoveCloserNode.CompareTo(previousBestMoveCloserNode, moveAbilityState.MoveType == MoveType.Jump);
+								CompareResult compareResult =
+									newMoveCloserNode.CompareTo(previousBestMoveCloserNode, moveAbilityState.MoveType == MoveType.Jump);
 								switch(compareResult)
 								{
 									case CompareResult.Better:
@@ -507,7 +516,8 @@ public class MonsterMovePrompt(
 		foreach(Hex hex in reachableHexes)
 		{
 			GameController.Instance.HexIndicatorManager.SetIndicator(
-				hex, _bestAIMoveNodes.Any(bestAIMoveNode => bestAIMoveNode.Hex == hex) ? HexIndicatorType.Mandatory : HexIndicatorType.Normal, OnIndicatorPressed);
+				hex, _bestAIMoveNodes.Any(bestAIMoveNode => bestAIMoveNode.Hex == hex) ? HexIndicatorType.Mandatory : HexIndicatorType.Normal,
+				OnIndicatorPressed);
 		}
 
 		if(_currentNode != null && _currentNode.Parents.Count > 0)

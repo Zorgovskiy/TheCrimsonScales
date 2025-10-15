@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dir5vjdxjac3n" path="res://Scripts/UI/BetterButton.cs" id="1_bv84a"]
 [ext_resource type="Script" uid="uid://cdwpalad0muhc" path="res://Scripts/Scenario/UI/CardPlayView/CardPlayCard.cs" id="1_jumht"]
-[ext_resource type="Texture2D" uid="uid://bhjy7s2mheqbu" path="res://Content/Classes/Mirefoot/AbilityCardExample.tres" id="2_svpnw"]
+[ext_resource type="Texture2D" uid="uid://bhjy7s2mheqbu" path="res://Art/AbilityCardExample.tres" id="2_svpnw"]
 [ext_resource type="PackedScene" uid="uid://tawethckih5b" path="res://Scenes/Scenario/UI/BasicAbilityCardSide.tscn" id="8_vh3mo"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cmtje"]

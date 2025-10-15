@@ -13,7 +13,6 @@ public class FierceLeader : FireKnightCardModel<FierceLeader.CardTop, FierceLead
 		[
 			new AbilityCardAbility(GrantAbility.Builder()
 				.WithGetAbilities(state => [AttackAbility.Builder().WithDamage(3).Build()])
-				.WithTarget(Target.Allies)
 				.Build()),
 
 			new AbilityCardAbility(GiveFireKnightItemAbility([ModelDB.Item<ScrollOfCharisma>(), ModelDB.Item<ScrollOfInvigoration>()],

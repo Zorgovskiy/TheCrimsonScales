@@ -24,13 +24,13 @@
      inkscape:deskcolor="#505050"
      inkscape:document-units="px"
      showgrid="true"
-     inkscape:zoom="2.2511407"
-     inkscape:cx="91.509161"
-     inkscape:cy="167.69276"
-     inkscape:window-width="1920"
-     inkscape:window-height="1017"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:zoom="1.1255704"
+     inkscape:cx="116.82966"
+     inkscape:cy="224.33071"
+     inkscape:window-width="3840"
+     inkscape:window-height="2054"
+     inkscape:window-x="2869"
+     inkscape:window-y="-11"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1">
     <inkscape:grid
@@ -56,20 +56,12 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:none;stroke:#ffffff;stroke-width:9.53925;stroke-dasharray:none"
+       style="fill:none;stroke:#ffffff;stroke-width:11.8026;stroke-dasharray:none"
        id="rect2"
-       width="52.960709"
-       height="32.960709"
-       x="5.5196457"
-       y="15.519646"
-       ry="16.480354" />
-    <rect
-       style="fill:none;stroke:#ffffff;stroke-width:5.03037;stroke-dasharray:none"
-       id="rect3"
-       width="39.969627"
-       height="1.9696325"
-       x="10.015184"
-       y="70.030365"
-       ry="0.98481625" />
+       width="50.69738"
+       height="30.697403"
+       x="6.6512985"
+       y="16.6513"
+       ry="15.348701" />
   </g>
 </svg>

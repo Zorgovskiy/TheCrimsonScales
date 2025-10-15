@@ -7,9 +7,10 @@ public class AOEAttackTrait(AOEPattern aoePattern) : FigureTrait
 		base.Activate(figure);
 
 		ScenarioEvents.AbilityStartedEvent.Subscribe(figure, this,
-			parameters => parameters.Performer == figure,
+			parameters => parameters.Performer == figure && parameters.AbilityState is AttackAbility.State,
 			async parameters =>
 			{
+				//add aoe
 				await GDTask.CompletedTask;
 			}
 		);

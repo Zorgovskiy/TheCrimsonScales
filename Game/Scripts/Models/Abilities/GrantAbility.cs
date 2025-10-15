@@ -54,7 +54,7 @@ public class GrantAbility : TargetedAbility<GrantAbility.State, SingleTargetStat
 		/// </summary>
 		public override TAbility Build()
 		{
-			Obj.Target = _target ?? Target.Allies;
+			_target ??= Target.Allies;
 			return base.Build();
 		}
 	}

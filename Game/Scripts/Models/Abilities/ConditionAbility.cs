@@ -49,7 +49,7 @@ public class ConditionAbility : TargetedAbility<ConditionAbility.State, SingleTa
 		public override TAbility Build()
 		{
 			// TODO varadski 21.08.2025: I would maybe rather throw an exception if there are no conditions; should be mandatory for ConditionAbility
-			Obj.Target = _target ?? ((Obj.Conditions.Length > 0 && Obj.Conditions[0].IsPositive) ? Target.SelfOrAllies : Target.Enemies);
+			_target ??= ((Obj.Conditions.Length > 0 && Obj.Conditions[0].IsPositive) ? Target.SelfOrAllies : Target.Enemies);
 			return base.Build();
 		}
 	}

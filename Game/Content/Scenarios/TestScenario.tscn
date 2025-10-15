@@ -45,7 +45,7 @@ MonsterType4Characters = 1
 
 [node name="MonsterSpawner2" parent="Map/Rooms/Room" index="8" instance=ExtResource("8_5bvco")]
 position = Vector2(327.358, -189)
-MonsterModelId = "MONSTER_MODEL.SPITTING_DRAKE"
+MonsterModelId = "MONSTER_MODEL.LIVING_BONES"
 MonsterType2Characters = 1
 MonsterType3Characters = 1
 MonsterType4Characters = 1

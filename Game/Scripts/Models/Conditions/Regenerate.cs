@@ -19,7 +19,6 @@ public class Regenerate : ConditionModel
 				HealAbility heal = HealAbility.Builder()
 					.WithHealValue(1)
 					.WithTarget(Target.Self)
-					.WithCanPerformWhileStunned(true)
 					.Build();
 				ActionState actionState = new ActionState(parameters.Figure, [heal]);
 				await actionState.Perform();

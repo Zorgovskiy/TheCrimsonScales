@@ -23,7 +23,8 @@ public class PromptManager
 		return GameController.Instance.PromptManager._Prompt(prompt, authority);
 	}
 
-	private async GDTask<TAnswer> _Prompt<TAnswer>(Prompt<TAnswer> prompt, Figure authority) where TAnswer : PromptAnswer, new()
+	private async GDTask<TAnswer> _Prompt<TAnswer>(Prompt<TAnswer> prompt, Figure authority)
+		where TAnswer : PromptAnswer, new()
 	{
 		TAnswer answer = null;
 		Character characterDecider = authority as Character;
@@ -69,6 +70,8 @@ public class PromptManager
 
 					//TODO: Multiplayer sync resign
 					await GameController.Instance.CheckEarlyEnd();
+
+					//answer.AuthorityReferenceId = authority.ReferenceId;
 
 					//string serializedData = JsonConvert.SerializeObject(answer, JsonSerializerSettings);
 
@@ -116,6 +119,11 @@ public class PromptManager
 				}
 
 				_promptIndex++;
+
+				if(!answer.ImmediateCompletion)
+				{
+					GameController.Instance.SetRelevantTurnTakerPrompt(_promptIndex);
+				}
 
 				if(answer.SelectedEffectIndex >= 0)
 				{
@@ -177,6 +185,10 @@ public class PromptManager
 						PromptAnswer promptAnswer = (PromptAnswer)instance;
 						return promptAnswer.SyncedAction != null;
 					},
+					// nameof(PromptAnswer.AuthorityReferenceId) => instance =>
+					// {
+					// 	return true;
+					// },
 					_ => instance =>
 					{
 						PromptAnswer promptAnswer = (PromptAnswer)instance;

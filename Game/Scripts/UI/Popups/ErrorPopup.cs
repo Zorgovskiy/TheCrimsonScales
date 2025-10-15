@@ -67,7 +67,7 @@ public partial class ErrorPopup : Popup<ErrorPopup.Request>
 
 	private void OnUndoPressed()
 	{
-		GameController.Instance.Undo();
+		GameController.Instance.Undo(UndoType.Basic);
 		Log.ResetHasLoggedError();
 	}
 

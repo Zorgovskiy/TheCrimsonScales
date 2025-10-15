@@ -152,6 +152,7 @@ public partial class Map : Node2D
 	public void SetTurnTaker(Figure figure)
 	{
 		CurrentTurnTaker = figure;
+
 		TurnTakerChangedEvent?.Invoke(figure);
 	}
 

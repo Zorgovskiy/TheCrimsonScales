@@ -1,7 +1,0 @@
-[gd_resource type="AtlasTexture" load_steps=2 format=3 uid="uid://bhjy7s2mheqbu"]
-
-[ext_resource type="Texture2D" uid="uid://d37hrwq1hp3vs" path="res://Content/Classes/Mirefoot/Cards.jpg" id="1_8g5de"]
-
-[resource]
-atlas = ExtResource("1_8g5de")
-region = Rect2(0, 0, 625, 875)

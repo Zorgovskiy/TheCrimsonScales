@@ -18,9 +18,9 @@ public class Scenario002 : ScenarioModel
 	private Door _door1;
 	private Door _door2;
 
-	public override async GDTask Start()
+	public override async GDTask StartAfterFirstRoomRevealed()
 	{
-		await base.Start();
+		await base.StartAfterFirstRoomRevealed();
 
 		GameController.Instance.Map.Treasures[0].SetItemLoot(AbilityCmd.GetRandomAvailableStone());
 
@@ -80,7 +80,8 @@ public class Scenario002 : ScenarioModel
 					{
 						foreach(Figure figure in hex.GetHexObjectsOfType<Figure>())
 						{
-							ActionState actionState = new ActionState(figure, [HealAbility.Builder().WithHealValue(2).WithTarget(Target.Self).Build()]);
+							ActionState actionState =
+								new ActionState(figure, [HealAbility.Builder().WithHealValue(2).WithTarget(Target.Self).Build()]);
 							await actionState.Perform();
 						}
 					}
@@ -94,7 +95,7 @@ public class Scenario002 : ScenarioModel
 
 			UpdateScenarioText(
 				$"The door is locked. When a character ends their turn on the pressure plate marked {Icons.Marker(Marker.Type.b)} the door is permanently unlocked " +
-				$"and all figures occupying the H1A map tile perform a ”{Icons.Inline(Icons.Heal)} 2, Self” ability.");
+				$"and all figures occupying the H1A map tile perform a “{Icons.Inline(Icons.Heal)} 2, Self” ability.");
 		}
 
 		if(parameters.OpenedDoor == _door2)

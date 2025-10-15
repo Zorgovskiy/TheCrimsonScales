@@ -28,7 +28,7 @@ public class OtherTargetedAbility : TargetedAbility<OtherTargetedAbility.State, 
 			Obj._onAfterTargetConfirmed = onAfterTargetConfirmed;
 			return (TBuilder)this;
 		}
-	
+
 		public TBuilder WithOnAfterConditionsApplied(Func<State, Figure, GDTask> onAfterConditionsApplied)
 		{
 			Obj._onAfterConditionsApplied = onAfterConditionsApplied;
@@ -40,7 +40,7 @@ public class OtherTargetedAbility : TargetedAbility<OtherTargetedAbility.State, 
 		/// </summary>
 		public override TAbility Build()
 		{
-			Obj.Target = _target ?? Target.Allies;
+			_target ??= Target.Allies;
 			return base.Build();
 		}
 	}

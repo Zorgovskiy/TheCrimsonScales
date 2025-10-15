@@ -12,9 +12,9 @@ public class Scenario001 : ScenarioModel
 
 	public override string BGSPath => "res://Audio/BGS/Forest Day.ogg";
 
-	public override async GDTask Start()
+	public override async GDTask StartAfterFirstRoomRevealed()
 	{
-		await base.Start();
+		await base.StartAfterFirstRoomRevealed();
 
 		GameController.Instance.Map.Treasures[0].SetItemLoot(ModelDB.Item<DizzyingTincture>());
 	}

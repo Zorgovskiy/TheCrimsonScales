@@ -38,7 +38,10 @@ public partial class Door : OverlayTile, IEventSubscriber
 
 		Locked = _startsLocked;
 
-		ScenarioEvents.FigureEnteredHexEvent.Subscribe(this, parameters => parameters.Hex == Hex, async parameters => await Open(), effectType: EffectType.MandatoryBeforeOptionals);
+		ScenarioEvents.FigureEnteredHexEvent.Subscribe(this,
+			parameters => parameters.Hex == Hex,
+			async parameters => await Open(),
+			effectType: EffectType.MandatoryBeforeOptionals);
 	}
 
 	public async GDTask Unlock()
@@ -73,6 +76,9 @@ public partial class Door : OverlayTile, IEventSubscriber
 	{
 		base.AddInfoItemParameters(parametersList);
 
-		parametersList.Add(new GenericInfoItem.Parameters(this, "Door", Locked ? "This door is locked. It will open once specific conditions are met." : "A character can move on top of this to open this door."));
+		parametersList.Add(new GenericInfoItem.Parameters(this, "Door",
+			Locked
+				? "This door is locked. It will open once specific conditions are met."
+				: "A character can move on top a door to open it."));
 	}
 }

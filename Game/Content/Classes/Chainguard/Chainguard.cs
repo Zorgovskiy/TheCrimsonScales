@@ -26,7 +26,7 @@ public partial class Chainguard : Character
 			canApply: parameters => parameters.Condition is Shackle,
 			apply: async parameters =>
 			{
-				((Shackle)parameters.Condition).AddShackler(parameters.PotentialAbilityState.Performer);
+				((Shackle)parameters.Condition).SetShackler(parameters.PotentialAbilityState.Performer);
 
 				int shacklesToKeep = _maximumShackles - 1;
 
@@ -52,9 +52,9 @@ public partial class Chainguard : Character
 			for(int extraShacklesIndex = 1; extraShacklesIndex <= shacklesToRemove; extraShacklesIndex++)
 			{
 				TargetSelectionPrompt.Answer targetAnswer = await PromptManager.Prompt(
-					new TargetSelectionPrompt(figures => figures.AddRange(shackledFigures), 
-						true, true, null, 
-						() => $"Select an enemy to lose {Icons.Inline(Icons.GetCondition(Shackle))}, {extraShacklesIndex}/{shacklesToRemove}"), 
+					new TargetSelectionPrompt(figures => figures.AddRange(shackledFigures),
+						true, true, null,
+						() => $"Select an enemy to lose {Icons.Inline(Icons.GetCondition(Shackle))}, {extraShacklesIndex}/{shacklesToRemove}"),
 					this);
 
 				await AbilityCmd.RemoveCondition(GameController.Instance.ReferenceManager.Get<Figure>(targetAnswer.FigureReferenceId), Shackle);

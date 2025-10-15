@@ -8,23 +8,23 @@
 [node name="Sprite2D4" type="Sprite2D" parent="."]
 position = Vector2(93, -26)
 rotation = 1.5708
-scale = Vector2(0.15, 0.15)
+scale = Vector2(0.16, 0.16)
 texture = ExtResource("2_nu33b")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(93, 0)
 rotation = 1.5708
-scale = Vector2(0.15, 0.15)
+scale = Vector2(0.16, 0.16)
 texture = ExtResource("1_b0nnr")
 
 [node name="Sprite2D2" type="Sprite2D" parent="."]
 position = Vector2(93, 26)
 rotation = 1.5708
-scale = Vector2(0.15, 0.15)
+scale = Vector2(0.16, 0.16)
 texture = ExtResource("2_nu33b")
 
 [node name="Sprite2D3" type="Sprite2D" parent="."]
 position = Vector2(90, 52)
 rotation = 2.0944
-scale = Vector2(0.15, 0.15)
+scale = Vector2(0.16, 0.16)
 texture = ExtResource("1_b0nnr")

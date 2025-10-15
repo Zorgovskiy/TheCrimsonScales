@@ -79,6 +79,7 @@ public partial class Summon : Figure
 				.WithDamage(Stats.Attack.Value)
 				.WithRange(Stats.Range ?? 1)
 				.WithRangeType(Stats.RangeType)
+				.WithAOEPattern(Stats.AOEPattern)
 				.Build();
 			_abilities.Add(attackAbility);
 		}

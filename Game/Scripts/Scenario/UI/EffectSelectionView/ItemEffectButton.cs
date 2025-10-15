@@ -17,10 +17,22 @@ public partial class ItemEffectButton : EffectButton<ItemEffectButton.Parameters
 	[Export]
 	private ItemView _itemView;
 
+	[Export]
+	private Control _iconContainer;
+	[Export]
+	private TextureRect _iconTextureRect;
+
 	protected override void Init(Parameters parameters)
 	{
 		base.Init(parameters);
 
 		_itemView.SetItem(parameters.ItemModel);
+
+		_iconContainer.SetVisible(parameters.ItemModel.Owner != null);
+		if(parameters.ItemModel.Owner != null)
+		{
+			_iconTextureRect.SetTexture(parameters.ItemModel.Owner.ClassModel.IconTexture);
+			_iconTextureRect.SetSelfModulate(parameters.ItemModel.Owner.ClassModel.PrimaryColor);
+		}
 	}
 }

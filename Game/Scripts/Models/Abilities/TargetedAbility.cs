@@ -440,7 +440,9 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 					}
 				}
 
-				if(!abilityState.AbilityTarget.HasFlag(Target.Allies) && abilityState.Authority.AlliedWith(figure, false))
+				if(abilityState.Authority.AlliedWith(figure, false) && 
+					!abilityState.AbilityTarget.HasFlag(Target.Self) && 
+					!abilityState.AbilityTarget.HasFlag(Target.Allies))
 				{
 					remove = true;
 				}
@@ -489,7 +491,8 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 				}
 
 				ScenarioCheckEvents.CanBeTargetedCheck.Parameters canBeTargetedParameters =
-					ScenarioCheckEvents.CanBeTargetedCheckEvent.Fire(new ScenarioCheckEvents.CanBeTargetedCheck.Parameters(performer, figure));
+					ScenarioCheckEvents.CanBeTargetedCheckEvent.Fire(
+						new ScenarioCheckEvents.CanBeTargetedCheck.Parameters(abilityState, performer, figure));
 
 				if(!canBeTargetedParameters.CanBeTargeted)
 				{
@@ -669,6 +672,15 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 
 	protected async GDTask ForcedMovement(T abilityState, Hex origin, Figure target, int distance, ForcedMovementType type, Func<string> hintText)
 	{
+		ScenarioCheckEvents.ImmuneToForcedMovementCheck.Parameters immuneToForcedMovementParameters =
+			ScenarioCheckEvents.ImmuneToForcedMovementCheckEvent.Fire(
+				new ScenarioCheckEvents.ImmuneToForcedMovementCheck.Parameters(target));
+
+		if(immuneToForcedMovementParameters.ImmuneToForcedMovement)
+		{
+			return;
+		}
+
 		List<Vector2I> path = null;
 		SwingDirectionType? requiredDirection = null;
 

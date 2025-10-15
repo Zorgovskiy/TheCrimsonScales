@@ -16,14 +16,19 @@ public abstract class ScenarioModel : AbstractModel<ScenarioModel>, IEventSubscr
 	public virtual string BGMPath => "res://Audio/BGM/Floral-Woods.ogg";
 	public virtual string BGSPath => null;
 
-	public virtual async GDTask Start()
+	public virtual async GDTask StartBeforeFirstRoomRevealed()
 	{
 		ScenarioGoals = CreateScenarioGoals();
+		UpdateScenarioText(null);
+
+		await GDTask.CompletedTask;
+	}
+
+	public virtual async GDTask StartAfterFirstRoomRevealed()
+	{
 		ScenarioGoals.Start();
 
 		ScenarioEvents.RoomRevealedEvent.Subscribe(this, parameters => true, OnRoomRevealed);
-
-		UpdateScenarioText(null);
 
 		await GDTask.CompletedTask;
 	}

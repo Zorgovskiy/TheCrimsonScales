@@ -8,7 +8,7 @@ public class Scenario007 : ScenarioModel
 	public override string ScenePath => "res://Content/Scenarios/Scenario007.tscn";
 	public override int ScenarioNumber => 7;
 	public override ScenarioChain ScenarioChain => ModelDB.ScenarioChain<MainCampaignScenarioChain>();
-	public override IEnumerable<ScenarioConnection> Connections => [new ScenarioConnection<Scenario008>()];
+	public override IEnumerable<ScenarioConnection> Connections => [new ScenarioConnection<Scenario008>(), new ScenarioConnection<Scenario010>()];
 
 	protected override ScenarioGoals CreateScenarioGoals() => new CustomScenarioGoals("Find all three Golden Eggs to win this scenario.");
 
@@ -17,9 +17,9 @@ public class Scenario007 : ScenarioModel
 	private readonly List<(Water, int)> _waterTiles = new List<(Water, int)>();
 	private int _lastUsedRoundIndex = -1;
 
-	public override async GDTask Start()
+	public override async GDTask StartAfterFirstRoomRevealed()
 	{
-		await base.Start();
+		await base.StartAfterFirstRoomRevealed();
 
 		UpdateScenarioText(
 			$"Once per round, when a character ends their turn on a water tile marked {Icons.Marker(Marker.Type.a)}, " +
@@ -114,14 +114,16 @@ public class Scenario007 : ScenarioModel
 						{
 							if(character.EnemiesWith(figure))
 							{
-								ActionState actionState = new ActionState(figure, [HealAbility.Builder().WithHealValue(3).WithTarget(Target.Self).Build()]);
+								ActionState actionState = new ActionState(figure,
+									[HealAbility.Builder().WithHealValue(3).WithTarget(Target.Self).Build()]);
 								await actionState.Perform();
 							}
 						}
 
 						// Add +1 Move to all their Move abilities this round
 						ScenarioEvents.AbilityStartedEvent.Subscribe(this,
-							parameters => parameters.AbilityState is MoveAbility.State moveAbilityState && character.EnemiesWith(moveAbilityState.Performer),
+							parameters => parameters.AbilityState is MoveAbility.State moveAbilityState &&
+							              character.EnemiesWith(moveAbilityState.Performer),
 							async parameters =>
 							{
 								MoveAbility.State moveAbilityState = (MoveAbility.State)parameters.AbilityState;
@@ -142,7 +144,8 @@ public class Scenario007 : ScenarioModel
 					}
 					else
 					{
-						ActionState actionState = new ActionState(character, [HealAbility.Builder().WithHealValue(3).WithTarget(Target.Self).Build()]);
+						ActionState actionState =
+							new ActionState(character, [HealAbility.Builder().WithHealValue(3).WithTarget(Target.Self).Build()]);
 						await actionState.Perform();
 
 						if(character.Cards.Any(card => card.CardState == CardState.Discarded && card.OriginalOwner == character))
@@ -357,7 +360,8 @@ public class Scenario007 : ScenarioModel
 			{
 				if(character.Cards.Any(card => card.CardState == CardState.Hand && card.OriginalOwner == character))
 				{
-					AbilityCard card = await AbilityCmd.SelectAbilityCard(character, CardState.Hand, true, card => card.OriginalOwner == character, hintText: "Select a card to discard");
+					AbilityCard card = await AbilityCmd.SelectAbilityCard(character, CardState.Hand, true, card => card.OriginalOwner == character,
+						hintText: "Select a card to discard");
 					await AbilityCmd.DiscardCard(card);
 				}
 

@@ -40,7 +40,7 @@ public static class NodeUtils
 			}
 
 			T recurseValue = child.GetChildOfType<T>(includeInternal);
-			if(recurseValue.Equals(default))
+			if(recurseValue != null)
 			{
 				return recurseValue;
 			}

@@ -13,6 +13,10 @@ public partial class MenuPopup : Popup<MenuPopup.Request>
 	[Export]
 	private BetterButton _optionsButton;
 	[Export]
+	private BetterButton _undoTurnButton;
+	[Export]
+	private BetterButton _undoRoundButton;
+	[Export]
 	private BetterButton _resignButton;
 	[Export]
 	private BetterButton _winButton;
@@ -27,9 +31,12 @@ public partial class MenuPopup : Popup<MenuPopup.Request>
 
 		_resumeButton.Pressed += OnResumePressed;
 		_optionsButton.Pressed += OnOptionsPressed;
+		_undoTurnButton.Pressed += OnUndoTurnPressed;
+		_undoRoundButton.Pressed += OnUndoRoundPressed;
 		_resignButton.Pressed += OnResignPressed;
 		_winButton.Pressed += OnWinPressed;
-		_copyToClipboardButton = GetNode<BetterButton>("Panel/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Content/CopyToClipboardButton/BetterButton");
+		_copyToClipboardButton =
+			GetNode<BetterButton>("Panel/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Content/CopyToClipboardButton/BetterButton");
 		_copyToClipboardButton.Pressed += OnCopyToClipboardPressed;
 		_exitButton.Pressed += OnExitPressed;
 	}
@@ -38,6 +45,8 @@ public partial class MenuPopup : Popup<MenuPopup.Request>
 	{
 		base.OnOpen();
 
+		_undoTurnButton.GetParent<Control>().SetVisible(GameController.Instance != null && GameController.Instance.CanUndo(UndoType.Turn));
+		_undoRoundButton.GetParent<Control>().SetVisible(GameController.Instance != null && GameController.Instance.CanUndo(UndoType.Round));
 		_resignButton.GetParent<Control>().SetVisible(GameController.Instance != null);
 		_winButton.GetParent<Control>().SetVisible(GameController.Instance != null);
 		_copyToClipboardButton.GetParent<Control>().SetVisible(GameController.Instance != null);
@@ -55,6 +64,28 @@ public partial class MenuPopup : Popup<MenuPopup.Request>
 		AppController.Instance.PopupManager.OpenPopupOnTop(new OptionsPopup.Request());
 	}
 
+	private void OnUndoTurnPressed()
+	{
+		Close();
+
+		GameController.Instance.Undo(UndoType.Turn);
+	}
+
+	private void OnUndoRoundPressed()
+	{
+		AppController.Instance.PopupManager.OpenPopupOnTop(new TextPopup.Request("Win", "Are you sure you undo to the start of the past round?",
+			new TextButton.Parameters("Cancel", () =>
+			{
+			}),
+			new TextButton.Parameters("Undo", () =>
+			{
+				Close();
+
+				GameController.Instance.Undo(UndoType.Round);
+			}, TextButton.ColorType.Red)
+		));
+	}
+
 	private void OnCopyToClipboardPressed()
 	{
 		Close();
@@ -69,7 +100,8 @@ public partial class MenuPopup : Popup<MenuPopup.Request>
 
 	private void OnResignPressed()
 	{
-		AppController.Instance.PopupManager.OpenPopupOnTop(new TextPopup.Request("Resign", "Are you sure you want to resign?\nYou will lose the scenario.",
+		AppController.Instance.PopupManager.OpenPopupOnTop(new TextPopup.Request("Resign",
+			"Are you sure you want to resign?\nYou will lose the scenario.",
 			new TextButton.Parameters("Cancel", () =>
 			{
 			}),
