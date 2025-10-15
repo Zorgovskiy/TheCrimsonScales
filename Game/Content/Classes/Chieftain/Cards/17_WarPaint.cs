@@ -55,7 +55,7 @@ public class WarPaint : ChieftainCardModel<WarPaint.CardTop, WarPaint.CardBottom
 				{
 					ScenarioCheckEvents.PotentialTargetCheckEvent.Subscribe(state, this,
 						parameters => parameters.PotentialTarget == state.Performer,
-						parameters => 
+						parameters =>
 						{
 							ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
 								ScenarioCheckEvents.IsMountedCheckEvent.Fire(
@@ -68,10 +68,20 @@ public class WarPaint : ChieftainCardModel<WarPaint.CardTop, WarPaint.CardBottom
 						}
 					);
 
-					ScenarioEvents.InitiativesSortedEvent.Subscribe(state, this,
-						parameters => ScenarioCheckEvents.IsMountedCheckEvent.Fire(
-									new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer)).IsMounted,
-						async parameters => 
+					ScenarioEvents.NextActiveFigureEvent.Subscribe(state, this,
+						parameters =>
+						{
+							if(parameters.PreviousActiveFigure == state.Performer)
+                            {
+                                return false;
+                            }
+
+							ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
+								ScenarioCheckEvents.IsMountedCheckEvent.Fire(
+									new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer));
+							return isMountedCheckParameters.IsMounted && isMountedCheckParameters.Mount == parameters.NextActiveFigure;
+						},
+						async parameters =>
 						{
 							Figure mount = ScenarioCheckEvents.IsMountedCheckEvent.Fire(
 									new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer)).Mount;
@@ -83,21 +93,26 @@ public class WarPaint : ChieftainCardModel<WarPaint.CardTop, WarPaint.CardBottom
 							);
 
 							mount.UpdateInitiative();
+							parameters.SetSortingRequired();
+
 							ScenarioCheckEvents.InitiativeCheckEvent.Unsubscribe(state, this);
 
 							await GDTask.CompletedTask;
 						},
 						effectType: EffectType.Selectable,
-						effectButtonParameters: new IconEffectButton.Parameters(Icons.Active),
-						effectInfoViewParameters: new TextEffectInfoView.Parameters($"Act before your mounted summon.")
+						effectButtonParameters: new IconEffectButton.Parameters("res://Content/Classes/Chieftain/Icon.svg"),
+						effectInfoViewParameters: new TextEffectInfoView.Parameters("Act before your mounted summon.")
 					);
 
 					await GDTask.CompletedTask;
 				})
 				.WithOnDeactivate(async state =>
 				{
+					state.Performer.UpdateInitiative();
+
 					ScenarioCheckEvents.PotentialTargetCheckEvent.Unsubscribe(state, this);
-					ScenarioEvents.InitiativesSortedEvent.Unsubscribe(state, this);
+					ScenarioEvents.NextActiveFigureEvent.Unsubscribe(state, this);
+					ScenarioCheckEvents.InitiativeCheckEvent.Unsubscribe(state, this);
 
 					await GDTask.CompletedTask;
 				})

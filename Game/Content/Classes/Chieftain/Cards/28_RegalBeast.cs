@@ -54,7 +54,7 @@ public class RegalBeast : ChieftainCardModel<RegalBeast.CardTop, RegalBeast.Card
 					]
 				})
 				.WithName("Sabretooth Tiger")
-				.WithTexturePath("res://Content/Classes/Chieftain/Summons/sabretooth_tiger_AI.png")
+				.WithTexturePath("res://Content/Classes/Chieftain/Summons/sabretooth_tiger_edit.png")
 				.Build()
 			),
 		];

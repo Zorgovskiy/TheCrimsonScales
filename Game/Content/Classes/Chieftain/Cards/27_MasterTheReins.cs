@@ -67,7 +67,7 @@ public class MasterTheReins : ChieftainCardModel<MasterTheReins.CardTop, MasterT
 				.WithOnActivate(async state =>
 				{
 					AbilityCard selectedAbilityCard =
-						await AbilityCmd.SelectAbilityCard((Character)state.Performer, CardState.Persistent,
+						await AbilityCmd.SelectAbilityCard((Character)state.Performer, CardState.PersistentLoss,
 							canSelectFunc: abilityCard => abilityCard.Top.Abilities.Concat(abilityCard.Bottom.Abilities).Any(cardAbility => cardAbility.Ability is SummonAbility),
 							hintText: $"Select an active card with summon ability to attach to");
 
@@ -75,7 +75,7 @@ public class MasterTheReins : ChieftainCardModel<MasterTheReins.CardTop, MasterT
 						.SelectMany(actionState => actionState.AbilityStates)
 						.FirstOrDefault(abilityState => abilityState is SummonAbility.State)).Summon;
 
-					ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(state, this,
+					ScenarioEvents.DuringAttackEvent.Subscribe(state, this,
 						canApplyParameters => summon == canApplyParameters.Performer,
 						async applyParameters =>
 						{
@@ -105,7 +105,7 @@ public class MasterTheReins : ChieftainCardModel<MasterTheReins.CardTop, MasterT
 				})
 				.WithOnDeactivate(async state =>
 				{
-					ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(state, this);
+					ScenarioEvents.DuringAttackEvent.Unsubscribe(state, this);
 					ScenarioCheckEvents.IsSummonControlledCheckEvent.Unsubscribe(state, this);
 					ScenarioEvents.FigureKilledEvent.Unsubscribe(state, this);
 

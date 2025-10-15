@@ -16,15 +16,16 @@ public class SpikedMuzzle : ChieftainCardModel<SpikedMuzzle.CardTop, SpikedMuzzl
 			new AbilityCardAbility(UseSlotAbility.Builder()
 				.WithOnActivate(async state =>
 				{
-					ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(state, this,
-						canApplyParameters => true,
+					ScenarioEvents.DuringAttackEvent.Subscribe(state, this,
+						canApplyParameters => ScenarioCheckEvents.IsMountedCheckEvent.Fire(
+									new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer)).IsMounted,
 						async applyParameters =>
 						{
 							ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
 								ScenarioCheckEvents.IsMountedCheckEvent.Fire(
 									new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer));
 
-							if(isMountedCheckParameters.IsMounted && applyParameters.Performer == isMountedCheckParameters.Mount)
+							if(applyParameters.Performer == isMountedCheckParameters.Mount)
 							{
 								applyParameters.AbilityState.SingleTargetAdjustAttackValue(1);
 
@@ -36,7 +37,7 @@ public class SpikedMuzzle : ChieftainCardModel<SpikedMuzzle.CardTop, SpikedMuzzl
 				})
 				.WithOnDeactivate(async state =>
 				{
-					ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(state, this);
+					ScenarioEvents.DuringAttackEvent.Unsubscribe(state, this);
 
 					await GDTask.CompletedTask;
 				})

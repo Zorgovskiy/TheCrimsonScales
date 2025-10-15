@@ -49,7 +49,7 @@ public class StrappingBullwhip : ChieftainCardModel<StrappingBullwhip.CardTop, S
 			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async state =>
 				{
-					ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(state, this,
+					ScenarioEvents.DuringAttackEvent.Subscribe(state, this,
 						canApplyParameters => canApplyParameters.Performer == state.Performer && 
 							canApplyParameters.AbilityState.AbilityRangeType == RangeType.Melee,
 						async applyParameters =>
@@ -71,7 +71,7 @@ public class StrappingBullwhip : ChieftainCardModel<StrappingBullwhip.CardTop, S
 				})
 				.WithOnDeactivate(async state =>
 				{
-					ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(state, this);
+					ScenarioEvents.DuringAttackEvent.Unsubscribe(state, this);
 
 					await GDTask.CompletedTask;
 				})

@@ -16,7 +16,7 @@ public class PositiveReinforcement : ChieftainCardModel<PositiveReinforcement.Ca
 			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async state =>
 				{
-					ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(state, this,
+					ScenarioEvents.DuringAttackEvent.Subscribe(state, this,
 						canApplyParameters => canApplyParameters.Performer == state.Performer,
 						async applyParameters =>
 						{
@@ -36,7 +36,7 @@ public class PositiveReinforcement : ChieftainCardModel<PositiveReinforcement.Ca
 				})
 				.WithOnDeactivate(async state =>
 				{
-					ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(state, this);
+					ScenarioEvents.DuringAttackEvent.Unsubscribe(state, this);
 
 					await GDTask.CompletedTask;
 				})
@@ -52,7 +52,6 @@ public class PositiveReinforcement : ChieftainCardModel<PositiveReinforcement.Ca
 	{
 		protected override IEnumerable<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(MoveAbility.Builder().WithDistance(2).Build()),
 			new AbilityCardAbility(GrantAbility.Builder()
 				.WithGetAbilities(grantState =>
 				[
