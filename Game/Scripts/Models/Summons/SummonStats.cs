@@ -4,7 +4,6 @@
 	public int? Move { get; init; } = null;
 	public int? Attack { get; init; } = null;
 	public int? Range { get; init; } = null;
-	public AOEPattern AOEPattern { get; init; } = null;
 
 	public FigureTrait[] Traits { get; init; } = null;
 

@@ -39,6 +39,7 @@ public abstract class TargetedAbilityState : AbilityState
 
 	public Target AbilityTarget { get; set; }
 	public int AbilityTargets { get; set; }
+	public AOEPattern AbilityAOEPattern { get; set; }
 
 	public RangeType AbilityRangeType { get; set; }
 	public int AbilityRange { get; set; }
@@ -46,6 +47,7 @@ public abstract class TargetedAbilityState : AbilityState
 	public int AbilityPush { get; set; }
 	public int AbilityPull { get; set; }
 	public int AbilitySwing { get; set; }
+
 
 	public RangeType SingleTargetRangeType { get; set; }
 	public int SingleTargetRange { get; set; }
@@ -118,6 +120,11 @@ public abstract class TargetedAbilityState : AbilityState
 
 		SingleTargetConditionModels.Remove(conditionModel);
 	}
+
+	public void AbilityAddAOEPattern(AOEPattern aoePattern)
+    {
+		AbilityAOEPattern = aoePattern;
+    }
 
 	public void AbilityAdjustPush(int amount)
 	{
@@ -331,6 +338,8 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 
 		abilityState.AbilityTarget = Target;
 		abilityState.AbilityTargets = Targets;
+		abilityState.AbilityAOEPattern = AOEPattern;
+
 		if(abilityState.AbilityTarget.HasFlag(Target.TargetAll))
 		{
 			abilityState.AbilityTargets = int.MaxValue;
@@ -342,6 +351,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 		abilityState.AbilityPush = Push;
 		abilityState.AbilityPull = Pull;
 		abilityState.AbilitySwing = Swing;
+
 	}
 
 	protected override async GDTask Perform(T abilityState)
@@ -350,7 +360,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 
 		//await InitAbilityState(abilityState);
 
-		if(AOEPattern != null)
+		if(abilityState.AbilityAOEPattern != null)
 		{
 			Dictionary<Vector2I, AOEHexType> aoeHexes = new Dictionary<Vector2I, AOEHexType>();
 
@@ -358,7 +368,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 			if(abilityState.Authority is Character)
 			{
 				AOEPrompt.Answer aoeAnswer =
-					await PromptManager.Prompt(new AOEPrompt(abilityState, AOEPattern, TargetHex, null, () => "Select where to target"),
+					await PromptManager.Prompt(new AOEPrompt(abilityState, abilityState.AbilityAOEPattern, TargetHex, null, () => "Select where to target"),
 						abilityState.Authority);
 
 				if(aoeAnswer.Skipped)
@@ -376,7 +386,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 				Figure focus = await abilityState.ActionState.GetFocus();
 				MonsterAOEPrompt.Answer aoeAnswer =
 					await PromptManager.Prompt(
-						new MonsterAOEPrompt(abilityState, AOEPattern, abilityState.AbilityRange, abilityState.AbilityRangeType, focus, null,
+						new MonsterAOEPrompt(abilityState, abilityState.AbilityAOEPattern, abilityState.AbilityRange, abilityState.AbilityRangeType, focus, null,
 							() => "Select where to target"), abilityState.Authority);
 
 				if(aoeAnswer.Skipped)
@@ -526,7 +536,9 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 
 			if(abilityState.Authority is Character)
 			{
-				bool autoSelectIfOne = Mandatory || abilityState.AbilityTarget == Target.Self || (TargetHex != null && AOEPattern == null);
+				bool autoSelectIfOne = Mandatory || 
+					abilityState.AbilityTarget == Target.Self || 
+					(TargetHex != null && abilityState.AbilityAOEPattern == null);
 				TargetSelectionPrompt.Answer targetAnswer = await PromptManager.Prompt(
 					new TargetSelectionPrompt(getValidTargets, autoSelectIfOne, Mandatory, duringTargetedAbilityEffectCollection,
 						() => _getTargetingHintText(abilityState)), abilityState.Authority);
@@ -609,9 +621,9 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 				break;
 			}
 
-			if(AOEPattern != null)
+			if(abilityState.AbilityAOEPattern != null)
 			{
-				if(abilityState.TargetedHexes.Count == AOEPattern.Hexes.Count)
+				if(abilityState.TargetedHexes.Count == abilityState.AbilityAOEPattern.Hexes.Count)
 				{
 					break;
 				}
