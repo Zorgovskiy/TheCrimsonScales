@@ -178,9 +178,9 @@ public class ScenarioCheckEvents
 
 			public bool HasFlying { get; private set; }
 
-			public void SetFlying()
+			public void SetFlying(bool hasFlying)
 			{
-				HasFlying = true;
+				HasFlying = hasFlying;
 			}
 		}
 	}
@@ -281,7 +281,9 @@ public class ScenarioCheckEvents
 	}
 
 	private readonly FigureInfoItemExtraEffectsCheck _figureInfoItemExtraEffectsCheck = new FigureInfoItemExtraEffectsCheck();
-	public static FigureInfoItemExtraEffectsCheck FigureInfoItemExtraEffectsCheckEvent => GameController.Instance.ScenarioCheckEvents._figureInfoItemExtraEffectsCheck;
+
+	public static FigureInfoItemExtraEffectsCheck FigureInfoItemExtraEffectsCheckEvent =>
+		GameController.Instance.ScenarioCheckEvents._figureInfoItemExtraEffectsCheck;
 
 	public class CanBeFocusedCheck : ScenarioCheckEvent<CanBeFocusedCheck.Parameters>
 	{
@@ -305,9 +307,10 @@ public class ScenarioCheckEvents
 
 	public class CanBeTargetedCheck : ScenarioCheckEvent<CanBeTargetedCheck.Parameters>
 	{
-		public class Parameters(Figure performer, Figure potentialTarget)
+		public class Parameters(AbilityState potentialAbilityState, Figure performer, Figure potentialTarget)
 			: ParametersBase
 		{
+			public AbilityState PotentialAbilityState { get; } = potentialAbilityState;
 			public Figure Performer { get; } = performer;
 			public Figure PotentialTarget { get; } = potentialTarget;
 
@@ -322,6 +325,27 @@ public class ScenarioCheckEvents
 
 	private readonly CanBeTargetedCheck _canBeTargetedCheck = new CanBeTargetedCheck();
 	public static CanBeTargetedCheck CanBeTargetedCheckEvent => GameController.Instance.ScenarioCheckEvents._canBeTargetedCheck;
+
+	public class ImmuneToForcedMovementCheck : ScenarioCheckEvent<ImmuneToForcedMovementCheck.Parameters>
+	{
+		public class Parameters(Figure figure)
+			: ParametersBase
+		{
+			public Figure Figure { get; } = figure;
+
+			public bool ImmuneToForcedMovement { get; private set; } = false;
+
+			public void SetImmuneToForcedMovement()
+			{
+				ImmuneToForcedMovement = true;
+			}
+		}
+	}
+
+	private readonly ImmuneToForcedMovementCheck _immuneToForcedMovementCheck = new ImmuneToForcedMovementCheck();
+
+	public static ImmuneToForcedMovementCheck ImmuneToForcedMovementCheckEvent =>
+		GameController.Instance.ScenarioCheckEvents._immuneToForcedMovementCheck;
 
 	public class DisadvantageCheck : ScenarioCheckEvent<DisadvantageCheck.Parameters>
 	{

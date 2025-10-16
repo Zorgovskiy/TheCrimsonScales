@@ -7,9 +7,9 @@ public class TestScenario : ScenarioModel
 	public override ScenarioChain ScenarioChain => ModelDB.ScenarioChain<MainCampaignScenarioChain>();
 	protected override ScenarioGoals CreateScenarioGoals() => new KillAlLEnemiesScenarioGoals();
 
-	public override async GDTask Start()
+	public override async GDTask StartAfterFirstRoomRevealed()
 	{
-		await base.Start();
+		await base.StartAfterFirstRoomRevealed();
 
 		GameController.Instance.Map.Treasures[0].SetItemLoot(ModelDB.Item<DizzyingTincture>());
 	}

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Fractural.Tasks;
+﻿using Fractural.Tasks;
 
 public class Regenerate : ConditionModel
 {
@@ -20,7 +19,6 @@ public class Regenerate : ConditionModel
 				HealAbility heal = HealAbility.Builder()
 					.WithHealValue(1)
 					.WithTarget(Target.Self)
-					.WithCanPerformWhileStunned(true)
 					.Build();
 				ActionState actionState = new ActionState(parameters.Figure, [heal]);
 				await actionState.Perform();
@@ -28,7 +26,7 @@ public class Regenerate : ConditionModel
 			effectType: EffectType.MandatoryBeforeOptionals,
 			order: -1
 		);
-		
+
 		ScenarioEvents.AfterSufferDamageEvent.Subscribe(Owner, this,
 			canApply: parameters => parameters.Figure == Owner,
 			apply: async parameters =>
@@ -42,7 +40,7 @@ public class Regenerate : ConditionModel
 	{
 		await base.Remove();
 
-		ScenarioEvents.FigureTurnStartedEvent.Unsubscribe(Owner ,this);
-		ScenarioEvents.AfterSufferDamageEvent.Unsubscribe(Owner ,this);
+		ScenarioEvents.FigureTurnStartedEvent.Unsubscribe(Owner, this);
+		ScenarioEvents.AfterSufferDamageEvent.Unsubscribe(Owner, this);
 	}
 }

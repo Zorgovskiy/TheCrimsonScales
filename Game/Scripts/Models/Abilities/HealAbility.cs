@@ -114,7 +114,7 @@ public class HealAbility : TargetedAbility<HealAbility.State, HealAbility.HealAb
 		/// </summary>
 		public override TAbility Build()
 		{
-			Obj.Target = _target ?? Target.SelfOrAllies;
+			_target ??= Target.SelfOrAllies;
 			return base.Build();
 		}
 	}

@@ -37,16 +37,16 @@ public partial class BetweenScenariosController : SceneController<BetweenScenari
 			}, 0.5f);
 		}
 
-		if(SceneRequest.SavedCampaign.SavedScenarioProgresses.GetScenarioProgress(ModelDB.Scenario<Scenario009>()).Completed)
-		{
-			this.DelayedCall(() =>
-			{
-				AppController.Instance.PopupManager.RequestPopup(new TextPopup.Request("End of Demo",
-					"Thank you for playing this demo of The Crimson Scales!\nHope you had fun!" +
-					"\nAny and all feedback is very welcome. Please do not hesitate to let me know your thoughts."
-				));
-			});
-		}
+		// if(SceneRequest.SavedCampaign.SavedScenarioProgresses.GetScenarioProgress(ModelDB.Scenario<Scenario009>()).Completed)
+		// {
+		// 	this.DelayedCall(() =>
+		// 	{
+		// 		AppController.Instance.PopupManager.RequestPopup(new TextPopup.Request("End of Demo",
+		// 			"Thank you for playing this demo of The Crimson Scales!\nHope you had fun!" +
+		// 			"\nAny and all feedback is very welcome. Please do not hesitate to let us know your thoughts."
+		// 		));
+		// 	});
+		// }
 
 		AppController.Instance.AudioController.SetBGM("res://Audio/BGM/old-tavern-cinematic-atmosphere-fairytale-273871.mp3");
 		AppController.Instance.AudioController.SetBGS(null);

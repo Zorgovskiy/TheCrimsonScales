@@ -42,7 +42,8 @@ public class RoundPhase : ScenarioPhase
 				_sortedFigures.Clear();
 				_sortedFigures.AddRange(GameController.Instance.Map.Figures);
 
-				_sortedFigures.Sort((turnTakerA, turnTakerB) => turnTakerA.Initiative.SortingInitiative.CompareTo(turnTakerB.Initiative.SortingInitiative));
+				_sortedFigures.Sort((turnTakerA, turnTakerB) =>
+					turnTakerA.Initiative.SortingInitiative.CompareTo(turnTakerB.Initiative.SortingInitiative));
 
 				_sortingRequired = false;
 			}
@@ -55,6 +56,8 @@ public class RoundPhase : ScenarioPhase
 
 			GameController.Instance.Map.SetTurnTaker(figure);
 			await figure.TakeFullTurn();
+
+			GameController.Instance.ResetRelevantTurnTaker();
 
 			await GDTask.DelayFastForwardable(0.5f);
 		}

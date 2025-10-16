@@ -2,7 +2,8 @@
 
 public partial class GenericInfoItem : InfoItem<GenericInfoItem.Parameters>
 {
-	public class Parameters(HexObject hexObject, string title, string description, float xOffset = 0f, float? sceneVerticalSize = null) : InfoItemParameters<HexObject>(hexObject)
+	public class Parameters(HexObject hexObject, string title, string description, float xOffset = 0f, float? sceneVerticalSize = null)
+		: InfoItemParameters<HexObject>(hexObject)
 	{
 		public override string ScenePath => "res://Scenes/Scenario/UI/InfoView/GenericInfoItem.tscn";
 

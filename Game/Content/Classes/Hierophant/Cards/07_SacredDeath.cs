@@ -18,6 +18,10 @@ public class SacredDeath : HierophantCardModel<SacredDeath.CardTop, SacredDeath.
 			new AbilityCardAbility(ConditionAbility.Builder()
 				.WithConditions(Conditions.Bless)
 				.WithRange(2)
+				.WithOnAbilityEndedPerformed(async state =>
+				{
+					await AbilityCmd.GainXP(state.Performer, 1);
+				})
 				.WithConditionalAbilityCheck(async state =>
 					{
 						await GDTask.CompletedTask;

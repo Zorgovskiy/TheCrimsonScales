@@ -62,7 +62,7 @@ public class GiveItemAbility : TargetedAbility<GiveItemAbility.State, SingleTarg
 		/// </summary>
 		public override TAbility Build()
 		{
-			Obj.Target = _target ?? Target.Allies | Target.MustTargetCharacters;
+			_target ??= Target.Allies | Target.MustTargetCharacters;
 			return base.Build();
 		}
 	}

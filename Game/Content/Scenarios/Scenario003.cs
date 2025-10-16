@@ -12,7 +12,8 @@ public class Scenario003 : ScenarioModel
 	public override IEnumerable<ScenarioConnection> Connections => [new ScenarioConnection<Scenario007>()];
 	// public override IEnumerable<ScenarioConnection> Connections => [new ScenarioConnection<Scenario004>(), new ScenarioConnection<Scenario007>()];
 
-	protected override ScenarioGoals CreateScenarioGoals() => new KillSpecificEnemyTypeGoals(ModelDB.Monster<HydraSpirit>(), "Kill the Hydra Spirit to win this scenario.");
+	protected override ScenarioGoals CreateScenarioGoals() =>
+		new KillSpecificEnemyTypeGoals(ModelDB.Monster<HydraSpirit>(), "Kill the Hydra Spirit to win this scenario.");
 
 	public override string BGMPath => "res://Audio/BGM/Dark-Abyss.ogg";
 	public override string BGSPath => "res://Audio/BGS/Cave.ogg";
@@ -20,9 +21,9 @@ public class Scenario003 : ScenarioModel
 	private readonly List<Water> _waterTiles = new List<Water>();
 	private readonly List<Hex> _waterSpawnHexes = new List<Hex>();
 
-	public override async GDTask Start()
+	public override async GDTask StartAfterFirstRoomRevealed()
 	{
-		await base.Start();
+		await base.StartAfterFirstRoomRevealed();
 
 		UpdateScenarioText(
 			$"At the end of each round, the water tiles marked {Icons.Marker(Marker.Type.a)} " +

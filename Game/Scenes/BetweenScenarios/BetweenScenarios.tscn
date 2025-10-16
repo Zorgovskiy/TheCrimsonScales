@@ -419,6 +419,38 @@ ScenarioNumber = 26
 layout_mode = 2
 ScenarioNumber = 30
 
+[node name="ScenarioButton33" parent="CanvasLayer/UI/BetweenScenariosActionManager/ScenarioFlowchart/Container/SubViewportContainer/SubViewport/Container/Flowchart/Buttons" instance=ExtResource("1_5l4i3")]
+layout_mode = 2
+ScenarioNumber = 30
+
+[node name="ScenarioButton12" parent="CanvasLayer/UI/BetweenScenariosActionManager/ScenarioFlowchart/Container/SubViewportContainer/SubViewport/Container/Flowchart/Buttons" instance=ExtResource("1_5l4i3")]
+layout_mode = 2
+ScenarioNumber = 12
+
+[node name="ScenarioButton11" parent="CanvasLayer/UI/BetweenScenariosActionManager/ScenarioFlowchart/Container/SubViewportContainer/SubViewport/Container/Flowchart/Buttons" instance=ExtResource("1_5l4i3")]
+layout_mode = 2
+ScenarioNumber = 11
+
+[node name="ScenarioButton14" parent="CanvasLayer/UI/BetweenScenariosActionManager/ScenarioFlowchart/Container/SubViewportContainer/SubViewport/Container/Flowchart/Buttons" instance=ExtResource("1_5l4i3")]
+layout_mode = 2
+ScenarioNumber = 14
+
+[node name="ScenarioButton20" parent="CanvasLayer/UI/BetweenScenariosActionManager/ScenarioFlowchart/Container/SubViewportContainer/SubViewport/Container/Flowchart/Buttons" instance=ExtResource("1_5l4i3")]
+layout_mode = 2
+ScenarioNumber = 20
+
+[node name="ScenarioButton27" parent="CanvasLayer/UI/BetweenScenariosActionManager/ScenarioFlowchart/Container/SubViewportContainer/SubViewport/Container/Flowchart/Buttons" instance=ExtResource("1_5l4i3")]
+layout_mode = 2
+ScenarioNumber = 27
+
+[node name="ScenarioButton28" parent="CanvasLayer/UI/BetweenScenariosActionManager/ScenarioFlowchart/Container/SubViewportContainer/SubViewport/Container/Flowchart/Buttons" instance=ExtResource("1_5l4i3")]
+layout_mode = 2
+ScenarioNumber = 28
+
+[node name="ScenarioButton29" parent="CanvasLayer/UI/BetweenScenariosActionManager/ScenarioFlowchart/Container/SubViewportContainer/SubViewport/Container/Flowchart/Buttons" instance=ExtResource("1_5l4i3")]
+layout_mode = 2
+ScenarioNumber = 29
+
 [node name="AnimationContainer" type="Control" parent="CanvasLayer/UI/BetweenScenariosActionManager/ScenarioFlowchart"]
 layout_mode = 1
 anchors_preset = 8

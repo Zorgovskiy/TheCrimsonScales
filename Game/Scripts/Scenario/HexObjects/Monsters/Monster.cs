@@ -19,6 +19,7 @@ public partial class Monster : Figure
 	public MonsterGroup MonsterGroup { get; private set; }
 	public MonsterType MonsterType { get; private set; }
 	public int StandeeNumber { get; private set; }
+	public int MonsterLevel { get; private set; }
 	public MonsterStats Stats { get; private set; }
 	public Color TypeColor { get; private set; }
 
@@ -69,7 +70,8 @@ public partial class Monster : Figure
 		_monsterViewComponent.StandeeNumberCircle.SelfModulate = TypeColor;
 		_monsterViewComponent.StandeeNumberCircle.Visible = MonsterType != MonsterType.Boss;
 
-		Stats = levelStats[GameController.Instance.SavedScenario.ScenarioLevel];
+		MonsterLevel = GameController.Instance.SavedScenario.ScenarioLevel;
+		Stats = levelStats[MonsterLevel];
 
 		SetMaxHealth(Stats.Health);
 		SetHealth(Stats.Health);

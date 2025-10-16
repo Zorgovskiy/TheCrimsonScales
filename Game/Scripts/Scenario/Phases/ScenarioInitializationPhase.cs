@@ -6,6 +6,8 @@ public class ScenarioInitializationPhase : ScenarioPhase
 	{
 		await base.Activate();
 
+		await GameController.Instance.ScenarioModel.StartBeforeFirstRoomRevealed();
+
 		foreach(Room room in GameController.Instance.Map.Rooms)
 		{
 			if(room.StartsRevealed)
@@ -17,6 +19,6 @@ public class ScenarioInitializationPhase : ScenarioPhase
 		// Set initial positions of all characters
 		await GameController.Instance.CharacterManager.PlaceCharacters();
 
-		await GameController.Instance.ScenarioModel.Start();
+		await GameController.Instance.ScenarioModel.StartAfterFirstRoomRevealed();
 	}
 }

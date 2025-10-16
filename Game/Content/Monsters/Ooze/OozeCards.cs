@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Fractural.Tasks;
 using Godot;
 
 public abstract class OozeAbilityCard : MonsterAbilityCardModel
@@ -20,141 +21,139 @@ public abstract class OozeAbilityCard : MonsterAbilityCardModel
 
 public class OozeAbilityCard0 : OozeAbilityCard
 {
-	public override int Initiative => 65;
+	public override int Initiative => 36;
 	public override int CardIndex => 0;
 
 	public override IEnumerable<MonsterAbilityCardAbility> GetAbilities(Monster monster) =>
 	[
-		new MonsterAbilityCardAbility(AttackAbility(monster, +0, range: 3, targets: 3, conditions: [Conditions.Curse])),
+		new MonsterAbilityCardAbility(MoveAbility(monster, +1)),
+		new MonsterAbilityCardAbility(AttackAbility(monster, -1)),
 	];
 }
 
 public class OozeAbilityCard1 : OozeAbilityCard
 {
-	public override int Initiative => 60;
+	public override int Initiative => 57;
 	public override int CardIndex => 1;
-	public override bool Reshuffles => true;
 
 	public override IEnumerable<MonsterAbilityCardAbility> GetAbilities(Monster monster) =>
 	[
-		new MonsterAbilityCardAbility(AttackAbility(monster, +0, pierce: 3,
-			aoePattern: new AOEPattern([
-				new AOEHex(Vector2I.Zero, AOEHexType.Gray),
-				new AOEHex(new Vector2I(1, 0), AOEHexType.Red),
-				new AOEHex(new Vector2I(2, 0), AOEHexType.Red),
-				new AOEHex(new Vector2I(3, 0), AOEHexType.Red),
-				new AOEHex(new Vector2I(4, 0), AOEHexType.Red),
-				new AOEHex(new Vector2I(5, 0), AOEHexType.Red),
-			])
-		)),
+		new MonsterAbilityCardAbility(MoveAbility(monster, +0)),
+		new MonsterAbilityCardAbility(AttackAbility(monster, +0)),
 	];
 }
 
 public class OozeAbilityCard2 : OozeAbilityCard
 {
-	public override int Initiative => 60;
+	public override int Initiative => 59;
 	public override int CardIndex => 2;
-	public override bool Reshuffles => true;
 
 	public override IEnumerable<MonsterAbilityCardAbility> GetAbilities(Monster monster) =>
 	[
-		new MonsterAbilityCardAbility(AttackAbility(monster, +0, pierce: 3,
-			aoePattern: new AOEPattern([
-				new AOEHex(Vector2I.Zero, AOEHexType.Gray),
-				new AOEHex(new Vector2I(1, 0), AOEHexType.Red),
-				new AOEHex(new Vector2I(2, 0), AOEHexType.Red),
-				new AOEHex(new Vector2I(3, 0), AOEHexType.Red),
-				new AOEHex(new Vector2I(4, 0), AOEHexType.Red),
-				new AOEHex(new Vector2I(5, 0), AOEHexType.Red),
-			])
-		)),
+		new MonsterAbilityCardAbility(AttackAbility(monster, +0, targets: 2, conditions: [Conditions.Poison1])),
 	];
 }
 
 public class OozeAbilityCard3 : OozeAbilityCard
 {
-	public override int Initiative => 84;
+	public override int Initiative => 66;
 	public override int CardIndex => 3;
 
 	public override IEnumerable<MonsterAbilityCardAbility> GetAbilities(Monster monster) =>
 	[
-		new MonsterAbilityCardAbility(AttackAbility(monster, -1, target: Target.Enemies | Target.TargetAll)),
-		new MonsterAbilityCardAbility(AttackAbility(monster, -1, range: 4, conditions: [Conditions.Wound1])),
+		new MonsterAbilityCardAbility(MoveAbility(monster, -1)),
+		new MonsterAbilityCardAbility(AttackAbility(monster, +1, extraRange: 1)),
 	];
 }
 
 public class OozeAbilityCard4 : OozeAbilityCard
 {
-	public override int Initiative => 75;
+	public override int Initiative => 94;
 	public override int CardIndex => 4;
+	public override bool Reshuffles => true;
 
 	public override IEnumerable<MonsterAbilityCardAbility> GetAbilities(Monster monster) =>
 	[
-		new MonsterAbilityCardAbility(AttackAbility(monster, +0, conditions: [Conditions.Poison1])),
-		new MonsterAbilityCardAbility(AttackAbility(monster, -1, range: 5, conditions: [Conditions.Immobilize])),
+		new MonsterAbilityCardAbility(OtherAbility.Builder()
+			.WithPerformAbility(async state =>
+			{
+				await AbilityCmd.SufferDamage(null, state.Performer, 2);
+			})
+			.Build()),
+
+		new MonsterAbilityCardAbility(MonsterSummonAbility.Builder()
+			.WithMonsterModel(ModelDB.Monster<Ooze>())
+			.WithMonsterType(MonsterType.Normal)
+			.WithOnAbilityStarted(async state =>
+			{
+				int level = state.Performer is Monster performingMonster
+					? performingMonster.MonsterLevel
+					: GameController.Instance.SavedScenario.ScenarioLevel;
+				state.SetForcedHitPoints(Mathf.Min(state.MonsterModel.NormalLevelStats[level].Health, state.Performer.Health));
+
+				await GDTask.CompletedTask;
+			})
+			.Build())
 	];
 }
 
 public class OozeAbilityCard5 : OozeAbilityCard
 {
-	public override int Initiative => 75;
+	public override int Initiative => 94;
 	public override int CardIndex => 5;
+	public override bool Reshuffles => true;
 
 	public override IEnumerable<MonsterAbilityCardAbility> GetAbilities(Monster monster) =>
 	[
-		new MonsterAbilityCardAbility(AttackAbility(monster, -2, target: Target.Enemies | Target.TargetAll, conditions: [Conditions.Disarm])),
-		new MonsterAbilityCardAbility(AttackAbility(monster, +0, range: 3, targets: 2)),
+		new MonsterAbilityCardAbility(OtherAbility.Builder()
+			.WithPerformAbility(async state =>
+			{
+				await AbilityCmd.SufferDamage(null, state.Performer, 2);
+			})
+			.Build()),
+
+		new MonsterAbilityCardAbility(MonsterSummonAbility.Builder()
+			.WithMonsterModel(ModelDB.Monster<Ooze>())
+			.WithMonsterType(MonsterType.Normal)
+			.WithOnAbilityStarted(async state =>
+			{
+				int level = state.Performer is Monster performingMonster
+					? performingMonster.MonsterLevel
+					: GameController.Instance.SavedScenario.ScenarioLevel;
+				state.SetForcedHitPoints(Mathf.Min(state.MonsterModel.NormalLevelStats[level].Health, state.Performer.Health));
+
+				await GDTask.CompletedTask;
+			})
+			.Build())
 	];
 }
 
 public class OozeAbilityCard6 : OozeAbilityCard
 {
-	public override int Initiative => 96;
+	public override int Initiative => 66;
 	public override int CardIndex => 6;
 
 	public override IEnumerable<MonsterAbilityCardAbility> GetAbilities(Monster monster) =>
 	[
-		new MonsterAbilityCardAbility(AttackAbility(monster, -2, range: 6)),
-		new MonsterAbilityCardAbility(OtherAbility.Builder()
-			.WithPerformAbility(async state =>
-			{
-				AttackAbility.State attackAbilityState = state.ActionState.GetAbilityState<AttackAbility.State>(0);
-				foreach(Figure target in attackAbilityState.UniqueTargetedFigures)
-				{
-					Hex hex = await AbilityCmd.SelectHex(state, list =>
-					{
-						foreach(Hex neighbourHex in target.Hex.Neighbours)
-						{
-							if(neighbourHex.IsEmpty())
-							{
-								list.Add(neighbourHex);
-							}
-						}
-					});
-
-					// if(hex != null && await GameController.Instance.Map.CreateMonster(ModelDB.Monster<Ooze>(), MonsterType.Normal, hex.Coords, true))
-					// {
-					// 	state.SetPerformed();
-					// 	break;
-					// }
-				}
-			})
-			.WithConditionalAbilityCheck(state => AbilityCmd.HasPerformedAbility(state, 0))
-			.Build())
+		new MonsterAbilityCardAbility(MoveAbility(monster, -1)),
+		new MonsterAbilityCardAbility(LootAbility.Builder().WithRange(1).Build()),
+		new MonsterAbilityCardAbility(HealAbility.Builder().WithHealValue(2).WithTarget(Target.Self).Build())
 	];
 }
 
 public class OozeAbilityCard7 : OozeAbilityCard
 {
-	public override int Initiative => 54;
+	public override int Initiative => 85;
 	public override int CardIndex => 7;
 
 	public override IEnumerable<MonsterAbilityCardAbility> GetAbilities(Monster monster) =>
 	[
-		new MonsterAbilityCardAbility(ConditionAbility.Builder()
-			.WithConditions(Conditions.Wound1, Conditions.Poison1)
+		new MonsterAbilityCardAbility(PushAbility.Builder()
+			.WithPush(1)
+			.WithConditions([Conditions.Poison1])
 			.WithTarget(Target.Enemies | Target.TargetAll)
 			.Build()),
-		new MonsterAbilityCardAbility(AttackAbility(monster, +0, range: 4)),
+
+		new MonsterAbilityCardAbility(AttackAbility(monster, +1, extraRange: -1))
 	];
 }
