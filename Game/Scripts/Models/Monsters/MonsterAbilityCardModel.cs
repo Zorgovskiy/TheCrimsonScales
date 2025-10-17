@@ -40,6 +40,7 @@ public abstract class MonsterAbilityCardModel : AbstractModel<MonsterAbilityCard
 		AOEPattern aoePattern = null, int push = 0, int pull = 0, int swing = 0, DynamicInt<AttackAbility.State> pierce = null, ConditionModel[] conditions = null,
 		Action<AttackAbility.State, List<Figure>> customGetTargets = null,
 		Ability<AttackAbility.State>.ConditionalAbilityCheckDelegate conditionalAbilityCheck = null,
+		List<ScenarioEvents.DuringAttack.Subscription> duringAttackSubscriptions = null,
 		List<ScenarioEvents.AttackAfterTargetConfirmed.Subscription> afterTargetConfirmedSubscriptions = null,
 		List<ScenarioEvents.AfterAttackPerformed.Subscription> afterAttackPerformedSubscriptions = null)
 	{
@@ -64,6 +65,7 @@ public abstract class MonsterAbilityCardModel : AbstractModel<MonsterAbilityCard
 			.WithConditions(conditions ?? [])
 			.WithCustomGetTargets(customGetTargets)
 			.WithConditionalAbilityCheck(conditionalAbilityCheck)
+			.WithDuringAttackSubscriptions(duringAttackSubscriptions)
 			.WithAfterTargetConfirmedSubscriptions(afterTargetConfirmedSubscriptions)
 			.WithAfterAttackPerformedSubscriptions(afterAttackPerformedSubscriptions)
 			.Build();

@@ -30,7 +30,7 @@ public class BloodOozeAbilityCard0 : BloodOozeAbilityCard
 	[
 		new MonsterAbilityCardAbility(AttackAbility(monster, 
 			extraDamage: -1, 
-			extraRange: 3
+			range: 5
 			)),
 
 		new MonsterAbilityCardAbility(MonsterSummonAbility.Builder()
@@ -77,10 +77,13 @@ public class BloodOozeAbilityCard1 : BloodOozeAbilityCard
 			.WithMonsterType(MonsterType.Normal)
 			.WithOnAbilityStarted(async state =>
 			{
-				state.SetForcedHitPoints(await AbilityCmd.AskConsumeElement(state.Performer, Element.Fire) ? 3 : 4);
+				state.SetForcedHitPoints(CheckElementConsumed(monster, [Element.Fire]) ? 3 : 4);
 			})
 			.Build()),
 	];
+
+	public override IEnumerable<MonsterAbilityCardElementConsumption> ElementConsumptions { get; } =
+		[MonsterAbilityCardElementConsumption.Consume(Element.Fire)];
 }
 
 public class BloodOozeAbilityCard2 : BloodOozeAbilityCard
@@ -127,7 +130,7 @@ public class BloodOozeAbilityCard3 : BloodOozeAbilityCard
 		new MonsterAbilityCardAbility(MoveAbility(monster, +1)),
 		new MonsterAbilityCardAbility(AttackAbility(monster, 
 			extraDamage: +0,
-			extraRange: -1,
+			range: 1,
 			afterTargetConfirmedSubscriptions: [
 				ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
 					parameters => RangeHelper.GetFiguresInRange(parameters.AbilityState.Target.Hex, 1, false)
@@ -148,7 +151,7 @@ public class BloodOozeAbilityCard4 : BloodOozeAbilityCard
 
 	public override IEnumerable<MonsterAbilityCardAbility> GetAbilities(Monster monster) =>
 	[
-		new MonsterAbilityCardAbility(AttackAbility(monster, extraDamage: +0, extraRange: -1, conditions: [Conditions.Poison1])),
+		new MonsterAbilityCardAbility(AttackAbility(monster, extraDamage: +0, range: 1, conditions: [Conditions.Poison1])),
 		new MonsterAbilityCardAbility(AttackAbility(monster, 
 			extraDamage: +0, 
 			customGetTargets: (state, figures) =>
