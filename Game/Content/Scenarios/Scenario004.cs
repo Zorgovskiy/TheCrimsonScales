@@ -7,6 +7,6 @@ public class Scenario004 : ScenarioModel
 	public override ScenarioChain ScenarioChain => ModelDB.ScenarioChain<InfectiousScenarioChain>();
 	//public override IEnumerable<ScenarioConnection> Connections => [new ScenarioConnection<Scenario005>()];
 
-	//protected override ScenarioGoals CreateScenarioGoals() => new KillAlLEnemiesScenarioGoals();
+	protected override ScenarioGoals CreateScenarioGoals() => new KillAlLEnemiesScenarioGoals();
 }
 
