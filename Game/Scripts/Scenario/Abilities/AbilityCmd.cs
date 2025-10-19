@@ -254,6 +254,11 @@ public static class AbilityCmd
 		return await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, hex.Coords, false);
 	}
 
+	public static async GDTask<Monster> SpawnAlly(MonsterModel monsterModel, MonsterType monsterType, Hex hex)
+	{
+		return await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, hex.Coords, false, true);
+	}
+
 	public static async GDTask<T> CreateOverlayTile<T>(Hex hex, PackedScene scene)
 		where T : HexObject
 	{

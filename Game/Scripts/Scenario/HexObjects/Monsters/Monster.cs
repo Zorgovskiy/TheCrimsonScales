@@ -37,7 +37,7 @@ public partial class Monster : Figure
 		_monsterViewComponent = GetViewComponent<MonsterViewComponent>();
 	}
 
-	public void Spawn(MonsterGroup monsterGroup, MonsterType monsterType, int standeeNumber, bool summon)
+	public void Spawn(MonsterGroup monsterGroup, MonsterType monsterType, int standeeNumber, bool summon, bool ally)
 	{
 		MonsterGroup = monsterGroup;
 		MonsterType = monsterType;
@@ -76,8 +76,8 @@ public partial class Monster : Figure
 		SetMaxHealth(Stats.Health);
 		SetHealth(Stats.Health);
 
-		SetAlignment(Alignment.Enemies);
-		SetEnemies(Alignment.Characters);
+		SetAlignment(ally ? Alignment.Characters : Alignment.Enemies);
+		SetEnemies(ally ? Alignment.Enemies : Alignment.Characters);
 
 		if(Stats.Traits != null)
 		{
