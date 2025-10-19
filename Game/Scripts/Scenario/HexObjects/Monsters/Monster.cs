@@ -92,9 +92,11 @@ public partial class Monster : Figure
 			CanTakeTurn = false;
 		}
 
-		MonsterGroup.RegisterMonster(this);
-
-		GameController.Instance.Map.RegisterFigure(this);
+		if(!ally)
+		{
+			MonsterGroup.RegisterMonster(this);
+			GameController.Instance.Map.RegisterFigure(this);
+		}
 
 		Scale = Vector2.Zero;
 		this.TweenScale(1f, 0.3f).SetEasing(Easing.OutBack).PlayFastForwardable();
@@ -104,7 +106,10 @@ public partial class Monster : Figure
 	{
 		await base.TakeTurn();
 
-		await MonsterGroup.ActiveMonsterAbilityCard.Perform(this);
+		if(MonsterGroup.ActiveMonsterAbilityCard != null)
+		{
+			await MonsterGroup.ActiveMonsterAbilityCard.Perform(this);
+		}
 	}
 
 	public override async GDTask Destroy(bool immediately = false, bool forceDestroy = false)

@@ -52,8 +52,11 @@ public partial class Treasure : LootableObject
 
 		Looted = true;
 		_lootingCharacter = (Character)lootObtainer;
-
-		await _obtainLootFunction.Invoke(_lootingCharacter);
+		
+		if(_obtainLootFunction != null)
+		{
+			await _obtainLootFunction.Invoke(_lootingCharacter);
+		}
 
 		GameController.Instance.EndEvent += OnScenarioEnd;
 	}

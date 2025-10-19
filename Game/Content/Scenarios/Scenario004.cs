@@ -11,11 +11,19 @@ public class Scenario004 : ScenarioModel
 	//public override IEnumerable<ScenarioConnection> Connections => [new ScenarioConnection<Scenario005>()];
 
 	protected override ScenarioGoals CreateScenarioGoals() =>
-		new CustomScenarioGoals("Kill all enemies and cure four sick warriors to win this scenario.");
+		new CustomScenarioGoals("Kill all enemies and cure four sick warriors to win this scenario." + 
+			System.Environment.NewLine + System.Environment.NewLine +
+			"Any character may forgo the top action of their turn to perform a" + 
+			$"”Heal{Icons.Inline(Icons.Heal)}1, Range{Icons.Inline(Icons.Range)}2” ability.");
+
+	private List<InfectedWarrior> _infectedWarriors = [];
+	private bool _update_once = false;
 
 	public override async GDTask StartAfterFirstRoomRevealed()
 	{
 		await base.StartAfterFirstRoomRevealed();
+
+		GameController.Instance.Map.Treasures[0].SetItemLoot(ModelDB.Item<BonecladShawl>());
 
 		// Give antidote if starting for the first time and didn't complete scenario 7
 		if(!GameController.Instance.SavedScenarioProgress.Unlocked &&
@@ -35,14 +43,10 @@ public class Scenario004 : ScenarioModel
 			await AbilityCmd.GiveItem(character, itemModel, true);
 		}
 
-		UpdateScenarioText(
-			$"Any character may forgo the top action of their turn to perform a ”Heal{Icons.Inline(Icons.Heal)}1, Range{Icons.Inline(Icons.Range)}2” ability.");
-
 		// Allow using Heal 1 instead of any top action
 		ScenarioEvents.AbilityCardSideStartedEvent.Subscribe(this,
-			parameters =>
-				(parameters.AbilityCardSide.IsTop || parameters.AbilityCardSide.IsBasicTop) &&
-				!parameters.ForgoneAction,
+			parameters => !parameters.ForgoneAction &&
+				(parameters.AbilityCardSide.IsTop || parameters.AbilityCardSide.IsBasicTop),
 			async parameters =>
 			{
 				parameters.ForgoAction();
@@ -54,75 +58,81 @@ public class Scenario004 : ScenarioModel
 			effectButtonParameters: new IconEffectButton.Parameters(Icons.Heal),
 			effectInfoViewParameters: new TextEffectInfoView.Parameters($"Heal{Icons.Inline(Icons.Heal)}1,Range {Icons.Inline(Icons.Range)}2")
 		);
+
+		// Win when all infected warriors are healed and all enemies are dead
+		ScenarioEvents.RoundEndedEvent.Subscribe(this,
+			parameters =>
+			{
+				if(_infectedWarriors.Count < 4 || _infectedWarriors.Any(infectedWarrior => !infectedWarrior.IsHealed))
+				{
+					return false;
+				}
+
+				foreach(Figure figure in GameController.Instance.Map.Figures)
+				{
+					if(figure.Alignment == Alignment.Enemies)
+					{
+						return false;
+					}
+				}
+
+				return true;
+			},
+			async parameters =>
+			{
+				await ((CustomScenarioGoals)ScenarioGoals).Win();
+			}
+		);
 	}
-	private List<InfectedWarrior> lista = [];
+
 	protected override async GDTask OnRoomRevealed(ScenarioEvents.RoomRevealed.Parameters parameters)
-    {
-        UpdateScenarioText(
-			$"Infected warriors, represented by {Icons.Marker(Marker.Type.a)} and {Icons.Marker(Marker.Type.b)} " +
-			$"suffer from INFECT{Icons.Inline(Icons.GetCondition(Conditions.Infect))}. They are considered allies to you. " +
-			"If you perform a heal ability targeting the infected warrior, you have successfully cured the warrior." +
-			$"{Icons.Marker(Marker.Type.a)} are City Archers and {Icons.Marker(Marker.Type.b)} are City Guards.");
+	{
+		await base.OnRoomRevealed(parameters);
+
+		if(!_update_once)
+        {
+            UpdateScenarioText(
+				$"City Archers and City Guards suffer from INFECT{Icons.Inline(Icons.GetCondition(Conditions.Infect))}" +
+				"They are considered allies to you." + 
+				"If you perform a heal ability targeting the infected warrior, you have successfully cured them.");
+			
+			_update_once = true;
+        }
 
 		foreach(Marker marker in GameController.Instance.Map.Markers)
 		{
-            InfectedWarrior warrior = new();
-			MonsterModel monsterModel = marker.MarkerType == Marker.Type.a ? ModelDB.Monster<CityArcher>() : ModelDB.Monster<CityGuard>();
-			warrior.Init(monsterModel);
-			warrior._Ready();
-			await warrior.Init(marker.Hex);
-			lista.Add(warrior);
-        }
-
-		ScenarioEvents.AfterHealPerformedEvent.Subscribe(this,
-			parameters => parameters.AbilityState.Target is InfectedWarrior,
-			async parameters =>
+			if(marker.GetParent<Room>() == parameters.Room)
 			{
-				InfectedWarrior infectedWarrior = parameters.AbilityState.Target as InfectedWarrior;
-				Hex hex = infectedWarrior.Hex;
-				MonsterModel monsterModel = infectedWarrior.MonsterModel;
-
-				await infectedWarrior.Destroy();
-				Monster monster = await AbilityCmd.SpawnAlly(monsterModel, MonsterType.Normal, hex);
-
-				monster.SetHealth(4);
-				monster.SetMaxHealth(4);
+				await SpawnGuard(marker);
 			}
-		);
-
-		await GDTask.CompletedTask;
-    }
-}
-
-	public partial class InfectedWarrior : Figure
-	{
-		private string _name = "Infected Warrior";
-
-		public override string DisplayName => _name;
-		public override string DebugName => _name;
-
-		public override AMDCardDeck AMDCardDeck => null;
-
-		public MonsterModel MonsterModel;
-
-		public void Init(MonsterModel monsterModel)
-		{
-			MonsterModel = monsterModel;
 		}
 
-		public override async GDTask Init(Hex originHex, int rotationIndex = 0, bool hexCanBeNull = false)
+		await GDTask.CompletedTask;
+	}
+
+	private async GDTask SpawnGuard(Marker marker)
+    {
+        MonsterModel monsterModel = marker.MarkerType == Marker.Type.a ? ModelDB.Monster<CityArcher>() : ModelDB.Monster<CityGuard>();
+
+		Monster monster = await AbilityCmd.SpawnAlly(monsterModel, MonsterType.Normal, marker.Hex);
+
+		monster.SetHealth(4);
+		monster.SetMaxHealth(4);
+		await AbilityCmd.AddCondition(null, monster, Conditions.Infect);
+
+		InfectedWarrior infectedWarrior = new();
+		await infectedWarrior.Init(monster);
+		_infectedWarriors.Add(infectedWarrior);
+    }
+
+	public class InfectedWarrior
+	{
+		public bool IsHealed = false;
+
+		public async GDTask Init(Monster monster)
 		{
-			await base.Init(originHex, rotationIndex, hexCanBeNull);
-
-			SetAlignment(Alignment.Characters);
-			SetEnemies(Alignment.Other);
-
-			GameController.Instance.Map.RegisterFigure(this);
-
-			UpdateInitiative();
-
-			ScenarioEvents.InflictConditionEvent.Subscribe(this, this,
-				parameters => parameters.Target == this,
+			ScenarioEvents.InflictConditionEvent.Subscribe(monster, this,
+				parameters => parameters.Target == monster,
 				async parameters =>
 				{
 					parameters.SetPrevented(true);
@@ -131,9 +141,10 @@ public class Scenario004 : ScenarioModel
 				}
 			);
 
-			ScenarioCheckEvents.CanBeTargetedCheckEvent.Subscribe(this, this,
+			// Can be targeted only with a heal
+			ScenarioCheckEvents.CanBeTargetedCheckEvent.Subscribe(monster, this,
 				parameters =>
-					parameters.PotentialTarget == this &&
+					parameters.PotentialTarget == monster && 
 					parameters.PotentialAbilityState != null &&
 					parameters.PotentialAbilityState is not HealAbility.State,
 				parameters =>
@@ -142,46 +153,69 @@ public class Scenario004 : ScenarioModel
 				}
 			);
 
-			ScenarioCheckEvents.ImmuneToForcedMovementCheckEvent.Subscribe(this, this,
-				parameters => parameters.Figure == this,
+			ScenarioCheckEvents.CanBeFocusedCheckEvent.Subscribe(monster, this,
+				parameters => parameters.PotentialTarget == monster,
+				parameters =>
+				{
+					parameters.SetCannotBeFocused();
+				}
+			);
+
+			ScenarioCheckEvents.ImmuneToForcedMovementCheckEvent.Subscribe(monster, this,
+				parameters => parameters.Figure == monster,
 				parameters =>
 				{
 					parameters.SetImmuneToForcedMovement();
 				}
 			);
 
-			CanTakeTurn = false;
-		}
+			ScenarioEvents.SufferDamageEvent.Subscribe(monster, this,
+				parameters => parameters.Figure == monster,
+				async parameters =>
+				{
+					parameters.SetDamagePrevented();
 
-		public override async GDTask Destroy(bool immediately = false, bool forceDestroy = false)
-		{
-			await base.Destroy(immediately, forceDestroy);
+					await GDTask.CompletedTask;
+				}
+			);
 
-			ScenarioEvents.InflictConditionEvent.Unsubscribe(this, this);
-			ScenarioCheckEvents.CanBeTargetedCheckEvent.Unsubscribe(this, this);
-			ScenarioCheckEvents.ImmuneToForcedMovementCheckEvent.Unsubscribe(this, this);
-		}
+			ScenarioEvents.AfterHealPerformedEvent.Subscribe(monster, this,
+				parameters => parameters.AbilityState.Target == monster,
+				async parameters => 
+				{
+					IsHealed = true;
 
-		public override void RoundEnd()
-		{
-			base.RoundEnd();
+					monster.MonsterGroup.RegisterMonster(monster);
+					GameController.Instance.Map.RegisterFigure(monster);
 
-			CanTakeTurn = false;
-		}
+					ScenarioEvents.InflictConditionEvent.Unsubscribe(monster, this);
+					ScenarioCheckEvents.CanBeTargetedCheckEvent.Unsubscribe(monster, this);
+					ScenarioCheckEvents.CanBeFocusedCheckEvent.Unsubscribe(monster, this);
+					ScenarioCheckEvents.ImmuneToForcedMovementCheckEvent.Unsubscribe(monster, this);
+					ScenarioEvents.AfterHealPerformedEvent.Unsubscribe(monster, this);
+					ScenarioEvents.SufferDamageEvent.Unsubscribe(monster, this);
+					
+					await GDTask.CompletedTask;
+				}
+			);
 
-		protected override Initiative GetInitiative()
-		{
-			return new Initiative()
-			{
-				MainInitiative = 99,
-				SortingInitiative = 99 * 10000000
-			};
-		}
+			ScenarioEvents.FigureKilledEvent.Subscribe(monster, this,
+				parameters => parameters.Figure == monster,
+				async parameters => 
+				{
+					ScenarioEvents.InflictConditionEvent.Unsubscribe(monster, this);
+					ScenarioCheckEvents.CanBeTargetedCheckEvent.Unsubscribe(monster, this);
+					ScenarioCheckEvents.CanBeFocusedCheckEvent.Unsubscribe(monster, this);
+					ScenarioCheckEvents.ImmuneToForcedMovementCheckEvent.Unsubscribe(monster, this);
+					ScenarioEvents.SufferDamageEvent.Unsubscribe(monster, this);
+					ScenarioEvents.AfterHealPerformedEvent.Unsubscribe(monster, this);
+					ScenarioEvents.FigureKilledEvent.Unsubscribe(monster, this);
 
-		public override void AddInfoItemParameters(List<InfoItemParameters> parametersList)
-		{
-			base.AddInfoItemParameters(parametersList);
+					await GDTask.CompletedTask;
+				}
+			);
 
-			parametersList.Add(new GenericInfoItem.Parameters(this, "Infected Warrior", "Read the Scenario goals and the special rules."));
+			await GDTask.CompletedTask;
 		}
 	}
+}
