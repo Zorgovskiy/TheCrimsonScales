@@ -37,7 +37,7 @@ public partial class Monster : Figure
 		_monsterViewComponent = GetViewComponent<MonsterViewComponent>();
 	}
 
-	public void Spawn(MonsterGroup monsterGroup, MonsterType monsterType, int standeeNumber, bool summon, bool ally)
+	public void Spawn(MonsterGroup monsterGroup, MonsterType monsterType, int standeeNumber, bool summon, bool register)
 	{
 		MonsterGroup = monsterGroup;
 		MonsterType = monsterType;
@@ -76,8 +76,8 @@ public partial class Monster : Figure
 		SetMaxHealth(Stats.Health);
 		SetHealth(Stats.Health);
 
-		SetAlignment(ally ? Alignment.Characters : Alignment.Enemies);
-		SetEnemies(ally ? Alignment.Enemies : Alignment.Characters);
+		SetAlignment(Alignment.Enemies);
+		SetEnemies(Alignment.Characters);
 
 		if(Stats.Traits != null)
 		{
@@ -92,7 +92,7 @@ public partial class Monster : Figure
 			CanTakeTurn = false;
 		}
 
-		if(!ally)
+		if(register)
 		{
 			MonsterGroup.RegisterMonster(this);
 			GameController.Instance.Map.RegisterFigure(this);

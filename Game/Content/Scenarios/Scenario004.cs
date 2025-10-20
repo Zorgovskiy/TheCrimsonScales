@@ -26,7 +26,7 @@ public class Scenario004 : ScenarioModel
 		GameController.Instance.Map.Treasures[0].SetItemLoot(ModelDB.Item<BonecladShawl>());
 
 		// Give antidote if starting for the first time and didn't complete scenario 7
-		if(!GameController.Instance.SavedScenarioProgress.Unlocked &&
+		if(!GameController.Instance.SavedScenarioProgress.Completed &&
 			!GameController.Instance.SavedCampaign.CollectedPartyAchievements.Contains(PartyAchievement.FollowTheMoney))
 		{
 			TargetSelectionPrompt.Answer targetAnswer = await PromptManager.Prompt(
@@ -114,8 +114,10 @@ public class Scenario004 : ScenarioModel
     {
         MonsterModel monsterModel = marker.MarkerType == Marker.Type.a ? ModelDB.Monster<CityArcher>() : ModelDB.Monster<CityGuard>();
 
-		Monster monster = await AbilityCmd.SpawnAlly(monsterModel, MonsterType.Normal, marker.Hex);
+		Monster monster = await AbilityCmd.SpawnMonster(monsterModel, MonsterType.Normal, marker.Hex, false);
 
+		monster.SetAlignment(Alignment.Characters);
+		monster.SetEnemies(Alignment.Enemies);
 		monster.SetHealth(4);
 		monster.SetMaxHealth(4);
 		await AbilityCmd.AddCondition(null, monster, Conditions.Infect);
@@ -192,8 +194,9 @@ public class Scenario004 : ScenarioModel
 					ScenarioCheckEvents.CanBeTargetedCheckEvent.Unsubscribe(monster, this);
 					ScenarioCheckEvents.CanBeFocusedCheckEvent.Unsubscribe(monster, this);
 					ScenarioCheckEvents.ImmuneToForcedMovementCheckEvent.Unsubscribe(monster, this);
-					ScenarioEvents.AfterHealPerformedEvent.Unsubscribe(monster, this);
 					ScenarioEvents.SufferDamageEvent.Unsubscribe(monster, this);
+					ScenarioEvents.AfterHealPerformedEvent.Unsubscribe(monster, this);
+					ScenarioEvents.FigureKilledEvent.Unsubscribe(monster, this);
 					
 					await GDTask.CompletedTask;
 				}

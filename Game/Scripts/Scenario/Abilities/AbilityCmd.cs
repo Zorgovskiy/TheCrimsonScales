@@ -246,17 +246,12 @@ public static class AbilityCmd
 
 	public static async GDTask<Monster> SummonMonster(MonsterModel monsterModel, MonsterType monsterType, Hex hex)
 	{
-		return await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, hex.Coords, true);
+		return await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, hex.Coords, summon: true);
 	}
 
-	public static async GDTask<Monster> SpawnMonster(MonsterModel monsterModel, MonsterType monsterType, Hex hex)
+	public static async GDTask<Monster> SpawnMonster(MonsterModel monsterModel, MonsterType monsterType, Hex hex, bool register = false)
 	{
-		return await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, hex.Coords, false);
-	}
-
-	public static async GDTask<Monster> SpawnAlly(MonsterModel monsterModel, MonsterType monsterType, Hex hex)
-	{
-		return await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, hex.Coords, false, true);
+		return await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, hex.Coords, summon: false, register: register);
 	}
 
 	public static async GDTask<T> CreateOverlayTile<T>(Hex hex, PackedScene scene)
@@ -556,7 +551,7 @@ public static class AbilityCmd
 		object subscriber = new object();
 		ScenarioEvents.ConsumeElementElement.Subscribe(authority, subscriber,
 			canApplyParameters => canApplyParameters.Elements.Contains(element) &&
-			                      GameController.Instance.ElementManager.GetState(element) > ElementState.Inert,
+								  GameController.Instance.ElementManager.GetState(element) > ElementState.Inert,
 			async applyParameters =>
 			{
 				applyParameters.SetConsumed(element);
