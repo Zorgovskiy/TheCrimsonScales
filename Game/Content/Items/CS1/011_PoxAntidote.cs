@@ -1,0 +1,39 @@
+using System.Linq;
+
+public class PoxAntidote : CS1Item
+{
+	public override string Name => "Pox Antidote";
+	public override int ItemNumber => 11;
+	public override int ShopCount => 1;
+	public override int Cost => 10;
+	public override ItemType ItemType => ItemType.Small;
+	public override ItemUseType ItemUseType => ItemUseType.Spend;
+
+	protected override int AtlasIndex => 20;
+
+	protected override void Subscribe()
+	{
+		base.Subscribe();
+
+		SubscribeDuringTurn(
+			canApply: character => character == Owner,
+			apply: async character =>
+			{
+				await Use(async user =>
+				{	
+					TargetSelectionPrompt.Answer targetAnswer = await PromptManager.Prompt(
+						new TargetSelectionPrompt(figures => figures.AddRange(RangeHelper.GetFiguresInRange(user.Hex, 1)
+								.Where(figure => figure.HasCondition(Conditions.Infect))), 
+							true, false, null, () => $"Select a character to lose {Icons.HintText(Icons.GetCondition(Conditions.Infect))}"), user);
+
+					if(targetAnswer.Skipped)
+					{
+						return;
+					}
+
+					await AbilityCmd.RemoveCondition(GameController.Instance.ReferenceManager.Get<Figure>(targetAnswer.FigureReferenceId), Conditions.Infect);
+				});
+			}
+		);
+	}
+}
