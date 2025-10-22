@@ -21,17 +21,23 @@ public class PoxAntidote : CS1Item
 			{
 				await Use(async user =>
 				{	
-					TargetSelectionPrompt.Answer targetAnswer = await PromptManager.Prompt(
-						new TargetSelectionPrompt(figures => figures.AddRange(RangeHelper.GetFiguresInRange(user.Hex, 1)
-								.Where(figure => figure.HasCondition(Conditions.Infect))), 
-							true, false, null, () => $"Select a character to lose {Icons.HintText(Icons.GetCondition(Conditions.Infect))}"), user);
+					Figure figure = await AbilityCmd.SelectFigure(user, list =>
+					{
+						foreach(Figure figure in RangeHelper.GetFiguresInRange(user.Hex, 1))
+						{
+							if((user == figure || user.AlliedWith(figure)) && figure.HasCondition(Conditions.Muddle))
+							{
+								list.Add(figure);
+							}
+						}
+					}, hintText: $"Select a figure to lose {Icons.HintText(Icons.GetCondition(Conditions.Infect))}");
 
-					if(targetAnswer.Skipped)
+					if(figure == null)
 					{
 						return;
 					}
 
-					await AbilityCmd.RemoveCondition(GameController.Instance.ReferenceManager.Get<Figure>(targetAnswer.FigureReferenceId), Conditions.Infect);
+					await AbilityCmd.RemoveCondition(figure, Conditions.Infect);
 				});
 			}
 		);
