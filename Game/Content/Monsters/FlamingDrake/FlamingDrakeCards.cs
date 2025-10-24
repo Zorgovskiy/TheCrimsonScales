@@ -122,19 +122,23 @@ public class FlamingDrakeAbilityCard4 : FlamingDrakeAbilityCard
 				new AOEHex(new Vector2I(1, 0), AOEHexType.Red),
 				new AOEHex(new Vector2I(2, 0), AOEHexType.Red),
 				new AOEHex(new Vector2I(3, 0), AOEHexType.Red),
-			])
-		)),
-
-		new MonsterAbilityCardAbility(AttackAbility(monster, 
-			extraDamage: +1, 
-			aoePattern: new AOEPattern([
-				new AOEHex(Vector2I.Zero, AOEHexType.Gray),
-				new AOEHex(new Vector2I(1, 0), AOEHexType.Red),
-				new AOEHex(new Vector2I(2, 0), AOEHexType.Red),
-				new AOEHex(new Vector2I(3, 0), AOEHexType.Red),
-				new AOEHex(new Vector2I(4, 0), AOEHexType.Red),
 			]),
-			conditionalAbilityCheck: ConsumeElementAbilityCheck<AttackAbility.State>([Element.Fire])
+			duringAttackSubscriptions: [
+				ConsumeElementCheckSubscription<ScenarioEvents.DuringAttack.Parameters>(monster, [Element.Fire],
+				applyFunction: async parameters =>
+				{
+					parameters.AbilityState.AbilityAdjustAttackValue(2);
+					//parameters.AbilityState.AbilityAddAOEPattern(new AOEPattern([
+					//	new AOEHex(Vector2I.Zero, AOEHexType.Gray),
+					//	new AOEHex(new Vector2I(1, 0), AOEHexType.Red),
+					//	new AOEHex(new Vector2I(2, 0), AOEHexType.Red),
+					//	new AOEHex(new Vector2I(3, 0), AOEHexType.Red),
+					//	new AOEHex(new Vector2I(4, 0), AOEHexType.Red),
+					//]));
+
+					await GDTask.CompletedTask;
+				}
+			)]
 		)),
 	];
 
