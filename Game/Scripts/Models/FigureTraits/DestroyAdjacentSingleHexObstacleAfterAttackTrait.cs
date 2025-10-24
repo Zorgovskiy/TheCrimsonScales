@@ -1,8 +1,7 @@
-﻿using Fractural.Tasks;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-public class DestroyAdjacentObstacleTrait() : FigureTrait
+public class DestroyAdjacentSingleHexObstacleAfterAttackTrait() : FigureTrait
 {
 	public override void Activate(Figure figure)
 	{

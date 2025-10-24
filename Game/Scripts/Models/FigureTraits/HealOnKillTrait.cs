@@ -1,6 +1,4 @@
-﻿using Fractural.Tasks;
-
-public class HealOnKillTrait(int heal) : FigureTrait
+﻿public class HealOnKillTrait(int heal) : FigureTrait
 {
 	public override void Activate(Figure figure)
 	{

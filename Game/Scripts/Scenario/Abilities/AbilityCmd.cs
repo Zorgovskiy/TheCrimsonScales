@@ -219,6 +219,14 @@ public static class AbilityCmd
 		}
 	}
 
+	public static async GDTask DisarmTrap(Trap trap)
+	{
+		if(!trap.CannotBeDestroyed)
+		{
+			await trap.Disarm();
+		}
+	}
+
 	public static async GDTask<DifficultTerrain> CreateDifficultTerrain(Hex hex, PackedScene scene)
 	{
 		return await CreateOverlayTile<DifficultTerrain>(hex, scene);

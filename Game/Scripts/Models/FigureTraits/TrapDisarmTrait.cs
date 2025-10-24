@@ -33,5 +33,6 @@
 		base.Deactivate(figure);
 
 		ScenarioEvents.FigureEnteredHexEvent.Unsubscribe(figure, this);
+		ScenarioCheckEvents.FigureInfoItemExtraEffectsCheckEvent.Unsubscribe(figure, this);
 	}
 }
