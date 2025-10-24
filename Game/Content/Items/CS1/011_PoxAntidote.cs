@@ -25,7 +25,7 @@ public class PoxAntidote : CS1Item
 					{
 						foreach(Figure figure in RangeHelper.GetFiguresInRange(user.Hex, 1))
 						{
-							if((user == figure || user.AlliedWith(figure)) && figure.HasCondition(Conditions.Muddle))
+							if(user.AlliedWith(figure, true) && figure.HasCondition(Conditions.Infect))
 							{
 								list.Add(figure);
 							}
