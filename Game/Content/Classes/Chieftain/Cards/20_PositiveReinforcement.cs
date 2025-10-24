@@ -72,6 +72,10 @@ public class PositiveReinforcement : ChieftainCardModel<PositiveReinforcement.Ca
 								async parameters =>
 								{
 									parameters.AbilityState.SingleTargetAdjustAttackValue(((Summon)parameters.Performer).Stats.Attack ?? 0);
+
+									int range = ((Summon)parameters.Performer).Stats.Range ?? 1;
+									parameters.AbilityState.SingleTargetAdjustRange(range);
+									parameters.AbilityState.SingleTargetSetRangeType(range == 1 ? RangeType.Melee : RangeType.Range);
 								}
 							),
 							ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Earth,
