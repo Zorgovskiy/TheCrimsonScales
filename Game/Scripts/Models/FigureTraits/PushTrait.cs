@@ -11,7 +11,7 @@ public abstract class PushTrait(int amount) : FigureTrait
 				parameters.AbilityState.Performer == figure,
 			async parameters =>
 			{
-				parameters.AbilityState.AbilityAdjustPush(amount);
+				parameters.AbilityState.SingleTargetAdjustPush(amount);
 
 				await GDTask.CompletedTask;
 			}

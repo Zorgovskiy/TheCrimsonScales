@@ -11,7 +11,7 @@ public abstract class PullTrait(int amount) : FigureTrait
 				parameters.AbilityState.Performer == figure,
 			async parameters =>
 			{
-				parameters.AbilityState.AbilityAdjustPull(amount);
+				parameters.AbilityState.SingleTargetAdjustPull(amount);
 
 				await GDTask.CompletedTask;
 			}
