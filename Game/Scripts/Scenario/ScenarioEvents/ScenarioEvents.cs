@@ -252,6 +252,18 @@ public class ScenarioEvents
 		}
 	}
 
+	public class RemoveCondition : ScenarioEvent<RemoveCondition.Parameters>
+	{
+		public class Parameters(Figure figure, ConditionModel condition) : ParametersBase
+		{
+			public Figure Figure { get; } = figure;
+			public ConditionModel Condition { get; } = condition;
+		}
+	}
+
+	private readonly RemoveCondition _removeCondition = new RemoveCondition();
+	public static RemoveCondition RemoveConditionEvent => GameController.Instance.ScenarioEvents._removeCondition;
+
 	private readonly DuringGrant _duringGrant = new DuringGrant();
 	public static DuringGrant DuringGrantEvent => GameController.Instance.ScenarioEvents._duringGrant;
 

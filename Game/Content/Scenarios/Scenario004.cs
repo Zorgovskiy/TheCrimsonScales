@@ -25,7 +25,7 @@ public class Scenario004 : ScenarioModel
 
 		GameController.Instance.Map.Treasures[0].SetItemLoot(ModelDB.Item<BonecladShawl>());
 
-		// Give antidote if starting for the first time and didn't complete scenario 7
+		// Give antidote if starting before the scenario is won and didn't complete scenario 7
 		if(!GameController.Instance.SavedScenarioProgress.Completed &&
 			!GameController.Instance.SavedCampaign.CollectedPartyAchievements.Contains(PartyAchievement.FollowTheMoney))
 		{
@@ -40,7 +40,7 @@ public class Scenario004 : ScenarioModel
 			ItemModel itemModel = ModelDB.Item<PoxAntidote>();
 			Character character = GameController.Instance.ReferenceManager.Get<Character>(targetAnswer.FigureReferenceId);
 
-			await AbilityCmd.GiveItem(character, itemModel, true);
+			await AbilityCmd.PermanentlyGiveItem(character, itemModel, true);
 		}
 
 		// Allow using Heal 1 instead of any top action
@@ -181,6 +181,20 @@ public class Scenario004 : ScenarioModel
 				}
 			);
 
+			ScenarioEvents.RemoveConditionEvent.Subscribe(monster, this,
+				parameters => parameters.Figure == monster && parameters.Condition == Conditions.Infect,
+				async parameters =>
+				{
+					IsHealed = true;
+
+					monster.MonsterGroup.RegisterMonster(monster);
+					GameController.Instance.Map.RegisterFigure(monster);
+
+					await Unsubscribe(monster);
+				}
+			);
+
+
 			ScenarioEvents.AfterHealPerformedEvent.Subscribe(monster, this,
 				parameters => parameters.AbilityState.Target == monster,
 				async parameters => 
@@ -190,15 +204,7 @@ public class Scenario004 : ScenarioModel
 					monster.MonsterGroup.RegisterMonster(monster);
 					GameController.Instance.Map.RegisterFigure(monster);
 
-					ScenarioEvents.InflictConditionEvent.Unsubscribe(monster, this);
-					ScenarioCheckEvents.CanBeTargetedCheckEvent.Unsubscribe(monster, this);
-					ScenarioCheckEvents.CanBeFocusedCheckEvent.Unsubscribe(monster, this);
-					ScenarioCheckEvents.ImmuneToForcedMovementCheckEvent.Unsubscribe(monster, this);
-					ScenarioEvents.SufferDamageEvent.Unsubscribe(monster, this);
-					ScenarioEvents.AfterHealPerformedEvent.Unsubscribe(monster, this);
-					ScenarioEvents.FigureKilledEvent.Unsubscribe(monster, this);
-					
-					await GDTask.CompletedTask;
+					await Unsubscribe(monster);
 				}
 			);
 
@@ -206,19 +212,23 @@ public class Scenario004 : ScenarioModel
 				parameters => parameters.Figure == monster,
 				async parameters => 
 				{
-					ScenarioEvents.InflictConditionEvent.Unsubscribe(monster, this);
-					ScenarioCheckEvents.CanBeTargetedCheckEvent.Unsubscribe(monster, this);
-					ScenarioCheckEvents.CanBeFocusedCheckEvent.Unsubscribe(monster, this);
-					ScenarioCheckEvents.ImmuneToForcedMovementCheckEvent.Unsubscribe(monster, this);
-					ScenarioEvents.SufferDamageEvent.Unsubscribe(monster, this);
-					ScenarioEvents.AfterHealPerformedEvent.Unsubscribe(monster, this);
-					ScenarioEvents.FigureKilledEvent.Unsubscribe(monster, this);
-
-					await GDTask.CompletedTask;
+					await Unsubscribe(monster);
 				}
 			);
 
 			await GDTask.CompletedTask;
+		}
+
+		private async GDTask Unsubscribe(Monster monster)
+		{
+			ScenarioEvents.InflictConditionEvent.Unsubscribe(monster, this);
+			ScenarioCheckEvents.CanBeTargetedCheckEvent.Unsubscribe(monster, this);
+			ScenarioCheckEvents.CanBeFocusedCheckEvent.Unsubscribe(monster, this);
+			ScenarioCheckEvents.ImmuneToForcedMovementCheckEvent.Unsubscribe(monster, this);
+			ScenarioEvents.SufferDamageEvent.Unsubscribe(monster, this);
+			ScenarioEvents.RemoveConditionEvent.Unsubscribe(monster, this);
+			ScenarioEvents.AfterHealPerformedEvent.Unsubscribe(monster, this);
+			ScenarioEvents.FigureKilledEvent.Unsubscribe(monster, this);
 		}
 	}
 }

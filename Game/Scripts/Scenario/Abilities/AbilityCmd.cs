@@ -184,6 +184,10 @@ public static class AbilityCmd
 
 	public static async GDTask<bool> RemoveCondition(Figure target, ConditionModel conditionModel)
 	{
+		ScenarioEvents.RemoveCondition.Parameters removeConditionParameters =
+			await ScenarioEvents.RemoveConditionEvent.CreatePrompt(
+				new ScenarioEvents.RemoveCondition.Parameters(target, conditionModel), target);
+
 		if(conditionModel.IsMutable)
 		{
 			conditionModel = conditionModel.ImmutableInstance;
@@ -272,9 +276,9 @@ public static class AbilityCmd
 		return await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, hex.Coords, true);
 	}
 
-	public static async GDTask<Monster> SpawnMonster(MonsterModel monsterModel, MonsterType monsterType, Hex hex)
+	public static async GDTask<Monster> SpawnMonster(MonsterModel monsterModel, MonsterType monsterType, Hex hex, bool register = true)
 	{
-		return await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, hex.Coords, false);
+		return await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, hex.Coords, false, register);
 	}
 
 	public static async GDTask<T> CreateOverlayTile<T>(Hex hex, PackedScene scene)
