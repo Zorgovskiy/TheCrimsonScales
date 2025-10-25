@@ -25,7 +25,7 @@ public class TakeTheReins : ChieftainCardModel<TakeTheReins.CardTop, TakeTheRein
 								parameters.AbilityState.SingleTargetAdjustAttackValue(((Summon)parameters.Performer).Stats.Attack ?? 0);
 
 								int range = ((Summon)parameters.Performer).Stats.Range ?? 1;
-								parameters.AbilityState.SingleTargetAdjustRange(range);
+								parameters.AbilityState.SingleTargetAdjustRange(range - 1);
 								parameters.AbilityState.SingleTargetSetRangeType(range == 1 ? RangeType.Melee : RangeType.Range);
 
 								ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
