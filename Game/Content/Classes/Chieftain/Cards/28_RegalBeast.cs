@@ -21,7 +21,7 @@ public class RegalBeast : ChieftainCardModel<RegalBeast.CardTop, RegalBeast.Card
 					Attack = 3,
 					Traits = 
 					[
-						new AllAttacksGainDisadvantageTrait(),
+						new AttackersGainDisadvantageTrait(),
 						new MountTrait(
 							async (owner, mount) => 
 							{

@@ -351,7 +351,6 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>
 		abilityState.AbilityPush = Push;
 		abilityState.AbilityPull = Pull;
 		abilityState.AbilitySwing = Swing;
-
 	}
 
 	protected override async GDTask Perform(T abilityState)

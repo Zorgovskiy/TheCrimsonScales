@@ -20,7 +20,7 @@ public class CatastrophicCattle : ChieftainCardModel<CatastrophicCattle.CardTop,
 					Traits = 
 					[
 						new MountTrait(),
-						new ForcedMovementTrait(ForcedMovementType.Push, 1)
+						new PushTrait(1),
 					]
 				})
 				.WithName("Fighting Bull")
