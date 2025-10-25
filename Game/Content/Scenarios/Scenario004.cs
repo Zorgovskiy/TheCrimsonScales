@@ -25,22 +25,41 @@ public class Scenario004 : ScenarioModel
 
 		GameController.Instance.Map.Treasures[0].SetItemLoot(ModelDB.Item<BonecladShawl>());
 
-		// Give antidote if starting before the scenario is won and didn't complete scenario 7
-		if(!GameController.Instance.SavedScenarioProgress.Completed &&
-			!GameController.Instance.SavedCampaign.CollectedPartyAchievements.Contains(PartyAchievement.FollowTheMoney))
+		// This implements
+		// One character gains the “Pox Antidote” item. 
+		// During this scenario, this item may be equipped without it occupying an item slot.
+		Map map = GameController.Instance.Map;
+
+		ItemModel itemModel = ModelDB.Item<PoxAntidote>();
+		Character character = (Character)map.Figures.FirstOrDefault(figure => figure is Character character && character.SavedCharacter.HasItem(itemModel), null);
+
+		bool poxAntidoteGiven = GameController.Instance.SavedScenarioProgress.CustomValues.ContainsKey("PoxAntidoteGiven");
+
+		// Antidote given previously and a character still has it (not sold)
+		// take it away and give back as "temporary" item
+		if(poxAntidoteGiven && character != null)
 		{
-			TargetSelectionPrompt.Answer targetAnswer = await PromptManager.Prompt(
-				new TargetSelectionPrompt(figures => figures.AddRange(GameController.Instance.Map.Figures.Where(figure => figure is Character)),
-					true, true, null,
-					() => $"Select a character to receive Pox Antidote." + System.Environment.NewLine + System.Environment.NewLine + 
-							"During this scenario, this item is equipped" + System.Environment.NewLine +
-							$"without it occupying an {Icons.Inline(Icons.GetItem(ItemType.Small))} item slot."),
-				null);
+			// Take it and give it back at the end of the scenario
+			SavedItem savedItem = GameController.Instance.SavedCampaign.GetSavedItem(itemModel);
+			savedItem.RemovedUnlocked(1);
+			character.SavedCharacter.RemoveItem(itemModel);
+		}
+		// Item not given previously - give if scenario 7 is not completed yet
+		else if(!poxAntidoteGiven && !GameController.Instance.SavedCampaign.CollectedPartyAchievements.Contains(PartyAchievement.FollowTheMoney))
+		{
+			character = (Character)await AbilityCmd.SelectFigure(authority: null,
+				figures => figures.AddRange(GameController.Instance.Map.Figures.Where(figure => figure is Character)),
+				mandatory: true, autoSelectIfOne: true, hintText:
+					$"Select a character to receive Pox Antidote." + System.Environment.NewLine + System.Environment.NewLine + 
+					"During this scenario, this item is equipped" + System.Environment.NewLine +
+					$"without it occupying an {Icons.Inline(Icons.GetItem(ItemType.Small))} item slot.");
 
-			ItemModel itemModel = ModelDB.Item<PoxAntidote>();
-			Character character = GameController.Instance.ReferenceManager.Get<Character>(targetAnswer.FigureReferenceId);
+			GameController.Instance.SavedScenarioProgress.CustomValues.Add("PoxAntidoteGiven", true);
+		}
 
-			await AbilityCmd.PermanentlyGiveItem(character, itemModel, true);
+		if(character != null)
+		{ 
+			await AbilityCmd.PermanentlyGiveItem(character, itemModel);
 		}
 
 		// Allow using Heal 1 instead of any top action
