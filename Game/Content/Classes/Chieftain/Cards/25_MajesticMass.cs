@@ -20,7 +20,7 @@ public class MajesticMass : ChieftainCardModel<MajesticMass.CardTop, MajesticMas
 					Attack = 3,
 					Traits = 
 					[
-						new DestroyAdjacentObstacleTrait(),
+						new DestroyAdjacentSingleHexObstacleAfterAttackTrait(),
 						new AOEAttackTrait(new AOEPattern(
 						[
 							new AOEHex(Vector2I.Zero, AOEHexType.Gray),

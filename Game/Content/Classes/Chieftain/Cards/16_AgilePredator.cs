@@ -22,7 +22,7 @@ public class AgilePredator : ChieftainCardModel<AgilePredator.CardTop, AgilePred
 					Traits = 
 					[
 						new RetaliateTrait(1),
-						new AllAttacksGainDisadvantageTrait(),
+						new AttackersGainDisadvantageTrait(),
 						new MountTrait(),
 					]
 				})

@@ -76,6 +76,8 @@ public class PositiveReinforcement : ChieftainCardModel<PositiveReinforcement.Ca
 									int range = ((Summon)parameters.Performer).Stats.Range ?? 1;
 									parameters.AbilityState.SingleTargetAdjustRange(range);
 									parameters.AbilityState.SingleTargetSetRangeType(range == 1 ? RangeType.Melee : RangeType.Range);
+
+									await GDTask.CompletedTask;
 								}
 							),
 							ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Earth,
