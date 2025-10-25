@@ -113,12 +113,19 @@ public class MasterTheReins : ChieftainCardModel<MasterTheReins.CardTop, MasterT
 							await state.ActionState.RequestDiscardOrLose();
 						}
 					);
+
+					ScenarioCheckEvents.FigureInfoItemExtraEffectsCheckEvent.Subscribe(state, this,
+						parameters => state.Performer.AlliedWith(parameters.Figure),
+						parameters => parameters.Add(
+							new FigureInfoTextExtraEffect.Parameters($"This summon adds +1{Icons.Inline(Icons.Attack)} to all its attacks and you control its abilities"))
+					);
 				})
 				.WithOnDeactivate(async state =>
 				{
 					ScenarioEvents.DuringAttackEvent.Unsubscribe(state, this);
 					ScenarioCheckEvents.IsSummonControlledCheckEvent.Unsubscribe(state, this);
 					ScenarioEvents.FigureKilledEvent.Unsubscribe(state, this);
+					ScenarioCheckEvents.FigureInfoItemExtraEffectsCheckEvent.Unsubscribe(state, this);
 
 					await GDTask.CompletedTask;
 				})
