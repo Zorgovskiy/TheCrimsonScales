@@ -123,12 +123,14 @@ public class FlamingDrakeAbilityCard4 : FlamingDrakeAbilityCard
 				new AOEHex(new Vector2I(2, 0), AOEHexType.Red),
 				new AOEHex(new Vector2I(3, 0), AOEHexType.Red),
 			]),
-			duringAttackSubscriptions: [
-				ConsumeElementCheckSubscription<ScenarioEvents.DuringAttack.Parameters>(monster, [Element.Fire],
+			abilityStartedSubscriptions: [
+				ConsumeElementCheckSubscription<ScenarioEvents.AbilityStarted.Parameters>(monster, [Element.Fire],
+				canApplyFunction: parameters => parameters.AbilityState is AttackAbility.State,
 				applyFunction: async parameters =>
 				{
-					parameters.AbilityState.AbilityAdjustAttackValue(2);
-					parameters.AbilityState.AbilityAddAOEPattern(new AOEPattern([
+					AttackAbility.State attackAbilityState = (AttackAbility.State)parameters.AbilityState;
+					attackAbilityState.AbilityAdjustAttackValue(2);
+					attackAbilityState.AbilityAddAOEPattern(new AOEPattern([
 						new AOEHex(Vector2I.Zero, AOEHexType.Gray),
 						new AOEHex(new Vector2I(1, 0), AOEHexType.Red),
 						new AOEHex(new Vector2I(2, 0), AOEHexType.Red),
