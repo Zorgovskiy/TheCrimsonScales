@@ -294,7 +294,6 @@ public class AttackAbility : TargetedAbility<AttackAbility.State, SingleTargetSt
 				
 		if(attackAfterTargetConfirmedParameters.CannotGainDisadvantage)
         {
-            attackAfterTargetConfirmedParameters.AbilityState.AbilityHasDisadvantage = false;
 			attackAfterTargetConfirmedParameters.AbilityState.SingleTargetHasDisadvantage = false;
         }
 

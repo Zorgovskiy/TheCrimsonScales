@@ -914,22 +914,6 @@ public class ScenarioEvents
 	private readonly SwingDirectionCheck _swingDirectionCheck = new SwingDirectionCheck();
 	public static SwingDirectionCheck SwingDirectionCheckEvent => GameController.Instance.ScenarioEvents._swingDirectionCheck;
 
-	public class ForcedMovementCheck : ScenarioEvent<ForcedMovementCheck.Parameters>
-	{
-		public class Parameters(TargetedAbilityState abilityState) : ParametersBase<TargetedAbilityState>(abilityState)
-		{
-			public bool IsPrevented { get; private set; } = false;
-
-			public void SetPrevented()
-			{
-				IsPrevented = true;
-			}
-		}
-	}
-
-	private readonly ForcedMovementCheck _forcedMovementCheck = new ForcedMovementCheck();
-	public static ForcedMovementCheck ForcedMovementCheckEvent => GameController.Instance.ScenarioEvents._forcedMovementCheck;
-
 	public class NextActiveFigure : ScenarioEvent<NextActiveFigure.Parameters>
 	{
 		public class Parameters(Figure previousActiveFigure, Figure nextActiveFigure)

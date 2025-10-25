@@ -32,5 +32,6 @@ public class AOEAttackTrait(AOEPattern aoePattern) : FigureTrait
 		base.Deactivate(figure);
 
 		ScenarioEvents.AbilityStartedEvent.Unsubscribe(figure, this);
+		ScenarioCheckEvents.AIMoveParametersCheckEvent.Unsubscribe(figure, this);
 	}
 }

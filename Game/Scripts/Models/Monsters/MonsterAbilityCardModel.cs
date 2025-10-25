@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Fractural.Tasks;
 using Godot;
 
@@ -37,8 +38,11 @@ public abstract class MonsterAbilityCardModel : AbstractModel<MonsterAbilityCard
 		int? extraDamage, DynamicInt<AttackAbility.State>.GetValueDelegate dynamicValue = null, int extraRange = 0,
 		int targets = 1, int? range = null, RangeType? rangeType = null, Target target = Target.Enemies,
 		Hex targetHex = null, bool requiresLineOfSight = true,
-		AOEPattern aoePattern = null, int push = 0, int pull = 0, int swing = 0, DynamicInt<AttackAbility.State> pierce = null, ConditionModel[] conditions = null,
+		AOEPattern aoePattern = null, int push = 0, int pull = 0, int swing = 0, DynamicInt<AttackAbility.State> pierce = null,
+		ConditionModel[] conditions = null,
 		Action<AttackAbility.State, List<Figure>> customGetTargets = null,
+		Ability<AttackAbility.State>.ConditionalAbilityCheckDelegate conditionalAbilityCheck = null,
+		List<ScenarioEvents.DuringAttack.Subscription> duringAttackSubscriptions = null,
 		List<ScenarioEvents.AttackAfterTargetConfirmed.Subscription> afterTargetConfirmedSubscriptions = null,
 		List<ScenarioEvents.AfterAttackPerformed.Subscription> afterAttackPerformedSubscriptions = null)
 	{
@@ -46,7 +50,12 @@ public abstract class MonsterAbilityCardModel : AbstractModel<MonsterAbilityCard
 			new DynamicInt<AttackAbility.State>(extraDamage.HasValue ? monster.Stats.Attack + extraDamage.Value : null, dynamicValue);
 		//Monster monster = (Monster)parameters.Performer;
 		int finalRange = range ?? ((monster.Stats.Range ?? 1) + extraRange);
-		RangeType finalRangeType = rangeType ?? (finalRange > 1 ? RangeType.Range : monster.Stats.RangeType);
+		RangeType finalRangeType =
+			rangeType ??
+			(aoePattern != null && aoePattern.Hexes.Any(hex => hex.Type == AOEHexType.Gray)
+				? RangeType.Melee
+				: (finalRange > 1 ? RangeType.Range : monster.Stats.RangeType));
+
 		return global::AttackAbility.Builder()
 			.WithDamage(dynamicAttackValue) //extraDamage.HasValue ? monster.Stats.Attack + extraDamage.Value : null, getValue: getValue,
 			.WithTargets(targets)
@@ -62,6 +71,8 @@ public abstract class MonsterAbilityCardModel : AbstractModel<MonsterAbilityCard
 			.WithPierce(pierce ?? 0)
 			.WithConditions(conditions ?? [])
 			.WithCustomGetTargets(customGetTargets)
+			.WithConditionalAbilityCheck(conditionalAbilityCheck)
+			.WithDuringAttackSubscriptions(duringAttackSubscriptions)
 			.WithAfterTargetConfirmedSubscriptions(afterTargetConfirmedSubscriptions)
 			.WithAfterAttackPerformedSubscriptions(afterAttackPerformedSubscriptions)
 			.Build();
