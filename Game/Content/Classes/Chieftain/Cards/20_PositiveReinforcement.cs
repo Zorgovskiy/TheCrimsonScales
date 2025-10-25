@@ -6,7 +6,7 @@ public class PositiveReinforcement : ChieftainCardModel<PositiveReinforcement.Ca
 {
 	public override string Name => "Positive Reinforcement";
 	public override int Level => 5;
-	public override int Initiative => 25;
+	public override int Initiative => 24;
 	protected override int AtlasIndex => 20;
 
 	public class CardTop : ChieftainCardSide

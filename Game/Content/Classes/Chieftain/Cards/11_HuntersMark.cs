@@ -33,6 +33,7 @@ public class HuntersMark : ChieftainCardModel<HuntersMark.CardTop, HuntersMark.C
 						return;
 					}
 
+					// If targeted by chosen enemy, reduce own sorting initiative for targeting purposes
 					ScenarioCheckEvents.PotentialTargetCheckEvent.Subscribe(state, this,
 						parameters => parameters.Performer == chosenFigure && state.Performer == parameters.PotentialTarget,
 						parameters => 
@@ -48,6 +49,7 @@ public class HuntersMark : ChieftainCardModel<HuntersMark.CardTop, HuntersMark.C
 						}
 					);
 
+					// If chosen enemy is targeted by the mount, add pierce
 					ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(state, this,
 						parameters => parameters.AbilityState.Target == chosenFigure,
 						async parameters =>
@@ -64,11 +66,22 @@ public class HuntersMark : ChieftainCardModel<HuntersMark.CardTop, HuntersMark.C
 							await GDTask.CompletedTask;
 						}
 					);
+
+					ScenarioEvents.FigureKilledEvent.Subscribe(state, this,
+						canApply: parameters => parameters.Figure == chosenFigure,
+						apply: async parameters =>
+						{
+							ScenarioEvents.FigureKilledEvent.Unsubscribe(state, this);
+
+							await state.ActionState.RequestDiscardOrLose();
+						}
+					);
 				})
 				.WithOnDeactivate(async state =>
 				{
 					ScenarioCheckEvents.PotentialTargetCheckEvent.Unsubscribe(state, this);
 					ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(state, this);
+					ScenarioEvents.FigureKilledEvent.Unsubscribe(state, this);
 					
 					await GDTask.CompletedTask;
 				})
@@ -82,11 +95,6 @@ public class HuntersMark : ChieftainCardModel<HuntersMark.CardTop, HuntersMark.C
 	{
 		protected override IEnumerable<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(RetaliateAbility.Builder()
-				.WithRetaliateValue(1)
-				.Build()
-			),
-
 			new AbilityCardAbility(GrantAbility.Builder()
 				.WithGetAbilities(state => [RetaliateAbility.Builder().WithRetaliateValue(1).Build()])
 				.WithCustomGetTargets((state, figures) =>
@@ -99,10 +107,12 @@ public class HuntersMark : ChieftainCardModel<HuntersMark.CardTop, HuntersMark.C
 					{
 						figures.Add(isMountedCheckParameters.Mount);
 					}
+
+					figures.Add(state.Performer);
 				})
-				.WithTarget(Target.Allies)
+				.WithTarget(Target.SelfOrAllies | Target.TargetAll)
 				.Build()
-			)
+			),
 		];
 
 		protected override bool Round => true;

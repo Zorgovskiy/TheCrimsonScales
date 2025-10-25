@@ -53,8 +53,6 @@ public class MajesticMass : ChieftainCardModel<MajesticMass.CardTop, MajesticMas
 				])				
 				.WithCustomGetTargets((state, figures) =>
 				{
-					figures.Add(state.Performer);
-
 					ScenarioCheckEvents.IsMountedCheck.Parameters isMountedCheckParameters =
 						ScenarioCheckEvents.IsMountedCheckEvent.Fire(
 							new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer));
@@ -63,6 +61,8 @@ public class MajesticMass : ChieftainCardModel<MajesticMass.CardTop, MajesticMas
 					{
 						figures.Add(isMountedCheckParameters.Mount);
 					}
+
+					figures.Add(state.Performer);
 				})
 				.WithTarget(Target.SelfOrAllies)
 				.Build()

@@ -5,7 +5,7 @@ public class PreparedRations : ChieftainCardModel<PreparedRations.CardTop, Prepa
 {
 	public override string Name => "Prepared Rations";
 	public override int Level => 1;
-	public override int Initiative => 93;
+	public override int Initiative => 91;
 	protected override int AtlasIndex => 10;
 
 	public class CardTop : ChieftainCardSide
@@ -30,8 +30,6 @@ public class PreparedRations : ChieftainCardModel<PreparedRations.CardTop, Prepa
 										ActionState actionState = new ActionState(owner, 
 											[HealAbility.Builder().WithHealValue(2).WithTarget(Target.Self).Build()]);
 										await actionState.Perform();
-
-										await GDTask.CompletedTask;
 									}
 								);
 								await GDTask.CompletedTask;

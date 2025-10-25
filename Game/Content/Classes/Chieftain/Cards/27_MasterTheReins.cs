@@ -75,6 +75,13 @@ public class MasterTheReins : ChieftainCardModel<MasterTheReins.CardTop, MasterT
 							canSelectFunc: abilityCard => abilityCard.Top.Abilities.Concat(abilityCard.Bottom.Abilities).Any(cardAbility => cardAbility.Ability is SummonAbility),
 							hintText: $"Select an active card with summon ability to attach to");
 
+					if(selectedAbilityCard == null)
+					{
+						await state.ActionState.RequestDiscardOrLose();
+
+						return;
+					}
+
 					Summon summon = ((SummonAbility.State)selectedAbilityCard.ActiveActionStates
 						.SelectMany(actionState => actionState.AbilityStates)
 						.FirstOrDefault(abilityState => abilityState is SummonAbility.State)).Summon;

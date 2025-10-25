@@ -23,7 +23,7 @@ public class VenomousMayhem : ChieftainCardModel<VenomousMayhem.CardTop, Venomou
 						new ApplyConditionTrait(Conditions.Immobilize)
 					]
 				})
-				.WithName("Conttonmouth Snake")
+				.WithName("Cottonmouth Snake")
 				.WithTexturePath("res://Content/Classes/Chieftain/Summons/cottonmouth_snake_AI.png")
 				.Build()
 			),

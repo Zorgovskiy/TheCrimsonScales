@@ -35,6 +35,7 @@ public class WarPaint : ChieftainCardModel<WarPaint.CardTop, WarPaint.CardBottom
 
 					if(state.GetCustomValue<bool>(this, "IsMounted"))
                     {
+						// The figure might not be mounted at this moment, still remove the invisibility
                         await AbilityCmd.RemoveCondition(state.GetCustomValue<Figure>(this, "Mount"), Conditions.Invisible);
                     }
 				})
@@ -53,6 +54,7 @@ public class WarPaint : ChieftainCardModel<WarPaint.CardTop, WarPaint.CardBottom
 			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async state =>
 				{
+					// If targeted by an enemy while mounted, reduce own sorting initiative for targeting purposes
 					ScenarioCheckEvents.PotentialTargetCheckEvent.Subscribe(state, this,
 						parameters => parameters.PotentialTarget == state.Performer,
 						parameters =>
@@ -71,6 +73,7 @@ public class WarPaint : ChieftainCardModel<WarPaint.CardTop, WarPaint.CardBottom
 					ScenarioEvents.NextActiveFigureEvent.Subscribe(state, this,
 						parameters =>
 						{
+							// If owner already acted then this effect was already applied
 							if(parameters.PreviousActiveFigure == state.Performer)
                             {
                                 return false;
@@ -86,6 +89,7 @@ public class WarPaint : ChieftainCardModel<WarPaint.CardTop, WarPaint.CardBottom
 							Figure mount = ScenarioCheckEvents.IsMountedCheckEvent.Fire(
 									new ScenarioCheckEvents.IsMountedCheck.Parameters(state.Performer)).Mount;
 
+							// Choose to act before the mount, mount's initiative increased to owner + 1
 							ScenarioCheckEvents.InitiativeCheckEvent.Subscribe(state, this,
 								parameters => parameters.Figure == mount,
 								parameters => parameters.SetSortingInitiative(state.Performer.Initiative.SortingInitiative + 1),
