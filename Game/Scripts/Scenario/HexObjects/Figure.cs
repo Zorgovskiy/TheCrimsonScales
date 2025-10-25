@@ -53,11 +53,16 @@ public abstract partial class Figure : HexObject
 	public event Action<Figure> ConditionsChangedEvent;
 	public event Action<Figure> DestroyedEvent;
 
+	public override void _Ready()
+	{
+		base._Ready();
+
+		_figureViewComponent = GetViewComponent<FigureViewComponent>();
+	}
+
 	public override async GDTask Init(Hex originHex, int rotationIndex = 0, bool hexCanBeNull = false)
 	{
 		await base.Init(originHex, rotationIndex, hexCanBeNull);
-
-		_figureViewComponent = GetViewComponent<FigureViewComponent>();
 
 		_figureViewComponent.Shield.Scale = Vector2.Zero;
 
@@ -151,7 +156,7 @@ public abstract partial class Figure : HexObject
 		}
 	}
 
-	public virtual async GDTask TakeFullTurn()
+	public async GDTask TakeFullTurn()
 	{
 		if(!IsDead)
 		{
@@ -345,7 +350,7 @@ public abstract partial class Figure : HexObject
 
 	protected abstract Initiative GetInitiative();
 
-	public void RoundEnd()
+	public virtual void RoundEnd()
 	{
 		CanTakeTurn = true;
 	}
@@ -402,11 +407,18 @@ public abstract partial class Figure : HexObject
 		if(!wasVisible && shouldBeVisible)
 		{
 			_figureViewComponent.Shield.Show();
-			_shieldTween = _figureViewComponent.Shield.TweenScale(1f, 0.2f).SetEasing(Easing.OutBack).PlayFastForwardable();
+			_shieldTween = _figureViewComponent.Shield
+				.TweenScale(1f, 0.2f)
+				.SetEasing(Easing.OutBack)
+				.PlayFastForwardable();
 		}
 		else if(wasVisible && !shouldBeVisible)
 		{
-			_shieldTween = _figureViewComponent.Shield.TweenScale(0f, 0.2f).OnComplete(_figureViewComponent.Shield.Hide).SetEasing(Easing.InBack).PlayFastForwardable();
+			_shieldTween = _figureViewComponent.Shield
+				.TweenScale(0f, 0.2f)
+				.OnComplete(_figureViewComponent.Shield.Hide)
+				.SetEasing(Easing.InBack)
+				.PlayFastForwardable();
 		}
 		else
 		{
@@ -437,7 +449,8 @@ public abstract partial class Figure : HexObject
 		}
 		else if(wasVisible && !shouldBeVisible)
 		{
-			_retaliateTween = _figureViewComponent.Retaliate.TweenScale(0f, 0.2f).OnComplete(_figureViewComponent.Retaliate.Hide).SetEasing(Easing.InBack).PlayFastForwardable();
+			_retaliateTween = _figureViewComponent.Retaliate.TweenScale(0f, 0.2f).OnComplete(_figureViewComponent.Retaliate.Hide)
+				.SetEasing(Easing.InBack).PlayFastForwardable();
 		}
 		else
 		{

@@ -68,8 +68,14 @@ public class ScenarioEvents
 	public class AttackAfterTargetConfirmed : ScenarioEvent<AttackAfterTargetConfirmed.Parameters>
 	{
 		public class Parameters(AttackAbility.State abilityState) : ParametersBase<AttackAbility.State>(abilityState)
-		{
-		}
+        {
+        	public bool CannotGainDisadvantage { get; private set; } = false;
+
+			public void SetCannotGainDisadvantage()
+			{
+				CannotGainDisadvantage = true;
+			}
+        }
 	}
 
 	private readonly AttackAfterTargetConfirmed _attackAfterTargetConfirmed = new AttackAfterTargetConfirmed();
@@ -248,6 +254,16 @@ public class ScenarioEvents
 
 	private readonly DuringGrant _duringGrant = new DuringGrant();
 	public static DuringGrant DuringGrantEvent => GameController.Instance.ScenarioEvents._duringGrant;
+
+	public class DuringControl : ScenarioEvent<DuringControl.Parameters>
+	{
+		public class Parameters(ControlAbility.State abilityState) : ParametersBase<ControlAbility.State>(abilityState)
+		{
+		}
+	}
+
+	private readonly DuringControl _duringControl = new DuringControl();
+	public static DuringControl DuringControlEvent => GameController.Instance.ScenarioEvents._duringControl;
 
 	public class SufferDamage : ScenarioEvent<SufferDamage.Parameters>
 	{
@@ -436,9 +452,9 @@ public class ScenarioEvents
 
 			public bool CanMoveFurther { get; private set; } = true;
 
-			public void SetCannotMoveFurther()
+			public void SetCannotMoveFurther(bool cannotMoveFurther)
 			{
-				CanMoveFurther = false;
+				CanMoveFurther = !cannotMoveFurther;
 			}
 		}
 	}
@@ -459,6 +475,25 @@ public class ScenarioEvents
 
 	private readonly FigureEnteredHex _figureEnteredHex = new FigureEnteredHex();
 	public static FigureEnteredHex FigureEnteredHexEvent => GameController.Instance.ScenarioEvents._figureEnteredHex;
+
+	public class MoveTogetherCheck : ScenarioEvent<MoveTogetherCheck.Parameters>
+	{
+		public class Parameters(Figure performer)
+			: ParametersBase
+		{
+			public Figure Performer { get; } = performer;
+
+			public Figure OtherFigure { get; private set; } = null;
+
+			public void SetOtherFigure(Figure otherFigure)
+			{
+				OtherFigure = otherFigure;
+			}
+		}
+	}
+
+	private readonly MoveTogetherCheck _moveTogetherCheck = new MoveTogetherCheck();
+	public static MoveTogetherCheck MoveTogetherCheckEvent => GameController.Instance.ScenarioEvents._moveTogetherCheck;
 
 	public class HazardousTerrainTriggered : ScenarioEvent<HazardousTerrainTriggered.Parameters>
 	{
@@ -481,16 +516,22 @@ public class ScenarioEvents
 
 	public class TrapTriggered : ScenarioEvent<TrapTriggered.Parameters>
 	{
-		public class Parameters(AbilityState abilityState, Hex hex, Trap trap, bool triggersTrap)
+		public class Parameters(AbilityState abilityState, Hex hex, Trap trap, Figure figure, bool triggersTrap)
 			: ParametersBase<AbilityState>(abilityState)
 		{
 			public Hex Hex { get; } = hex;
 			public Trap Trap { get; } = trap;
+			public Figure Figure { get; } = figure;
 			public bool TriggersTrap { get; private set; } = triggersTrap;
 
 			public void SetTriggersTrap(bool triggersTrap)
 			{
 				TriggersTrap = triggersTrap;
+			}
+
+			public void AdjustTrapDamage(int damage)
+			{
+				Trap.SetTrapDamage(Trap.Damage + damage);
 			}
 		}
 	}
@@ -856,4 +897,41 @@ public class ScenarioEvents
 
 	private readonly ItemUseEnded _itemUseEnded = new ItemUseEnded();
 	public static ItemUseEnded ItemUseEndedEvent => GameController.Instance.ScenarioEvents._itemUseEnded;
+
+	public class SwingDirectionCheck : ScenarioEvent<SwingDirectionCheck.Parameters>
+	{
+		public class Parameters(AbilityState abilityState) : ParametersBase<AbilityState>(abilityState)
+		{
+			public SwingDirectionType? RequiredDirection { get; private set; } = null;
+
+			public void SetRequiredSwingDirection(SwingDirectionType requiredDirection)
+			{
+				RequiredDirection = requiredDirection;
+			}
+		}
+	}
+
+	private readonly SwingDirectionCheck _swingDirectionCheck = new SwingDirectionCheck();
+	public static SwingDirectionCheck SwingDirectionCheckEvent => GameController.Instance.ScenarioEvents._swingDirectionCheck;
+
+	public class NextActiveFigure : ScenarioEvent<NextActiveFigure.Parameters>
+	{
+		public class Parameters(Figure previousActiveFigure, Figure nextActiveFigure)
+			: ParametersBase
+		{
+			public Figure PreviousActiveFigure { get; private set; } = previousActiveFigure;
+			public Figure NextActiveFigure { get; private set; } = nextActiveFigure;
+
+			public bool SortingRequired { get; private set; } = false;
+
+			public void SetSortingRequired()
+			{
+				SortingRequired = true;
+			}
+		}
+	}
+
+	private readonly NextActiveFigure _nextActiveFigure = new NextActiveFigure();
+	public static NextActiveFigure NextActiveFigureEvent => GameController.Instance.ScenarioEvents._nextActiveFigure;
+	
 }
