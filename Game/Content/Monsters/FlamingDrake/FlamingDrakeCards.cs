@@ -128,13 +128,13 @@ public class FlamingDrakeAbilityCard4 : FlamingDrakeAbilityCard
 				applyFunction: async parameters =>
 				{
 					parameters.AbilityState.AbilityAdjustAttackValue(2);
-					//parameters.AbilityState.AbilityAddAOEPattern(new AOEPattern([
-					//	new AOEHex(Vector2I.Zero, AOEHexType.Gray),
-					//	new AOEHex(new Vector2I(1, 0), AOEHexType.Red),
-					//	new AOEHex(new Vector2I(2, 0), AOEHexType.Red),
-					//	new AOEHex(new Vector2I(3, 0), AOEHexType.Red),
-					//	new AOEHex(new Vector2I(4, 0), AOEHexType.Red),
-					//]));
+					parameters.AbilityState.AbilityAddAOEPattern(new AOEPattern([
+						new AOEHex(Vector2I.Zero, AOEHexType.Gray),
+						new AOEHex(new Vector2I(1, 0), AOEHexType.Red),
+						new AOEHex(new Vector2I(2, 0), AOEHexType.Red),
+						new AOEHex(new Vector2I(3, 0), AOEHexType.Red),
+						new AOEHex(new Vector2I(4, 0), AOEHexType.Red),
+					]));
 
 					await GDTask.CompletedTask;
 				}
