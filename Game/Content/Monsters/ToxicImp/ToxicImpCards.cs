@@ -3,7 +3,7 @@ using Fractural.Tasks;
 
 public abstract class ToxicImpAbilityCard : MonsterAbilityCardModel
 {
-	public override string CardsAtlasPath => "res://Content/Monsters/ToxicImp/Cards.png";
+	public override string CardsAtlasPath => "res://Content/Monsters/ToxicImp/Cards.jpg";
 
 	public static IEnumerable<MonsterAbilityCardModel> Deck { get; } =
 	[
@@ -93,7 +93,7 @@ public class ToxicImpAbilityCard4 : ToxicImpAbilityCard
 					parameters => parameters.Figure == monster,
 					parameters =>
 					{
-						parameters.Add(new FigureInfoTextExtraEffect.Parameters("Attackers gain advantage on all their attacks targeting this figure."));
+						parameters.Add(new FigureInfoTextExtraEffect.Parameters("Attackers gain disadvantage on all their attacks targeting this figure."));
 					}
 				);
 

@@ -34,7 +34,7 @@ public partial class Treasure : LootableObject
 		SetObtainLootFunction(
 			async character =>
 			{
-				await AbilityCmd.GiveItem(character, itemModel);
+				await AbilityCmd.PermanentlyGiveItem(character, itemModel);
 			}
 		);
 	}
@@ -52,11 +52,8 @@ public partial class Treasure : LootableObject
 
 		Looted = true;
 		_lootingCharacter = (Character)lootObtainer;
-		
-		if(_obtainLootFunction != null)
-		{
-			await _obtainLootFunction.Invoke(_lootingCharacter);
-		}
+
+		await _obtainLootFunction.Invoke(_lootingCharacter);
 
 		GameController.Instance.EndEvent += OnScenarioEnd;
 	}
