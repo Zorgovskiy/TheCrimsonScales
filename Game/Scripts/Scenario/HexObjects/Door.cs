@@ -12,7 +12,7 @@ public partial class Door : OverlayTile, IEventSubscriber
 	[Export]
 	private Sprite2D _lock;
 
-	private readonly List<Room> _roomsToOpen = new List<Room>();
+	public readonly List<Room> RoomsToOpen = new List<Room>();
 
 	public bool Locked { get; private set; }
 	public bool Opened { get; private set; }
@@ -27,7 +27,7 @@ public partial class Door : OverlayTile, IEventSubscriber
 
 	public void AddRoom(Room room)
 	{
-		_roomsToOpen.Add(room);
+		RoomsToOpen.Add(room);
 	}
 
 	public override async GDTask Init(Hex originHex, int rotationIndex = 0, bool hexCanBeNull = false)
@@ -58,7 +58,7 @@ public partial class Door : OverlayTile, IEventSubscriber
 
 		ScenarioEvents.FigureEnteredHexEvent.Unsubscribe(this);
 
-		foreach(Room room in _roomsToOpen)
+		foreach(Room room in RoomsToOpen)
 		{
 			await room.Reveal(this, false);
 		}

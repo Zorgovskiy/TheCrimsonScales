@@ -16,6 +16,8 @@ public abstract class ScenarioModel : AbstractModel<ScenarioModel>, IEventSubscr
 	public virtual string BGMPath => "res://Audio/BGM/Floral-Woods.ogg";
 	public virtual string BGSPath => null;
 
+	public virtual bool Solo => false;
+
 	public virtual async GDTask StartBeforeFirstRoomRevealed()
 	{
 		ScenarioGoals = CreateScenarioGoals();

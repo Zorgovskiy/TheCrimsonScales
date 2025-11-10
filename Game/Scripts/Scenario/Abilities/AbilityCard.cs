@@ -15,8 +15,8 @@ public class AbilityCard : IReferenced
 
 	public AbilityCardSide Top { get; }
 	public AbilityCardSide Bottom { get; }
-	public AbilityCardSide BasicTop { get; }
-	public AbilityCardSide BasicBottom { get; }
+	public AbilityCardSide BasicTop { get; set; }
+	public AbilityCardSide BasicBottom { get; set; }
 
 	public List<ActionState> ActiveActionStates { get; } = new List<ActionState>();
 
