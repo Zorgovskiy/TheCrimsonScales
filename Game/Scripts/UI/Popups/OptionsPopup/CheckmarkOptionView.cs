@@ -6,8 +6,8 @@ public partial class CheckmarkOptionView : OptionView<CheckmarkOptionView.Parame
 	{
 		public override string ScenePath => "res://Scenes/UI/Popups/OptionsPopup/CheckmarkOptionView.tscn";
 
-		public Parameters(SavedOption<bool> savedOption, string label)
-			: base(label, savedOption)
+		public Parameters(SavedOption<bool> savedOption, string label, bool enabled)
+			: base(savedOption, label, enabled)
 		{
 		}
 	}
@@ -31,6 +31,8 @@ public partial class CheckmarkOptionView : OptionView<CheckmarkOptionView.Parame
 
 	protected override void OnValueChanged(bool value)
 	{
+		base.OnValueChanged(value);
+
 		_checkmark.SetVisible(value);
 	}
 

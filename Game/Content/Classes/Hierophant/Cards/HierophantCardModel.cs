@@ -2,25 +2,25 @@
 using System.Collections.Generic;
 using Fractural.Tasks;
 
-public abstract class HierophantLevelUpCardModel<TTop, TBottom> : AtlasAbilityCardModel<TTop, TBottom>
-	where TTop : HierophantCardSide, new()
-	where TBottom : HierophantCardSide, new()
+public abstract class HierophantLevelUpCardModel<TTop, TBottom> : AbilityCardModel<TTop, TBottom>
+	where TTop : HierophantCardSide
+	where TBottom : HierophantCardSide
 {
 	protected override string TexturePath => "res://Content/Classes/Hierophant/LevelUpCards.jpg";
 	protected override int ColumnCount => 5;
 	protected override int RowCount => 4;
 }
 
-public abstract class HierophantCardModel<TTop, TBottom> : AtlasAbilityCardModel<TTop, TBottom>
-	where TTop : HierophantCardSide, new()
-	where TBottom : HierophantCardSide, new()
+public abstract class HierophantCardModel<TTop, TBottom> : AbilityCardModel<TTop, TBottom>
+	where TTop : HierophantCardSide
+	where TBottom : HierophantCardSide
 {
 	protected override string TexturePath => "res://Content/Classes/Hierophant/Cards.jpg";
 	protected override int ColumnCount => 4;
 	protected override int RowCount => 4;
 }
 
-public abstract class HierophantCardSide : AbilityCardSide
+public abstract class HierophantCardSide : AbilityCardSideModel<Hierophant>
 {
 	protected GiveAbilityCardAbility GivePrayerCardAbility(int targets = 1, int range = 1,
 		Action<GiveAbilityCardAbility.State, List<Figure>> customGetTargets = null,
@@ -29,7 +29,7 @@ public abstract class HierophantCardSide : AbilityCardSide
 		return GiveAbilityCardAbility.Builder()
 			.WithGetAbilityCards((state, list) =>
 			{
-				Hierophant hierophant = (Hierophant)AbilityCard.OriginalOwner;
+				Hierophant hierophant = GetOriginalOwner(state);
 				list.AddRange(hierophant.PrayerCards);
 			})
 			.WithOnCardGiven(OnCardGiven)
@@ -47,14 +47,25 @@ public abstract class HierophantCardSide : AbilityCardSide
 		await GiveAbilityCardAbility.GiveAbilityCard(abilityState, target,
 			(state, list) =>
 			{
-				Hierophant hierophant = (Hierophant)AbilityCard.OriginalOwner;
+				Hierophant hierophant = GetOriginalOwner(state);
 				list.AddRange(hierophant.PrayerCards);
 			},
 			OnCardGiven, OnCardDiscarded, OnCardLost
 		);
 	}
 
-	private async GDTask OnCardGiven(AbilityState abilityState, AbilityCard abilityCard)
+	public static async GDTask GivePrayerCard(AbilityState abilityState, Hierophant hierophant, Figure target)
+	{
+		await GiveAbilityCardAbility.GiveAbilityCard(abilityState, target,
+			(state, list) =>
+			{
+				list.AddRange(hierophant.PrayerCards);
+			},
+			OnCardGiven, OnCardDiscarded, OnCardLost
+		);
+	}
+
+	private static async GDTask OnCardGiven(AbilityState abilityState, AbilityCard abilityCard)
 	{
 		Hierophant hierophant = (Hierophant)abilityCard.OriginalOwner;
 		hierophant.PrayerCards.Remove(abilityCard);
@@ -62,7 +73,7 @@ public abstract class HierophantCardSide : AbilityCardSide
 		await GDTask.CompletedTask;
 	}
 
-	private async GDTask OnCardDiscarded(AbilityCard abilityCard)
+	private static async GDTask OnCardDiscarded(AbilityCard abilityCard)
 	{
 		abilityCard.Owner.RemoveCard(abilityCard);
 
@@ -73,7 +84,7 @@ public abstract class HierophantCardSide : AbilityCardSide
 		await AbilityCmd.ReturnToHand(abilityCard);
 	}
 
-	private async GDTask OnCardLost(AbilityCard abilityCard)
+	private static async GDTask OnCardLost(AbilityCard abilityCard)
 	{
 		abilityCard.Owner.RemoveCard(abilityCard);
 

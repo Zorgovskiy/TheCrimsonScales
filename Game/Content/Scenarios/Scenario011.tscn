@@ -1,0 +1,83 @@
+[gd_scene format=3 uid="uid://bdxpumrpt4s34"]
+
+[ext_resource type="PackedScene" uid="uid://cifjwk1lx2x1h" path="res://Scenes/Scenario/Scenario.tscn" id="1_fwwrk"]
+[ext_resource type="Script" uid="uid://bbtc25ohouat7" path="res://Scripts/Scenario/Room.cs" id="2_0fttf"]
+[ext_resource type="PackedScene" uid="uid://bfj620m56mtuo" path="res://Content/OverlayTiles/Obstacles/Barrel1H.tscn" id="5_h6w5p"]
+[ext_resource type="PackedScene" uid="uid://clebwd8njsv5v" path="res://Content/OverlayTiles/Obstacles/DarkPit2H.tscn" id="6_hwybe"]
+[ext_resource type="PackedScene" uid="uid://gi5tvly6t0i1" path="res://Scenes/Scenario/Marker.tscn" id="6_jtiwx"]
+[ext_resource type="PackedScene" uid="uid://djgruowsq51gq" path="res://Content/MapTiles/B2a.tscn" id="7_jtiwx"]
+[ext_resource type="PackedScene" uid="uid://duex73di33xhs" path="res://Content/MapTiles/B3a.tscn" id="8_5tlut"]
+[ext_resource type="PackedScene" uid="uid://dw87gtssfd51x" path="res://Content/MapTiles/B1a.tscn" id="8_tbcxq"]
+[ext_resource type="PackedScene" uid="uid://bi5okxoh13fux" path="res://Content/MapTiles/B4a.tscn" id="9_2lgbt"]
+[ext_resource type="PackedScene" uid="uid://dlqet8t2xgyh" path="res://Scenes/Scenario/CharacterStartHex.tscn" id="9_llbor"]
+
+[node name="Scenario" unique_id=2073772042 instance=ExtResource("1_fwwrk")]
+
+[node name="Room" type="Node2D" parent="Map/Rooms" parent_id_path=PackedInt32Array(1508226184) index="0" unique_id=554760219]
+script = ExtResource("2_0fttf")
+StartsRevealed = true
+
+[node name="B1a" parent="Map/Rooms/Room" index="0" unique_id=1727972910 instance=ExtResource("8_tbcxq")]
+
+[node name="CharacterStartHex" parent="Map/Rooms/Room" index="1" unique_id=1393669314 instance=ExtResource("9_llbor")]
+position = Vector2(-218.2384, -378)
+
+[node name="Barrel1H4" parent="Map/Rooms/Room" index="2" unique_id=532279067 instance=ExtResource("5_h6w5p")]
+position = Vector2(218.2384, 0)
+CannotBeDestroyed = true
+
+[node name="Marker" parent="Map/Rooms/Room/Barrel1H4" index="6" unique_id=1790043281 instance=ExtResource("6_jtiwx")]
+_hideDuringPlay = true
+
+[node name="DarkPit2H" parent="Map/Rooms/Room" index="3" unique_id=1977939900 instance=ExtResource("6_hwybe")]
+position = Vector2(545.59595, -189)
+
+[node name="B2a" parent="Map/Rooms/Room" index="4" unique_id=174833049 instance=ExtResource("7_jtiwx")]
+position = Vector2(1091.1919, 0)
+
+[node name="CharacterStartHex2" parent="Map/Rooms/Room" index="5" unique_id=500988336 instance=ExtResource("9_llbor")]
+position = Vector2(1527.6688, -378)
+
+[node name="Barrel1H3" parent="Map/Rooms/Room" index="6" unique_id=1943133710 instance=ExtResource("5_h6w5p")]
+position = Vector2(1091.1919, 0)
+CannotBeDestroyed = true
+
+[node name="Marker" parent="Map/Rooms/Room/Barrel1H3" index="6" unique_id=262158086 instance=ExtResource("6_jtiwx")]
+_hideDuringPlay = true
+
+[node name="DarkPit2H2" parent="Map/Rooms/Room" index="7" unique_id=232390639 instance=ExtResource("6_hwybe")]
+position = Vector2(1309.4303, 378)
+rotation = 2.0943952
+
+[node name="B3a" parent="Map/Rooms/Room" index="8" unique_id=2127703404 instance=ExtResource("8_5tlut")]
+position = Vector2(0, 1134)
+
+[node name="CharacterStartHex3" parent="Map/Rooms/Room" index="9" unique_id=314959924 instance=ExtResource("9_llbor")]
+position = Vector2(-109.11921, 1323)
+
+[node name="Barrel1H2" parent="Map/Rooms/Room" index="10" unique_id=235302445 instance=ExtResource("5_h6w5p")]
+position = Vector2(109.11918, 945)
+CannotBeDestroyed = true
+
+[node name="Marker" parent="Map/Rooms/Room/Barrel1H2" index="6" unique_id=651015941 instance=ExtResource("6_jtiwx")]
+_hideDuringPlay = true
+
+[node name="DarkPit2H3" parent="Map/Rooms/Room" index="11" unique_id=99891417 instance=ExtResource("6_hwybe")]
+position = Vector2(0, 378)
+rotation = 1.0471976
+
+[node name="B4a" parent="Map/Rooms/Room" index="12" unique_id=1959967987 instance=ExtResource("9_2lgbt")]
+position = Vector2(1091.1919, 1134)
+
+[node name="CharacterStartHex4" parent="Map/Rooms/Room" index="13" unique_id=458454571 instance=ExtResource("9_llbor")]
+position = Vector2(1418.5496, 1323)
+
+[node name="Barrel1H" parent="Map/Rooms/Room" index="14" unique_id=1848544105 instance=ExtResource("5_h6w5p")]
+position = Vector2(1200.3112, 945)
+CannotBeDestroyed = true
+
+[node name="Marker" parent="Map/Rooms/Room/Barrel1H" index="6" unique_id=151041051 instance=ExtResource("6_jtiwx")]
+_hideDuringPlay = true
+
+[node name="DarkPit2H4" parent="Map/Rooms/Room" index="15" unique_id=1128881103 instance=ExtResource("6_hwybe")]
+position = Vector2(545.59595, 945)

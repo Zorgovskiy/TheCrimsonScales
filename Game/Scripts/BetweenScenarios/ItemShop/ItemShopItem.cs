@@ -38,29 +38,19 @@ public partial class ItemShopItem : Control
 
 		BetweenScenariosController.Instance.CharacterPortraitManager.SelectedPortraitChangedEvent += OnSelectedPortraitChanged;
 
+		BetweenScenariosEvents.ItemBoughtEvent.Subscribe(this, parameters =>
+		{
+			UpdateVisuals();
+		});
+
 		UpdateVisuals();
 	}
-
-	// public override void _ExitTree()
-	// {
-	// 	base._ExitTree();
-	//
-	// 	if(SavedItem != null)
-	// 	{
-	// 		SavedItem.StockCountChangedEvent -= OnStockCountChanged;
-	// 	}
-	//
-	// 	foreach(SavedCharacter savedCharacter in _savedCampaign.Characters)
-	// 	{
-	// 		savedCharacter.GoldChangedEvent -= OnGoldChanged;
-	// 	}
-	// }
 
 	public override void _Notification(int what)
 	{
 		base._Notification(what);
 
-		if(what == NotificationPredelete)
+		if(what == NotificationPredelete && AppController.Instance != null)
 		{
 			if(SavedItem != null)
 			{
@@ -75,6 +65,7 @@ public partial class ItemShopItem : Control
 			if(BetweenScenariosController.Instance != null)
 			{
 				BetweenScenariosController.Instance.CharacterPortraitManager.SelectedPortraitChangedEvent -= OnSelectedPortraitChanged;
+				BetweenScenariosEvents.ItemBoughtEvent.Unsubscribe(this);
 			}
 		}
 	}
@@ -88,14 +79,22 @@ public partial class ItemShopItem : Control
 
 		_stockLabel.Text = $"{SavedItem.StockCount} / {SavedItem.UnlockedCount}";
 
-		_itemView.TextureRect.SetInstanceShaderParameter("grayscaleFactor", hasItem || SavedItem.StockCount == 0 ? 1f : 0f);
+		foreach(TextureRect textureRect in _itemView.TextureRects)
+		{
+			textureRect.SetInstanceShaderParameter("grayscaleFactor", hasItem || SavedItem.StockCount == 0 ? 1f : 0f);
+		}
+
+		_itemView.SetCost(BetweenScenariosController.Instance.ItemShop.GetBuyPrice(selectedCharacter, ItemModel));
+		_itemView.SetItemCount(SavedItem.StockCount, SavedItem.UnlockedCount);
 	}
 
 	private bool GetCanAfford()
 	{
 		SavedCharacter selectedCharacter = BetweenScenariosController.Instance.CharacterPortraitManager.SelectedPortrait?.SavedCharacter;
 
-		return selectedCharacter != null && selectedCharacter.Gold >= ItemModel.Cost;
+		return
+			selectedCharacter != null &&
+			selectedCharacter.Gold >= BetweenScenariosController.Instance.ItemShop.GetBuyPrice(selectedCharacter, ItemModel);
 	}
 
 	private void OnPressed()
@@ -125,7 +124,8 @@ public partial class ItemShopItem : Control
 		{
 			ItemModel = ItemModel,
 			SavedItem = SavedItem,
-			Buyer = selectedCharacter
+			Buyer = selectedCharacter,
+			Price = BetweenScenariosController.Instance.ItemShop.GetBuyPrice(selectedCharacter, ItemModel)
 		});
 
 		UpdateVisuals();

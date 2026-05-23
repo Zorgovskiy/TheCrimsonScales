@@ -41,11 +41,14 @@ public partial class ActionState
 			{
 				if(Abilities[i] is AttackAbility attackAbility)
 				{
-					aiMoveParameters.Targets = attackAbility.Target.HasFlag(Target.MustTargetSameWithAllTargets) ? 1 : attackAbility.Targets;
-					aiMoveParameters.TargetAll = attackAbility.Target.HasFlag(Target.TargetAll);
-					aiMoveParameters.Range = attackAbility.Range;
-					aiMoveParameters.RangeType = attackAbility.RangeType;
-					aiMoveParameters.AOEPattern = attackAbility.AOEPattern;
+					Target target = attackAbility.TargetType.GetValue();
+
+					aiMoveParameters.Targets = target.HasFlag(Target.MustTargetSameWithAllTargets) ? 1 : 
+						attackAbility.Targets.GetValue();
+					aiMoveParameters.TargetAll = target.HasFlag(Target.TargetAll);
+					aiMoveParameters.Range = attackAbility.Range.GetValue();
+					aiMoveParameters.RangeType = attackAbility.TypeOfRange.GetValue();
+					aiMoveParameters.AOEPattern = attackAbility.AOEPattern?.GetValue();
 
 					break;
 				}
@@ -83,9 +86,9 @@ public partial class ActionState
 		bool hasGrayHex = false;
 		if(aiMoveParameters.AOEPattern != null)
 		{
-			foreach(AOEHex pivotAOEHex in aiMoveParameters.AOEPattern.Hexes)
+			foreach(AOEHex pivotAOEHex in aiMoveParameters.AOEPattern.LocalHexes)
 			{
-				if(pivotAOEHex.Type == AOEHexType.Gray)
+				if(pivotAOEHex.Type.HasFlag(AOEHexType.Gray))
 				{
 					hasGrayHex = true;
 				}
@@ -105,7 +108,7 @@ public partial class ActionState
 
 		foreach((Hex moveHex, MoveNode node) in moreMoveClosedList)
 		{
-			if(!MoveHelper.CanStopAt(Performer, moveHex, aiMoveParameters.MoveType))
+			if(!MoveHelper.CanStopAt(null, Performer, moveHex, aiMoveParameters.MoveType))
 			{
 				continue;
 			}
@@ -128,7 +131,8 @@ public partial class ActionState
 					}
 
 					ScenarioCheckEvents.CanBeFocusedCheck.Parameters canBeFocusedParameters =
-						ScenarioCheckEvents.CanBeFocusedCheckEvent.Fire(new ScenarioCheckEvents.CanBeFocusedCheck.Parameters(Performer, potentialTarget));
+						ScenarioCheckEvents.CanBeFocusedCheckEvent.Fire(
+							new ScenarioCheckEvents.CanBeFocusedCheck.Parameters(Performer, potentialTarget));
 
 					if(!canBeFocusedParameters.CanBeFocused)
 					{
@@ -139,7 +143,8 @@ public partial class ActionState
 						ScenarioCheckEvents.PotentialTargetCheckEvent.Fire(
 							new ScenarioCheckEvents.PotentialTargetCheck.Parameters(Performer, potentialTarget));
 
-					int adjustedSortingInitiative = potentialTarget.Initiative.SortingInitiative + potentialTargetCheckParameters.SortingInitiativeAdjustment;
+					int adjustedSortingInitiative =
+						potentialTarget.Initiative.SortingInitiative + potentialTargetCheckParameters.SortingInitiativeAdjustment;
 					int distanceFromCurrentHex = RangeHelper.Distance(Performer.Hex, potentialTargetHex);
 					FocusNode newNode = new FocusNode(potentialTarget, node.NegativeHexEncounteredCount, node.MoveSpent,
 						distanceFromCurrentHex, adjustedSortingInitiative, node);
@@ -183,22 +188,22 @@ public partial class ActionState
 
 				for(int i = 0; i < 6; i++)
 				{
-					foreach(AOEHex pivotAOEHex in aiMoveParameters.AOEPattern.Hexes)
+					foreach(AOEHex pivotAOEHex in aiMoveParameters.AOEPattern.LocalHexes)
 					{
-						if(hasGrayHex && pivotAOEHex.Type != AOEHexType.Gray)
+						if(hasGrayHex && !pivotAOEHex.Type.HasFlag(AOEHexType.Gray))
 						{
 							continue;
 						}
 
-						Vector2I pivotOffset = -pivotAOEHex.LocalCoords;
-						foreach(AOEHex aoeHex in aiMoveParameters.AOEPattern.Hexes)
+						Vector2I pivotOffset = -pivotAOEHex.Coords;
+						foreach(AOEHex aoeHex in aiMoveParameters.AOEPattern.LocalHexes)
 						{
-							if(aoeHex.Type != AOEHexType.Red)
+							if(!aoeHex.Type.HasFlag(AOEHexType.Red))
 							{
 								continue;
 							}
 
-							Vector2I globalCoords = hexInRange.Coords + Map.RotateCoordsClockwise(pivotOffset + aoeHex.LocalCoords, i);
+							Vector2I globalCoords = hexInRange.Coords + Map.RotateCoordsClockwise(pivotOffset + aoeHex.Coords, i);
 							Hex potentialTargetHex = map.GetHex(globalCoords);
 
 							HandlePotentialTargetHex(potentialTargetHex);

@@ -36,7 +36,9 @@ public class MoveAbility : Ability<MoveAbility.State>
 		}
 	}
 
-	public int Distance { get; private set; }
+	private static readonly List<Node2D> PreviousParents = new List<Node2D>();
+
+	public DynamicInt<State> Distance { get; private set; }
 	public MoveType MoveType { get; private set; }
 	public List<ScenarioEvents.DuringMovement.Subscription> DuringMovementSubscriptions { get; private set; } = [];
 	//public List<ScenarioEvent<ScenarioEvents.FigureEnteredHex.Parameters>.Subscription> FigureEnteredHexSubscriptions { get; }
@@ -54,12 +56,13 @@ public class MoveAbility : Ability<MoveAbility.State>
 	{
 		public interface IDistanceStep
 		{
-			TBuilder WithDistance(int distance);
+			TBuilder WithDistance(DynamicInt<State> distance, params MoveEnhancementMark[] enhancementMarks);
 		}
 
-		public TBuilder WithDistance(int distance)
+		public TBuilder WithDistance(DynamicInt<State> distance, params MoveEnhancementMark[] enhancementMarks)
 		{
 			Obj.Distance = distance;
+			AddEnhancements(enhancementMarks);
 			return (TBuilder)this;
 		}
 
@@ -78,7 +81,7 @@ public class MoveAbility : Ability<MoveAbility.State>
 		public TBuilder WithDuringMovementSubscriptions(
 			List<ScenarioEvents.DuringMovement.Subscription> movementSubscriptions)
 		{
-			Obj.DuringMovementSubscriptions = movementSubscriptions;
+			Obj.DuringMovementSubscriptions.AddRange(movementSubscriptions);
 			return (TBuilder)this;
 		}
 	}
@@ -119,7 +122,7 @@ public class MoveAbility : Ability<MoveAbility.State>
 		}
 
 		abilityState.Origin = performer.Hex;
-		abilityState.MoveValue = Distance;
+		abilityState.MoveValue = Distance.GetValue(abilityState);
 		abilityState.MoveType = moveType;
 	}
 
@@ -150,6 +153,14 @@ public class MoveAbility : Ability<MoveAbility.State>
 				Vector2I coords = path[i];
 				Hex hex = GameController.Instance.Map.GetHex(coords);
 
+				await AbilityCmd.ExitHex(abilityState, performer, abilityState.Authority);
+
+				abilityState.Hexes.Add(hex);
+
+				ScenarioEvents.MoveTogether.Parameters moveTogetherCheckParameters =
+					await ScenarioEvents.MoveTogetherEvent.CreatePrompt(
+						new ScenarioEvents.MoveTogether.Parameters(abilityState, performer, hex));
+
 				if(abilityState.MoveType == MoveType.Regular)
 				{
 					AppController.Instance.AudioController.PlayFastForwardable(SFX.GetStep(hex), delay: 0.1f);
@@ -157,37 +168,59 @@ public class MoveAbility : Ability<MoveAbility.State>
 
 				if(abilityState.MoveType == MoveType.Flying)
 				{
-					AppController.Instance.AudioController.PlayFastForwardable(SFX.MoveFlying, minPitch: 2.5f,
-						maxPitch: 3.4f, delay: 0.1f);
+					AppController.Instance.AudioController.PlayFastForwardable(SFX.MoveFlying, minPitch: 2.5f, maxPitch: 3.4f, delay: 0.1f);
 				}
 
 				if(abilityState.MoveType == MoveType.Jump && i == path.Count - 1)
 				{
 					playedLandSound = true;
-					AppController.Instance.AudioController.PlayFastForwardable(SFX.GetLand(performer.Hex),
-						delay: 0.25f);
+					AppController.Instance.AudioController.PlayFastForwardable(SFX.GetLand(hex), delay: 0.25f);
 				}
 
-				abilityState.Hexes.Add(hex);
-
-				ScenarioEvents.MoveTogetherCheck.Parameters moveTogetherCheckParameters =
-					await ScenarioEvents.MoveTogetherCheckEvent.CreatePrompt(new ScenarioEvents.MoveTogetherCheck.Parameters(performer));
-
-				if(moveTogetherCheckParameters.OtherFigure != null)
+				PreviousParents.Clear();
+				Node2D moveParent = GameController.Instance.MoveParent;
+				moveParent.SetGlobalPosition(performer.Hex.GlobalPosition);
+				PreviousParents.Add(performer.GetParent<Node2D>());
+				performer.Reparent(moveParent);
+				foreach(Figure otherFigure in moveTogetherCheckParameters.OtherFigures)
 				{
-					moveTogetherCheckParameters.OtherFigure.TweenGlobalPosition(hex.GlobalPosition, 0.3f).SetEasing(Easing.OutSine).PlayFastForwardable();
+					PreviousParents.Add(otherFigure.GetParent<Node2D>());
+					otherFigure.Reparent(moveParent);
 				}
 
-				await performer.TweenGlobalPosition(hex.GlobalPosition, 0.3f).SetEasing(Easing.OutSine)
-					.PlayFastForwardableAsync();
-				
+				await moveParent.TweenGlobalPosition(hex.GlobalPosition, 0.3f).SetEasing(Easing.OutSine).PlayFastForwardableAsync();
+
+				performer.Reparent(PreviousParents[0]);
+				PreviousParents.RemoveAt(0);
+				foreach(Figure otherFigure in moveTogetherCheckParameters.OtherFigures)
+				{
+					otherFigure.Reparent(PreviousParents[0]);
+					PreviousParents.RemoveAt(0);
+				}
+
 				await GDTask.DelayFastForwardable(0.03f);
 				bool triggerHexEffects = abilityState.MoveType == MoveType.Regular || (abilityState.MoveType == MoveType.Jump && i == path.Count - 1);
-				await AbilityCmd.EnterHex(abilityState, performer, abilityState.Authority, hex, triggerHexEffects);
+				await AbilityCmd.EnterHex(abilityState, performer, abilityState.Authority, hex, triggerHexEffects, true);
 
-				if(moveTogetherCheckParameters.OtherFigure != null)
+				DifficultTerrain difficultTerrain = hex.GetHexObjectOfType<DifficultTerrain>();
+				if(difficultTerrain != null && triggerHexEffects)
 				{
-					await AbilityCmd.EnterHex(abilityState, moveTogetherCheckParameters.OtherFigure, abilityState.Authority, hex, triggerHexEffects);
+					ScenarioCheckEvents.FlyingCheck.Parameters flyingCheckParameters =
+						ScenarioCheckEvents.FlyingCheckEvent.Fire(new ScenarioCheckEvents.FlyingCheck.Parameters(abilityState.Performer));
+
+					if(!flyingCheckParameters.HasFlying)
+					{
+						await ScenarioEvents.DifficultTerrainTriggeredEvent.CreatePrompt(
+							new ScenarioEvents.DifficultTerrainTriggered.Parameters(abilityState, abilityState.Performer, hex, difficultTerrain),
+							abilityState.Authority);
+					}
+				}
+
+				foreach(Figure otherFigure in moveTogetherCheckParameters.OtherFigures)
+				{
+					await AbilityCmd.ExitHex(abilityState, otherFigure, abilityState.Authority);
+					await AbilityCmd.EnterHex(abilityState, otherFigure, abilityState.Authority, hex,
+						moveTogetherCheckParameters.TriggerHexEffects, false);
 				}
 			}
 
@@ -201,6 +234,18 @@ public class MoveAbility : Ability<MoveAbility.State>
 
 		if(abilityState.Authority is Character)
 		{
+			if(abilityState.Performer.EnemiesWith(abilityState.Authority))
+			{
+				ScenarioCheckEvents.ImmuneToForcedMovementCheck.Parameters immuneToForcedMovementParameters =
+					ScenarioCheckEvents.ImmuneToForcedMovementCheckEvent.Fire(
+						new ScenarioCheckEvents.ImmuneToForcedMovementCheck.Parameters(abilityState.Performer));
+
+				if(immuneToForcedMovementParameters.ImmuneToForcedMovement)
+				{
+					return;
+				}
+			}
+
 			// Character moving
 			ScenarioEvents.DuringMovement.Parameters duringMovementAbilityStateParameters =
 				new ScenarioEvents.DuringMovement.Parameters(abilityState);

@@ -9,6 +9,7 @@ public static class Migrator
 		new Migration001(),
 		new Migration002(),
 		new Migration003(),
+		new Migration004(),
 	];
 
 	public static int MigrationVersion => Migrations.Length;
@@ -40,7 +41,7 @@ public static class Migrator
 			}
 		}
 
-		json = JsonConvert.SerializeObject(saveData, SaveFile.JsonSerializerSettings);
+		json = JsonConvert.SerializeObject(saveData, SaveManager.JsonSerializerSettings);
 
 		return json;
 	}

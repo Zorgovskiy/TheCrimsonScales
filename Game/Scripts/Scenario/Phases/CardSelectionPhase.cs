@@ -32,7 +32,7 @@ public class CardSelectionPhase : ScenarioPhase
 
 			if(playableCardCount < 2 && discardedCardCount < 2)
 			{
-				await AbilityCmd.KillOrExhaust(null, character);
+				await AbilityCmd.KillOrExhaust(character, character);
 			}
 		}
 
@@ -89,7 +89,7 @@ public class CardSelectionPhase : ScenarioPhase
 		}
 
 		//SetState(_cardSelectionState);
-		SyncGameWithState();
+		SyncGameWithState(false);
 
 		await PerformSyncedActions();
 
@@ -111,7 +111,7 @@ public class CardSelectionPhase : ScenarioPhase
 
 		// Final state update
 		//SetState(_cardSelectionState);
-		SyncGameWithState();
+		SyncGameWithState(true);
 
 		// foreach(Character character in GameController.Instance.CharacterManager.Characters)
 		// {
@@ -144,6 +144,9 @@ public class CardSelectionPhase : ScenarioPhase
 				await card.SetCardState(CardState.Playing);
 			}
 		}
+
+		GameController.Instance.UndoManager.SetRoundStart();
+		GameController.Instance.UndoManager.AddStep(new StartRoundUndoStep(_cardSelectionState));
 	}
 
 	private void OnPromptStarted(Character character)
@@ -183,8 +186,29 @@ public class CardSelectionPhase : ScenarioPhase
 		return fullState;
 	}
 
-	private void SyncGameWithState()
+	private void ValidateState()
 	{
+		foreach(CharacterCardSelectionState characterCardSelectionState in _cardSelectionState.CharacterCardSelectionStates)
+		{
+			for(int i = characterCardSelectionState.ChosenCardReferenceIds.Count - 1; i >= 0; i--)
+			{
+				int cardReferenceId = characterCardSelectionState.ChosenCardReferenceIds[i];
+				AbilityCard abilityCard = GameController.Instance.ReferenceManager.Get<AbilityCard>(cardReferenceId);
+				if(!CanSelectCardForPlay(abilityCard))
+				{
+					characterCardSelectionState.ChosenCardReferenceIds.RemoveAt(i);
+				}
+			}
+		}
+	}
+
+	private void SyncGameWithState(bool validate)
+	{
+		if(!GameController.FastForward && validate)
+		{
+			ValidateState();
+		}
+
 		for(int i = 0; i < _cardSelectionState.CharacterCardSelectionStates.Length; i++)
 		{
 			Character character = GameController.Instance.CharacterManager.GetCharacter(i);
@@ -230,7 +254,7 @@ public class CardSelectionPhase : ScenarioPhase
 
 		foreach(Character character in GameController.Instance.CharacterManager.Characters)
 		{
-			if(character.IsDead)
+			if(character.IsDead || character.Hex == null)
 			{
 				continue;
 			}
@@ -294,13 +318,19 @@ public class CardSelectionPhase : ScenarioPhase
 		while(_syncedActionIndex < _cardSelectionState.SyncedActions.Count)
 		{
 			// Perform all the synced actions
-			await _cardSelectionState.SyncedActions[_syncedActionIndex].Perform();
+			SyncedAction syncedAction = _cardSelectionState.SyncedActions[_syncedActionIndex];
+			GameController.Instance.UndoManager.AddStep(new StartSyncedActionStep(_cardSelectionState, syncedAction));
+			if(syncedAction.Validate())
+			{
+				await syncedAction.Perform();
+			}
+
 			_syncedActionIndex++;
 
 			//SetState(_cardSelectionState);
 		}
 
-		SyncGameWithState();
+		SyncGameWithState(true);
 	}
 
 	private void OnIndicatorPressed(HexIndicator hexIndicator)
@@ -402,7 +432,7 @@ public class CardSelectionPhase : ScenarioPhase
 			return;
 		}
 
-		if(card.CardState != CardState.Hand)
+		if(!CanSelectCardForPlay(card))
 		{
 			return;
 		}
@@ -429,7 +459,11 @@ public class CardSelectionPhase : ScenarioPhase
 			return;
 		}
 
-		AbilityCard abilityCard = GameController.Instance.CardManager.Get(cardSelectionCard.SavedAbilityCard);
+		AbilityCard abilityCard = GetAbilityCard(cardSelectionCard);
+		if(!CanSelectCardForPlay(abilityCard))
+		{
+			return;
+		}
 
 		CharacterCardSelectionState characterCardSelectionState = _cardSelectionState.CharacterCardSelectionStates[abilityCard.Owner.Index];
 
@@ -508,5 +542,15 @@ public class CardSelectionPhase : ScenarioPhase
 	private CharacterCardSelectionState GetCharacterCardSelectionState(Character character)
 	{
 		return _cardSelectionState.CharacterCardSelectionStates[character.Index];
+	}
+
+	private AbilityCard GetAbilityCard(CardSelectionCard cardSelectionCard)
+	{
+		return GameController.Instance.CardManager.Get(cardSelectionCard.SavedAbilityCard);
+	}
+
+	private bool CanSelectCardForPlay(AbilityCard card)
+	{
+		return card.CardState == CardState.Hand;
 	}
 }

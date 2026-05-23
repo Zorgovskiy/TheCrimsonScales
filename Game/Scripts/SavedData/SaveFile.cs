@@ -2,20 +2,12 @@
 using Godot;
 using Newtonsoft.Json;
 
-public class SaveFile
+public class SaveFile<TSaveData>
+	where TSaveData : SaveData, new()
 {
-	public static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings()
-	{
-		Formatting = Formatting.Indented,
-		TypeNameHandling = TypeNameHandling.Auto,
-		NullValueHandling = NullValueHandling.Ignore,
-		ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-		ContractResolver = PromptManager.PromptContractResolver.Instance,
-	};
-
 	private readonly string _path;
 
-	public SaveData SaveData { get; }
+	public TSaveData SaveData { get; private set; }
 	public bool RemovedSavedScenario { get; }
 
 	public SaveFile(string path)
@@ -28,7 +20,7 @@ public class SaveFile
 			try
 			{
 				json = Migrator.Migrate(json, GetVersion(), out bool removedSavedScenario);
-				SaveData = JsonConvert.DeserializeObject<SaveData>(json, JsonSerializerSettings);
+				SaveData = JsonConvert.DeserializeObject<TSaveData>(json, SaveManager.JsonSerializerSettings);
 				RemovedSavedScenario = removedSavedScenario;
 			}
 			catch(Exception e)
@@ -41,12 +33,7 @@ public class SaveFile
 
 		if(SaveData == null)
 		{
-			SaveData = new SaveData()
-			{
-				PlayerId = Guid.NewGuid(),
-				SavedCampaign = null,
-				MigrationVersion = Migrator.MigrationVersion
-			};
+			NewSaveData();
 		}
 	}
 
@@ -58,14 +45,25 @@ public class SaveFile
 		}
 
 		SaveData.AppVersion = GetVersion();
+		SaveData.LastSaved = DateTime.Now;
 
-		using FileAccess saveFile = FileAccess.Open(_path, FileAccess.ModeFlags.Write);
+		using FileAccess file = FileAccess.Open(_path, FileAccess.ModeFlags.Write);
 
-		string json = JsonConvert.SerializeObject(SaveData, JsonSerializerSettings);
-		saveFile.StoreLine(json);
+		string json = JsonConvert.SerializeObject(SaveData, SaveManager.JsonSerializerSettings);
+		file.StoreLine(json);
 	}
 
-	private string GetVersion()
+	public void NewSaveData()
+	{
+		SaveData = new TSaveData()
+		{
+			//PlayerId = Guid.NewGuid(),
+			//SavedCampaign = null,
+			MigrationVersion = Migrator.MigrationVersion
+		};
+	}
+
+	private static string GetVersion()
 	{
 		return ProjectSettings.GetSetting("application/config/version").AsString();
 	}

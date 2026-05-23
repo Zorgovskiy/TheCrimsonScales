@@ -6,8 +6,8 @@ public partial class SliderOptionView : OptionView<SliderOptionView.Parameters, 
 	{
 		public override string ScenePath => "res://Scenes/UI/Popups/OptionsPopup/SliderOptionView.tscn";
 
-		public Parameters(SavedOption<int> savedOption, string label)
-			: base(label, savedOption)
+		public Parameters(SavedOption<int> savedOption, string label, bool enabled)
+			: base(savedOption, label, enabled)
 		{
 		}
 	}
@@ -48,6 +48,7 @@ public partial class SliderOptionView : OptionView<SliderOptionView.Parameters, 
 
 	protected override void OnValueChanged(int value)
 	{
+		base.OnValueChanged(value);
 	}
 
 	private void OnSliderValueChanged(float value)

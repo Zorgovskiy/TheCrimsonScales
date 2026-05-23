@@ -105,11 +105,6 @@ public partial class EquipItemPopup : Popup<EquipItemPopup.Request>
 			bool shouldScroll = targetSize < _itemParent.Size.X;
 			_scrollContainer.CustomMinimumSize = new Vector2(targetSize, shouldScroll ? 440f : 420f);
 			_scrollContainer.HorizontalScrollMode = shouldScroll ? ScrollContainer.ScrollMode.Auto : ScrollContainer.ScrollMode.Disabled;
-
-			this.DelayedCall(() =>
-			{
-				_panelContainer.PivotOffset = _panelContainer.Size * 0.5f;
-			});
 		});
 	}
 
@@ -122,8 +117,19 @@ public partial class EquipItemPopup : Popup<EquipItemPopup.Request>
 
 	private void OnSellItemPressed(EquipItemPopupItem item)
 	{
-		AppController.Instance.PopupManager.OpenPopupOnTop(new TextPopup.Request("Are you sure?",
-			$"Are you sure you want to sell {item.ItemModel.Name}?",
+		int sellPrice = item.ItemModel.Cost / 2;
+
+		if(BetweenScenariosController.Instance != null)
+		{
+			BetweenScenariosEvents.CalculateItemSellPrice.Parameters parameters =
+				BetweenScenariosEvents.CalculateItemSellPriceEvent.Fire(
+					new BetweenScenariosEvents.CalculateItemSellPrice.Parameters(PopupRequest.SavedCharacter, item.ItemModel, sellPrice));
+
+			sellPrice = parameters.SellPrice;
+		}
+
+		AppController.Instance!.PopupManager.OpenPopupOnTop(new TextPopup.Request("Are you sure?",
+			$"Are you sure you want to sell {item.ItemModel.Name} for {Icons.Inline(Icons.Coins)}{sellPrice}?",
 			new TextButton.Parameters("Cancel",
 				() =>
 				{
@@ -132,9 +138,15 @@ public partial class EquipItemPopup : Popup<EquipItemPopup.Request>
 			new TextButton.Parameters("Sell",
 				() =>
 				{
-					PopupRequest.SavedCharacter.SellItem(item.ItemModel);
+					PopupRequest.SavedCharacter.SellItem(item.ItemModel, sellPrice);
 
-					AppController.Instance.SaveFile.Save();
+					if(BetweenScenariosController.Instance != null)
+					{
+						BetweenScenariosEvents.ItemSoldEvent.Fire(
+							new BetweenScenariosEvents.ItemSold.Parameters(PopupRequest.SavedCharacter, item.ItemModel, sellPrice));
+					}
+
+					AppController.Instance.SaveGame();
 
 					UpdateView();
 				},

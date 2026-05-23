@@ -9,10 +9,12 @@ public partial class Treasure : LootableObject
 	public int TreasureNumber = -1;
 
 	private Character _lootingCharacter;
+	private Func<Figure, bool> _canLootFunction;
+	private Func<Character, GDTask> _obtainLootFunction;
 
 	public bool Looted { get; private set; }
 
-	private Func<Character, GDTask> _obtainLootFunction;
+	public bool IsGoal => TreasureNumber <= 0;
 
 	public override async GDTask Init(Hex originHex, int rotationIndex = 0, bool hexCanBeNull = false)
 	{
@@ -31,17 +33,30 @@ public partial class Treasure : LootableObject
 
 	public void SetItemLoot(ItemModel itemModel)
 	{
-		SetObtainLootFunction(
-			async character =>
+		SetObtainLootFunction(async character =>
 			{
 				await AbilityCmd.PermanentlyGiveItem(character, itemModel);
 			}
 		);
 	}
 
+	public void SetItemDesignLoot(ItemModel itemModel)
+	{
+		SetObtainLootFunction(async character =>
+			{
+				await AbilityCmd.GainItemDesign(character, itemModel);
+			}
+		);
+	}
+
 	public override bool CanLoot(Figure lootObtainer)
 	{
-		return base.CanLoot(lootObtainer) && lootObtainer is Character;
+		return base.CanLoot(lootObtainer) && lootObtainer is Character && (_canLootFunction == null || _canLootFunction(lootObtainer));
+	}
+
+	public void SetCanLootFunction(Func<Figure, bool> canLootFunction)
+	{
+		_canLootFunction = canLootFunction;
 	}
 
 	public override async GDTask Loot(Figure lootObtainer)
@@ -53,12 +68,15 @@ public partial class Treasure : LootableObject
 		Looted = true;
 		_lootingCharacter = (Character)lootObtainer;
 
-		await _obtainLootFunction.Invoke(_lootingCharacter);
+		if(_obtainLootFunction != null)
+		{
+			await _obtainLootFunction.Invoke(_lootingCharacter);
+		}
 
 		GameController.Instance.EndEvent += OnScenarioEnd;
 	}
 
-	private void OnScenarioEnd(bool backToTown, bool won, SavedScenarioProgress savedScenarioProgress)
+	private void OnScenarioEnd(ScenarioResult scenarioResult, SavedScenarioProgress savedScenarioProgress)
 	{
 		if(TreasureNumber > 0)
 		{

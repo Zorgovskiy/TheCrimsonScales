@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Fractural.Tasks;
+using Godot;
 
 public class WeakenedWill : HierophantLevelUpCardModel<WeakenedWill.CardTop, WeakenedWill.CardBottom>
 {
@@ -10,11 +11,11 @@ public class WeakenedWill : HierophantLevelUpCardModel<WeakenedWill.CardTop, Wea
 
 	public class CardTop : HierophantCardSide
 	{
-		protected override IEnumerable<AbilityCardAbility> GetAbilities() =>
+		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 			new AbilityCardAbility(AttackAbility.Builder()
-				.WithDamage(2)
-				.WithRange(3)
+				.WithDamage(2, new AttackDiamond(this, new Vector2(0.39718983f, 0.22812192f)))
+				.WithRange(3, new RangeSquare(this, new Vector2(0.6233896f, 0.22812192f)))
 				.WithConditions(Conditions.Muddle)
 				.Build()),
 
@@ -45,12 +46,14 @@ public class WeakenedWill : HierophantLevelUpCardModel<WeakenedWill.CardTop, Wea
 
 	public class CardBottom : HierophantCardSide
 	{
-		protected override IEnumerable<AbilityCardAbility> GetAbilities() =>
+		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(MoveAbility.Builder().WithDistance(1).Build()),
+			new AbilityCardAbility(MoveAbility.Builder()
+				.WithDistance(1, new MoveCircle(this, new Vector2(0.62072915f, 0.71336424f)))
+				.Build()),
 
 			new AbilityCardAbility(OtherActiveAbility.Builder()
-				.WithOnActivate(state =>
+				.WithOnActivate(async state =>
 				{
 					ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(state, this,
 						parameters => state.Performer.AlliedWith(parameters.AbilityState.Target),
@@ -70,23 +73,23 @@ public class WeakenedWill : HierophantLevelUpCardModel<WeakenedWill.CardTop, Wea
 					ScenarioCheckEvents.FigureInfoItemExtraEffectsCheckEvent.Subscribe(state, this,
 						parameters => state.Performer.AlliedWith(parameters.Figure),
 						parameters => parameters.Add(
-							new FigureInfoTextExtraEffect.Parameters("All attacks targeting this figure this round gain disadvantage."))
+							new InfoTextExtraEffect.Parameters(textParameters => "All attacks targeting this figure this round gain disadvantage."))
 					);
 
-					return GDTask.CompletedTask;
+					await GDTask.CompletedTask;
 				})
-				.WithOnDeactivate(state =>
+				.WithOnDeactivate(async state =>
 					{
 						ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(state, this);
 						ScenarioCheckEvents.DisadvantageCheckEvent.Unsubscribe(state, this);
 						ScenarioCheckEvents.FigureInfoItemExtraEffectsCheckEvent.Unsubscribe(state, this);
 
-						return GDTask.CompletedTask;
+						await GDTask.CompletedTask;
 					}
 				)
 				.Build())
 		];
 
-		protected override bool Round => true;
+		public override bool Round => true;
 	}
 }

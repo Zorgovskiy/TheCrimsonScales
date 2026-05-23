@@ -46,12 +46,26 @@ public static class ExtensionMethods
 		return list[rng.RandiRange(0, list.Count - 1)];
 	}
 
-	public static void AddIfNew<T>(this List<T> list, T item)
+	public static bool AddIfNew<T>(this List<T> list, T item)
 	{
-		if(!list.Contains(item))
+		if(list.Contains(item))
 		{
-			list.Add(item);
+			return false;
 		}
+
+		list.Add(item);
+		return true;
+	}
+
+	public static bool RemoveLast<T>(this IList<T> list)
+	{
+		if(list.Count == 0)
+		{
+			return false;
+		}
+
+		list.RemoveAt(list.Count - 1);
+		return true;
 	}
 
 	/// <summary>
@@ -79,5 +93,30 @@ public static class ExtensionMethods
 	public static Vector2I Add(this Vector2I coords, Direction direction)
 	{
 		return coords + Map.NeighbourOffsets[(int)direction];
+	}
+
+	public static bool IsLoss(this CardState cardState)
+	{
+		return cardState is CardState.PersistentLoss or CardState.RoundLoss or CardState.Lost or CardState.UnrecoverablyLost;
+	}
+
+	public static bool IsRound(this CardState cardState)
+	{
+		return cardState is CardState.RoundLoss or CardState.Round;
+	}
+
+	public static bool IsPersistent(this CardState cardState)
+	{
+		return cardState is CardState.PersistentLoss or CardState.Persistent or CardState.PersistentNoDeactivate;
+	}
+
+	public static bool IsActive(this CardState cardState)
+	{
+		return IsRound(cardState) || IsPersistent(cardState);
+	}
+
+	public static void SetModulateAlpha(this CanvasItem canvasItem, float alpha)
+	{
+		canvasItem.Modulate = new Color(canvasItem.Modulate.R, canvasItem.Modulate.G, canvasItem.Modulate.B, alpha);
 	}
 }

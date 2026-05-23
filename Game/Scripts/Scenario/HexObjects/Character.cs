@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Fractural.Tasks;
 using Godot;
-using Newtonsoft.Json;
 
 public partial class Character : Figure
 {
@@ -18,10 +17,16 @@ public partial class Character : Figure
 
 	public int PlayableAbilityCardCount { get; private set; }
 
+	public List<BattleGoalModel> AvailableBattleGoals { get; } = new List<BattleGoalModel>();
+	public BattleGoalModel SelectedBattleGoalModel { get; private set; }
+	public BattleGoal BattleGoal { get; private set; }
+
 	public List<AbilityCard> Cards { get; } = new List<AbilityCard>();
 	public List<ItemModel> Items { get; } = new List<ItemModel>();
 
 	public List<AbilityCard> RoundCards { get; } = new List<AbilityCard>();
+	public List<CardPlayCardData> RoundCardData { get; } = new List<CardPlayCardData>();
+	public List<ItemModel> TurnItemsUsed { get; } = [];
 	public bool LongResting { get; private set; }
 
 	public int ShortRestSeed { get; private set; }
@@ -33,13 +38,18 @@ public partial class Character : Figure
 
 	public bool IsLocal => true;
 
-	public override string DisplayName => SavedCharacter.Name;
-	public override string DebugName => SavedCharacter.ClassModel.Name;
-
 	public Texture2D PortraitTexture => ClassModel.PortraitTexture;
 
+	public override string DisplayName => SavedCharacter.Name;
+	public override string DebugName => SavedCharacter.ClassModel.Name;
 	public override AMDCardDeck AMDCardDeck => _amdCardDeck;
+	public override Texture2D MapIconTexture => _staticSprite.Texture;
 
+	public override Node2D Visual =>
+		AppController.Instance.DeviceOptions.AnimatedCharacters.Value && ClassModel.HasAnimatedSprite ? _animatedSprite : _staticSprite;
+
+	public event Action<Character> BattleGoalChangedEvent;
+	public event Action<Character> BattleGoalProgressChangedEvent;
 	public event Action<Character> ShortRestedEvent;
 	public event Action<Character> CoinsChangedEvent;
 	public event Action<Character> XPChangedEvent;
@@ -55,7 +65,7 @@ public partial class Character : Figure
 		_animatedSprite = GetNode<AnimatedSpriteSheet2D>("Mask/AnimatedSpriteSheet2D");
 	}
 
-	public virtual void Spawn(SavedCharacter savedCharacter, int index)
+	public virtual async GDTask Spawn(SavedCharacter savedCharacter, int index)
 	{
 		SavedCharacter = savedCharacter;
 		ClassModel = SavedCharacter.ClassModel;
@@ -67,22 +77,60 @@ public partial class Character : Figure
 		SetHealth(health);
 
 		SetAlignment(Alignment.Characters);
-		SetEnemies(Alignment.Enemies);
 
 		// Create AMD
-		List<AMDCard> amdCards = AMDCardDeck.GetDefaultDeckCards($"res://Art/AMDs/Player{index + 1}AMD.jpg");
-		_amdCardDeck = new AMDCardDeck(amdCards, true);
+		AMDCardOwner amdCardOwner = (AMDCardOwner)(Index + 1);
+		List<AMDCard> amdCards = AMDCardDeck.GetDefaultDeckCards(amdCardOwner);
+		_amdCardDeck = new AMDCardDeck(amdCards, amdCardOwner);
+
+		for(int i = 0; i < ClassModel.Perks.Count; i++)
+		{
+			PerkModel perk = ClassModel.Perks[i];
+			if(SavedCharacter.GetPerkAcquired(i))
+			{
+				bool success = true;
+				foreach(AMDCardModel amdCardModel in perk.CardsToRemove)
+				{
+					AMDCard cardToRemove = _amdCardDeck.DrawPile.FirstOrDefault(amdCard => amdCard.Model == amdCardModel);
+					if(cardToRemove == null)
+					{
+						success = false;
+						Log.Warning($"Could not remove the appropriate AMD card for perk {perk.GetType().Name}.");
+						continue;
+					}
+
+					_amdCardDeck.RemoveCard(cardToRemove);
+				}
+
+				if(success)
+				{
+					foreach(AMDCardModel amdCardModel in perk.CardsToAdd)
+					{
+						_amdCardDeck.AddCard(new AMDCard(amdCardModel, amdCardOwner, potentialDeckOwner: this), true);
+					}
+				}
+			}
+		}
+
+		if(savedCharacter.DonationAMDCardIds != null)
+		{
+			foreach(string donationAMDCardId in savedCharacter.DonationAMDCardIds)
+			{
+				AMDCardModel amdCardModel = ModelDB.GetById<AMDCardModel>(donationAMDCardId);
+				_amdCardDeck.AddCard(new AMDCard(amdCardModel, amdCardOwner), true);
+			}
+		}
 
 		PlayableAbilityCardCount = 2;
 
-		_figureViewComponent.TurnStartPS.SelfModulate = _figureViewComponent.Outline.SelfModulate;
-		_figureViewComponent.ActivePS.Modulate = _figureViewComponent.Outline.SelfModulate;
+		FigureViewComponent.TurnStartPS.SetSelfModulate(OutlineColor);
+		FigureViewComponent.ActivePS.SetModulate(OutlineColor);
 
-		GameController.Instance.Map.RegisterFigure(this);
+		await GameController.Instance.Map.RegisterFigure(this);
 
-		AppController.Instance.Options.AnimatedCharacters.ValueChangedEvent += OnAnimatedCharactersChanged;
+		AppController.Instance.DeviceOptions.AnimatedCharacters.ValueChangedEvent += OnAnimatedCharactersChanged;
 
-		OnAnimatedCharactersChanged(AppController.Instance.Options.AnimatedCharacters.Value);
+		OnAnimatedCharactersChanged(AppController.Instance.DeviceOptions.AnimatedCharacters.Value);
 	}
 
 	public override async GDTask Destroy(bool immediately = false, bool forceDestroy = false)
@@ -104,6 +152,11 @@ public partial class Character : Figure
 		for(int i = Items.Count - 1; i >= 0; i--)
 		{
 			ItemModel item = Items[i];
+			if(item.ItemState == ItemState.Active)
+			{
+				await AbilityCmd.SpendOrConsume(item);
+			}
+
 			item.SetOwner(null);
 		}
 
@@ -114,11 +167,31 @@ public partial class Character : Figure
 		}
 	}
 
-	public override void _ExitTree()
+	public override void _Notification(int what)
 	{
-		base._ExitTree();
+		base._Notification(what);
 
-		AppController.Instance.Options.AnimatedCharacters.ValueChangedEvent -= OnAnimatedCharactersChanged;
+		if(what == NotificationPredelete && AppController.Instance != null)
+		{
+			AppController.Instance.DeviceOptions.AnimatedCharacters.ValueChangedEvent -= OnAnimatedCharactersChanged;
+		}
+	}
+
+	public void AddAvailableBattleGoal(BattleGoalModel battleGoal)
+	{
+		AvailableBattleGoals.Add(battleGoal);
+	}
+
+	public void SetBattleGoal(BattleGoalModel battleGoal)
+	{
+		if(battleGoal == SelectedBattleGoalModel)
+		{
+			return;
+		}
+
+		SelectedBattleGoalModel = battleGoal;
+
+		BattleGoalChangedEvent?.Invoke(this);
 	}
 
 	public void OnRoundCardsChanged()
@@ -244,6 +317,12 @@ public partial class Character : Figure
 		item.SetOwner(null);
 	}
 
+	public void EquipItem(ItemModel itemModel)
+	{
+		itemModel.Init(this);
+		Items.Add(itemModel);
+	}
+
 	public void RegisterSummon(Summon summon)
 	{
 		Summons.Add(summon);
@@ -273,21 +352,24 @@ public partial class Character : Figure
 		{
 			bool topPlayed = false;
 			bool bottomPlayed = false;
-			List<CardPlayCardData> cardDatas = new List<CardPlayCardData>();
+			RoundCardData.Clear();
 
 			foreach(AbilityCard card in RoundCards)
 			{
-				cardDatas.Add(new CardPlayCardData()
+				RoundCardData.Add(new CardPlayCardData()
 				{
 					AbilityCard = card,
 					CanPlayTop = true,
-					CanPlayBottom = true
+					CanPlayBottom = true,
+					CanPlayBasicTop = true,
+					CanPlayBasicBottom = true
 				});
 			}
 
-			for(int i = 0; i < cardDatas.Count; i++)
+			for(int i = 0; i < RoundCardData.Count; i++)
 			{
-				if(IsDead)
+				if(IsDead || !TakingTurn || RoundCardData.All(data =>
+					   !data.CanPlayBasicBottom && !data.CanPlayBottom && !data.CanPlayBasicTop && !data.CanPlayTop))
 				{
 					break;
 				}
@@ -296,7 +378,7 @@ public partial class Character : Figure
 					ScenarioEvents.CardSideSelectionEvent.CreateEffectCollection(new ScenarioEvents.CardSideSelection.Parameters(this));
 
 				AbilityCardSectionSelectionPrompt.Answer cardSectionAnswer = await PromptManager.Prompt(
-					new AbilityCardSectionSelectionPrompt(cardDatas, cardSideSelectionEffectCollection, () => "Select card side to play"), this);
+					new AbilityCardSectionSelectionPrompt(RoundCardData, cardSideSelectionEffectCollection, () => "Select card side to play"), this);
 
 				AbilityCard card = GameController.Instance.ReferenceManager.Get<AbilityCard>(cardSectionAnswer.CardReferenceId);
 				AbilityCardSection section = cardSectionAnswer.AbilityCardSection;
@@ -328,32 +410,36 @@ public partial class Character : Figure
 						throw new ArgumentOutOfRangeException();
 				}
 
-				foreach(CardPlayCardData cardData in cardDatas)
+				foreach(CardPlayCardData cardData in RoundCardData)
 				{
 					if(cardData.AbilityCard == card)
 					{
 						cardData.CanPlayTop = false;
 						cardData.CanPlayBottom = false;
+						cardData.CanPlayBasicTop = false;
+						cardData.CanPlayBasicBottom = false;
 					}
 				}
 
-				if(i == cardDatas.Count - 2)
+				if(i == RoundCardData.Count - 2)
 				{
 					// Only one card left, make sure both a top and bottom are played
 
 					if(!topPlayed)
 					{
-						foreach(CardPlayCardData cardData in cardDatas)
+						foreach(CardPlayCardData cardData in RoundCardData)
 						{
 							cardData.CanPlayBottom = false;
+							cardData.CanPlayBasicBottom = false;
 						}
 					}
 
 					if(!bottomPlayed)
 					{
-						foreach(CardPlayCardData cardData in cardDatas)
+						foreach(CardPlayCardData cardData in RoundCardData)
 						{
 							cardData.CanPlayTop = false;
+							cardData.CanPlayBasicTop = false;
 						}
 					}
 				}
@@ -366,6 +452,13 @@ public partial class Character : Figure
 		}
 	}
 
+	protected override async GDTask EndTurn()
+	{
+		await base.EndTurn();
+
+		TurnItemsUsed.Clear();
+	}
+
 	protected override async GDTask EndOfTurnLooting()
 	{
 		await base.EndOfTurnLooting();
@@ -375,15 +468,21 @@ public partial class Character : Figure
 
 	private async GDTask LongRest()
 	{
+		ScenarioEvents.LongRestStarted.Parameters longRestStartedParameters =
+			await ScenarioEvents.LongRestStartedEvent.CreatePrompt(
+				new ScenarioEvents.LongRestStarted.Parameters(this));
+
 		EffectCollection cardSelectionEffectCollection =
 			ScenarioEvents.LongRestCardSelectionEvent.CreateEffectCollection(new ScenarioEvents.LongRestCardSelection.Parameters(this));
-
-		AbilityCard cardToLose = await AbilityCmd.SelectAbilityCard(this, CardState.Discarded, true, null, cardSelectionEffectCollection,
-			"Select a card to lose for your long rest");
-
-		if(cardToLose != null)
+		if(longRestStartedParameters.LoseCard)
 		{
-			await AbilityCmd.LoseCard(cardToLose);
+			AbilityCard cardToLose = await AbilityCmd.SelectAbilityCard(this, CardState.Discarded, true, null, cardSelectionEffectCollection,
+				"Select a card to lose for your long rest");
+
+			if(cardToLose != null)
+			{
+				await AbilityCmd.LoseCard(cardToLose);
+			}
 		}
 
 		foreach(AbilityCard card in Cards)
@@ -411,6 +510,9 @@ public partial class Character : Figure
 				.Build()
 		]);
 		await actionState.Perform();
+
+		await ScenarioEvents.LongRestEndedEvent.CreatePrompt(
+			new ScenarioEvents.LongRestEnded.Parameters(this));
 	}
 
 	public async GDTask ShortRest()
@@ -419,36 +521,39 @@ public partial class Character : Figure
 			await ScenarioEvents.ShortRestStartedEvent.CreatePrompt(
 				new ScenarioEvents.ShortRestStarted.Parameters(this), this);
 
-		AbilityCard lostCard = null;
-
-		if(shortRestParameters.CanSelectCardToLose)
+		if(shortRestParameters.LoseCard)
 		{
-			lostCard = await AbilityCmd.SelectAbilityCard(this, CardState.Discarded, mandatory: true, hintText: "Select a card to lose");
-		}
-		else
-		{
-			ShortRestPrompt.Answer shortRestAnswer =
-				await PromptManager.Prompt(new ShortRestPrompt(this, true, null, () => "Lose this card for your Short Rest?"), this);
+			AbilityCard lostCard;
 
-			if(shortRestAnswer.Redraw)
+			if(shortRestParameters.CanSelectCardToLose)
 			{
-				await AbilityCmd.SufferDamage(null, this, 1);
-
-				AbilityCard cardRedrawnFor = GameController.Instance.ReferenceManager.Get<AbilityCard>(shortRestAnswer.AbilityCardReferenceId);
-				await AbilityCmd.ReturnToHand(cardRedrawnFor);
-
-				ShortRestPrompt.Answer redrawAnswer =
-					await PromptManager.Prompt(new ShortRestPrompt(this, false, null, () => "Confirm Short Rest"), this);
-
-				lostCard = GameController.Instance.ReferenceManager.Get<AbilityCard>(redrawAnswer.AbilityCardReferenceId);
+				lostCard = await AbilityCmd.SelectAbilityCard(this, CardState.Discarded, mandatory: true, hintText: "Select a card to lose");
 			}
 			else
 			{
-				lostCard = GameController.Instance.ReferenceManager.Get<AbilityCard>(shortRestAnswer.AbilityCardReferenceId);
-			}
-		}
+				ShortRestPrompt.Answer shortRestAnswer =
+					await PromptManager.Prompt(new ShortRestPrompt(this, true, null, () => "Lose this card for your Short Rest?"), this);
 
-		await AbilityCmd.LoseCard(lostCard);
+				if(shortRestAnswer.Redraw)
+				{
+					await AbilityCmd.SufferDamage(this, 1, this);
+
+					AbilityCard cardRedrawnFor = GameController.Instance.ReferenceManager.Get<AbilityCard>(shortRestAnswer.AbilityCardReferenceId);
+					await AbilityCmd.ReturnToHand(cardRedrawnFor);
+
+					ShortRestPrompt.Answer redrawAnswer =
+						await PromptManager.Prompt(new ShortRestPrompt(this, false, null, () => "Confirm Short Rest"), this);
+
+					lostCard = GameController.Instance.ReferenceManager.Get<AbilityCard>(redrawAnswer.AbilityCardReferenceId);
+				}
+				else
+				{
+					lostCard = GameController.Instance.ReferenceManager.Get<AbilityCard>(shortRestAnswer.AbilityCardReferenceId);
+				}
+			}
+
+			await AbilityCmd.LoseCard(lostCard);
+		}
 
 		foreach(AbilityCard card in Cards)
 		{
@@ -469,7 +574,7 @@ public partial class Character : Figure
 
 		if(playableCardCount < 2 && discardedCardCount < 2)
 		{
-			await AbilityCmd.KillOrExhaust(null, this);
+			await AbilityCmd.KillOrExhaust(this, this);
 		}
 	}
 
@@ -477,6 +582,10 @@ public partial class Character : Figure
 	{
 		AbilityCard card = await AbilityCmd.SelectAbilityCard(this, CardState.Hand, true, card => card.OriginalOwner == this,
 			hintText: "Select a card to lose");
+
+		await ScenarioEvents.LosingCardToNegateDamageEvent.CreatePrompt(
+			new ScenarioEvents.LosingCardToNegateDamage.Parameters(this, card, parameters));
+
 		await AbilityCmd.LoseCard(card);
 
 		parameters.SetDamagePrevented();
@@ -487,6 +596,9 @@ public partial class Character : Figure
 		foreach(AbilityCard card in await AbilityCmd.SelectAbilityCards(this, CardState.Discarded, 2, 2,
 			        card => card.OriginalOwner == this, hintText: "Select two discarded cards to lose"))
 		{
+			await ScenarioEvents.LosingCardToNegateDamageEvent.CreatePrompt(
+				new ScenarioEvents.LosingCardToNegateDamage.Parameters(this, card, parameters));
+
 			await AbilityCmd.LoseCard(card);
 		}
 
@@ -508,6 +620,16 @@ public partial class Character : Figure
 			AddCard(abilityCard);
 		}
 
+		if(GameController.Instance.SavedCampaign.GodMode)
+		{
+			for(int i = 0; i < 10; i++)
+			{
+				SavedAbilityCard savedAbilityCard = new SavedAbilityCard(ModelDB.AbilityCard<TestCard>());
+				AbilityCard abilityCard = new AbilityCard(savedAbilityCard, this);
+				AddCard(abilityCard);
+			}
+		}
+
 		// Add and initialize all equipped items
 		foreach(string baseSlotItem in SavedCharacter.EquippedBaseSlotItems)
 		{
@@ -517,8 +639,7 @@ public partial class Character : Figure
 			}
 
 			ItemModel item = ModelDB.GetById<ItemModel>(baseSlotItem).ToMutable();
-			item.Init(this);
-			Items.Add(item);
+			EquipItem(item);
 		}
 
 		foreach(string smallItem in SavedCharacter.EquippedSmallItems)
@@ -529,19 +650,37 @@ public partial class Character : Figure
 			}
 
 			ItemModel item = ModelDB.GetById<ItemModel>(smallItem).ToMutable();
-			item.Init(this);
-			Items.Add(item);
+			EquipItem(item);
 		}
 
-		foreach(ItemModel item in Items)
+		bool ignoreItemMinusOneEffects = false;
+		for(int i = 0; i < ClassModel.Perks.Count; i++)
 		{
-			//TODO: Check for perk that ignores -1 cards
-			for(int i = 0; i < item.MinusOneCount; i++)
+			PerkModel perkModel = ClassModel.Perks[i];
+			if(perkModel.IgnoreItemMinusOneEffects && SavedCharacter.GetPerkAcquired(i))
 			{
-				AMDCardDeck.AddMinusOne();
+				ignoreItemMinusOneEffects = true;
 			}
+		}
 
-			//item.SetupForScenario();
+		if(!ignoreItemMinusOneEffects)
+		{
+			foreach(ItemModel item in Items)
+			{
+				for(int i = 0; i < item.MinusOneCount; i++)
+				{
+					AMDCardDeck.AddMinusOne();
+				}
+			}
+		}
+
+		for(int i = 0; i < ClassModel.Perks.Count; i++)
+		{
+			PerkModel perkModel = ClassModel.Perks[i];
+			if(SavedCharacter.GetPerkAcquired(i))
+			{
+				await perkModel.OnScenarioSetupPhaseCompleted(this);
+			}
 		}
 
 		object loseHandCardToCancelDamageSubscriber = new object();
@@ -560,6 +699,19 @@ public partial class Character : Figure
 			effectButtonParameters: new IconEffectButton.Parameters(Icons.LoseDiscardedCards),
 			effectInfoViewParameters: new TextEffectInfoView.Parameters("Lose two cards from your discard pile to negate the damage"));
 
+		// Initialize subscriptions for this character's personal quest
+		if(SavedCharacter.SavedPersonalQuest != null)
+		{
+			await SavedCharacter.SavedPersonalQuest.Model.OnScenarioSetupPhaseCompleted(this);
+		}
+
+		if(SelectedBattleGoalModel != null)
+		{
+			BattleGoal = new BattleGoal(this, SelectedBattleGoalModel);
+			BattleGoal.ProgressChangedEvent += OnBattleGoalProgressChanged;
+			await BattleGoal.OnScenarioSetupPhaseCompleted();
+		}
+
 		await GDTask.CompletedTask;
 	}
 
@@ -567,6 +719,11 @@ public partial class Character : Figure
 	{
 		_staticSprite.SetVisible(!ClassModel.HasAnimatedSprite || !animatedCharacters);
 		_animatedSprite.SetVisible(ClassModel.HasAnimatedSprite && animatedCharacters);
+	}
+
+	private void OnBattleGoalProgressChanged(BattleGoal battleGoal)
+	{
+		BattleGoalProgressChangedEvent?.Invoke(this);
 	}
 
 	public override void AddInfoItemParameters(List<InfoItemParameters> parametersList)

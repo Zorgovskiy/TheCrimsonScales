@@ -7,7 +7,7 @@ public abstract partial class OptionView<TParameters, TValue> : OptionViewBase
 {
 	private Label _label;
 
-	private TParameters _parameters;
+	protected TParameters _parameters;
 
 	protected SavedOption<TValue> SavedOption => _parameters.SavedOption;
 
@@ -31,6 +31,24 @@ public abstract partial class OptionView<TParameters, TValue> : OptionViewBase
 	{
 		SavedOption.ValueChangedEvent += OnValueChanged;
 		OnValueChanged(SavedOption.Value);
+	}
+
+	public override void OnOpen()
+	{
+		base.OnOpen();
+
+		SetMouseBehaviorRecursive(_parameters.Enabled ? MouseBehaviorRecursiveEnum.Inherited : MouseBehaviorRecursiveEnum.Disabled);
+		SetModulate(_parameters.Enabled ? Colors.White : Colors.Gray);
+	}
+
+	public override void _ExitTree()
+	{
+		base._ExitTree();
+
+		if(SavedOption != null)
+		{
+			SavedOption.ValueChangedEvent -= OnValueChanged;
+		}
 	}
 
 	public override void Destroy()

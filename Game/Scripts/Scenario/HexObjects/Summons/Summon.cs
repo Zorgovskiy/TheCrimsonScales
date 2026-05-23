@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Fractural.Tasks;
 using Godot;
 
@@ -7,20 +6,20 @@ public partial class Summon : Figure
 {
 	private SummonViewComponent _summonViewComponent;
 	private string _name;
-	private List<Ability> _abilities = new List<Ability>();
+	private readonly List<Ability> _abilities = new List<Ability>();
 
 	private ActionState _turnActionState;
 
 	public SummonStats Stats { get; private set; }
 	public Character CharacterOwner { get; private set; }
+	public Texture2D Texture { get; private set; }
 	public int SummonIndex { get; private set; }
 
 	public override string DisplayName => _name;
 	public override string DebugName => _name;
-
 	public override AMDCardDeck AMDCardDeck => CharacterOwner.AMDCardDeck;
-
-	public Texture2D Texture => _summonViewComponent.Sprite.Texture;
+	public override Texture2D MapIconTexture => _summonViewComponent.Sprite.Texture;
+	public override Node2D Visual => _summonViewComponent.Sprite;
 
 	public override async GDTask Init(Hex originHex, int rotationIndex = 0, bool hexCanBeNull = false)
 	{
@@ -29,40 +28,40 @@ public partial class Summon : Figure
 		_summonViewComponent = GetViewComponent<SummonViewComponent>();
 	}
 
-	public void Spawn(SummonStats stats, Character characterOwner, string name, string texturePath)
+	public async GDTask Spawn(SummonStats stats, Character characterOwner, string name, string texturePath, string mapIconTexturePath)
 	{
 		Stats = stats;
 		CharacterOwner = characterOwner;
 		_name = name;
 
-		_figureViewComponent.Outline.SelfModulate = CharacterOwner.OutlineColor;
-		_figureViewComponent.TurnStartPS.SelfModulate = CharacterOwner.OutlineColor;
-		_figureViewComponent.ActivePS.Modulate = _figureViewComponent.Outline.SelfModulate;
+		_outline.SetSelfModulate(CharacterOwner.OutlineColor);
+		FigureViewComponent.TurnStartPS.SetSelfModulate(OutlineColor);
+		FigureViewComponent.ActivePS.SetModulate(OutlineColor);
 
-		_summonViewComponent.StandeeNumberCircle.SelfModulate = CharacterOwner.OutlineColor;
+		_summonViewComponent.StandeeNumberCircle.SetSelfModulate(OutlineColor);
 
-		Texture2D texture = ResourceLoader.Load<Texture2D>(texturePath);
-		_summonViewComponent.Sprite.Texture = texture;
-		float textureWidth = texture.GetWidth();
-		_summonViewComponent.Sprite.Scale = (330f / textureWidth) * Vector2.One;
+		Texture = ResourceLoader.Load<Texture2D>(texturePath);
+		Texture2D mapIconTexture = ResourceLoader.Load<Texture2D>(mapIconTexturePath);
+		_summonViewComponent.Sprite.SetTexture(mapIconTexture);
+		float textureWidth = mapIconTexture.GetWidth();
+		_summonViewComponent.Sprite.SetScale((250f / textureWidth) * Vector2.One);
 
 		SetMaxHealth(Stats.Health);
 		SetHealth(Stats.Health);
 
 		SetAlignment(characterOwner.Alignment);
-		SetEnemies(characterOwner.Enemies);
 
 		if(Stats.Traits != null)
 		{
 			foreach(FigureTrait trait in Stats.Traits)
 			{
-				trait.Activate(this);
+				await AddTrait(trait);
 			}
 		}
 
 		CharacterOwner.RegisterSummon(this);
 
-		GameController.Instance.Map.RegisterFigure(this);
+		await GameController.Instance.Map.RegisterFigure(this);
 
 		UpdateInitiative();
 
@@ -101,8 +100,17 @@ public partial class Summon : Figure
 						parameters.SetRangeType(RangeType.Melee);
 						parameters.SetTargets(1);
 						parameters.SetAOEPattern(null);
+					}
+				);
 
+				ScenarioEvents.AbilityEndedEvent.Subscribe(this, characterOwner,
+					parameters => parameters.Performer == this,
+					async parameters =>
+					{
+						ScenarioEvents.AbilityEndedEvent.Unsubscribe(this, characterOwner);
 						ScenarioCheckEvents.AIMoveParametersCheckEvent.Unsubscribe(this, characterOwner);
+
+						await GDTask.CompletedTask;
 					}
 				);
 
@@ -120,7 +128,7 @@ public partial class Summon : Figure
 
 		UpdateInitiative();
 
-		_summonViewComponent.StandeeNumberLabel.Text = (SummonIndex + 1).ToString();
+		_summonViewComponent.StandeeNumberLabel.SetText((SummonIndex + 1).ToString());
 	}
 
 	protected override async GDTask TakeTurn()
@@ -137,11 +145,11 @@ public partial class Summon : Figure
 			authority = CharacterOwner;
 		}
 
-		_turnActionState = new ActionState(this, authority, _abilities);
+		_turnActionState = new ActionState(this, this, authority, _abilities);
 		await _turnActionState.Perform();
 	}
 
-	public async GDTask RemoveActionFromActive()
+	public async GDTask RemoveTurnActionFromActive()
 	{
 		if(_turnActionState != null)
 		{
@@ -151,15 +159,7 @@ public partial class Summon : Figure
 
 	public override async GDTask Destroy(bool immediately = false, bool forceDestroy = false)
 	{
-		if(Stats.Traits != null)
-		{
-			foreach(FigureTrait trait in Stats.Traits)
-			{
-				trait.Deactivate(this);
-			}
-		}
-
-		await RemoveActionFromActive();
+		await RemoveTurnActionFromActive();
 
 		ScenarioEvents.FigureFoundFocusEvent.Unsubscribe(this, CharacterOwner);
 

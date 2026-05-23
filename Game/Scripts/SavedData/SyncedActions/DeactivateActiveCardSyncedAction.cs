@@ -18,6 +18,12 @@ public class DeactivateActiveCardSyncedAction : SyncedAction
 		AbilityCardReferenceId = card.ReferenceId;
 	}
 
+	public override bool Validate()
+	{
+		AbilityCard abilityCard = GameController.Instance.ReferenceManager.Get<AbilityCard>(AbilityCardReferenceId);
+		return abilityCard.CardState.IsActive();
+	}
+
 	public override async GDTask Perform()
 	{
 		AbilityCard abilityCard = GameController.Instance.ReferenceManager.Get<AbilityCard>(AbilityCardReferenceId);

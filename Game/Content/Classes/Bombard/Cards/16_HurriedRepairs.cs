@@ -1,6 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Fractural.Tasks;
+using Godot;
 
 public class HurriedRepairs : BombardCardModel<HurriedRepairs.CardTop, HurriedRepairs.CardBottom>
 {
@@ -11,24 +12,25 @@ public class HurriedRepairs : BombardCardModel<HurriedRepairs.CardTop, HurriedRe
 
 	public class CardTop : BombardCardSide
 	{
-		protected override IEnumerable<AbilityCardAbility> GetAbilities() =>
+		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 			new AbilityCardAbility(HealAbility.Builder()
-				.WithHealValue(new DynamicInt<HealAbility.State>(state => 1 + state.Performer.TurnMovedHexCount))
+				.WithHealValue(new DynamicInt<HealAbility.State>(state => 1 + state.Performer.TurnMovedHexes.Count))
+				.WithTarget(Target.Self)
 				.Build()),
 
 			new AbilityCardAbility(AbilityCmd.AllOpposingAttacksGainDisadvantageActiveAbility())
 		];
 
-		protected override bool Round => true;
+		public override bool Round => true;
 	}
 
 	public class CardBottom : BombardCardSide
 	{
-		protected override IEnumerable<AbilityCardAbility> GetAbilities() =>
+		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 			new AbilityCardAbility(MoveAbility.Builder()
-				.WithDistance(3)
+				.WithDistance(3, new MoveCircle(this, new Vector2(0.6209843f, 0.6982149f)))
 				.WithOnAbilityStarted(async state =>
 				{
 					ScenarioCheckEvents.CanPassEnemyCheckEvent.Subscribe(state, this,
@@ -51,24 +53,19 @@ public class HurriedRepairs : BombardCardModel<HurriedRepairs.CardTop, HurriedRe
 				})
 				.WithOnAbilityEndedPerformed(async state =>
 					{
-						MoveAbility.State moveAbilityState = state.ActionState.GetAbilityState<MoveAbility.State>(0);
-
 						List<Figure> figures = new List<Figure>();
 
-						foreach(Hex hex in moveAbilityState.Hexes)
+						foreach(Hex hex in state.Hexes)
 						{
-							foreach(Figure figure in hex.GetHexObjectsOfType<Figure>())
+							foreach(Figure figure in hex.GetHexObjectsOfType<Figure>().Where(figure => figure != state.Performer))
 							{
-								if(state.Performer.AlliedWith(figure))
-								{
-									figures.AddIfNew(figure);
-								}
+								figures.AddIfNew(figure);
 							}
 						}
 
 						foreach(Figure figure in figures)
 						{
-							await AbilityCmd.SufferDamage(null, figure, 1);
+							await AbilityCmd.SufferDamage(state, figure, 1);
 						}
 					}
 				)

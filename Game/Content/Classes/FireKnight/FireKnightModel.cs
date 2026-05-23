@@ -6,48 +6,102 @@ public class FireKnightModel : ClassModel
 	public override string Name => "Fire Knight";
 	public override MaxHealthValues MaxHealthValues => MaxHealthValues.MediumHigh;
 	public override int HandSize => 10;
+	public override Ancestry Ancestry => Ancestry.Valrath;
+
+	public override List<EventModel> UnlockEvents { get; } =
+	[
+		ModelDB.Event<City51>(),
+		ModelDB.Event<Road51>(),
+	];
+
+	public override List<EventModel> RetirementEvents { get; } =
+	[
+		// ModelDB.Event<City52>(),
+		// ModelDB.Event<Road52>(),
+	];
+
 	public override string AssetPath => "res://Content/Classes/FireKnight";
 	public override Color PrimaryColor => Color.FromHtml("df391f");
 	public override Color SecondaryColor => Color.FromHtml("531724");
 
 	public override PackedScene Scene => ResourceLoader.Load<PackedScene>($"{AssetPath}/FireKnight.tscn");
 
-	public override IList<AbilityCardModel> AbilityCards { get; } =
+	public override List<AbilityCardModel> AbilityCards { get; } =
 	[
-		ModelDB.Card<ForcibleEntry>(),
-		ModelDB.Card<BackupSupport>(),
-		ModelDB.Card<CollectiveCombat>(),
-		ModelDB.Card<ControlledAggression>(),
-		ModelDB.Card<RapidRescue>(),
-		ModelDB.Card<PlayingWithFire>(),
-		ModelDB.Card<FireWhirl>(),
-		ModelDB.Card<LightIrons>(),
-		ModelDB.Card<FieldMedic>(),
-		ModelDB.Card<FierceLeader>(),
+		ModelDB.AbilityCard<ForcibleEntry>(),
+		ModelDB.AbilityCard<BackupSupport>(),
+		ModelDB.AbilityCard<CollectiveCombat>(),
+		ModelDB.AbilityCard<ControlledAggression>(),
+		ModelDB.AbilityCard<RapidRescue>(),
+		ModelDB.AbilityCard<PlayingWithFire>(),
+		ModelDB.AbilityCard<FireWhirl>(),
+		ModelDB.AbilityCard<LightIrons>(),
+		ModelDB.AbilityCard<FieldMedic>(),
+		ModelDB.AbilityCard<FierceLeader>(),
 
-		ModelDB.Card<CoordinatedAttack>(),
-		ModelDB.Card<LoyalCompanion>(),
-		ModelDB.Card<ProtectiveInstinct>(),
+		ModelDB.AbilityCard<CoordinatedAttack>(),
+		ModelDB.AbilityCard<LoyalCompanion>(),
+		ModelDB.AbilityCard<ProtectiveInstinct>(),
 
-		ModelDB.Card<HeavyIrons>(),
-		ModelDB.Card<TraumaCare>(),
-		ModelDB.Card<LadderAssault>(),
-		ModelDB.Card<CrewIntegrity>(),
-		ModelDB.Card<JackOfAllTrades>(),
-		ModelDB.Card<ForgedByFire>(),
+		ModelDB.AbilityCard<HeavyIrons>(),
+		ModelDB.AbilityCard<TraumaCare>(),
+		ModelDB.AbilityCard<LadderAssault>(),
+		ModelDB.AbilityCard<CrewIntegrity>(),
+		ModelDB.AbilityCard<JackOfAllTrades>(),
+		ModelDB.AbilityCard<ForgedByFire>(),
+		ModelDB.AbilityCard<HookAndLadder>(),
+		ModelDB.AbilityCard<SearingBlaze>(),
+		ModelDB.AbilityCard<SpontaneousCombustion>(),
+		ModelDB.AbilityCard<MutualAid>(),
+		ModelDB.AbilityCard<RollingFlames>(),
+		ModelDB.AbilityCard<SearchAndRescue>(),
+		ModelDB.AbilityCard<Backdraft>(),
+		ModelDB.AbilityCard<FightTogether>(),
+		ModelDB.AbilityCard<Flashover>(),
+		ModelDB.AbilityCard<IncidentCommander>(),
 	];
 
-	public IList<ItemModel> AllItems { get; } =
+	public override List<PerkModel> Perks { get; } =
 	[
-		ModelDB.Item<EmberCladding>(),
-		ModelDB.Item<RescueShield>(),
-		ModelDB.Item<RescueAxe>(),
-		ModelDB.Item<PikeHook>(),
-		ModelDB.Item<FireproofHelm>(),
-		ModelDB.Item<KindledTonic>(),
-		ModelDB.Item<ExplosiveTonic>(),
-		ModelDB.Item<ScrollOfCharisma>(),
-		ModelDB.Item<ScrollOfProtection>(),
-		ModelDB.Item<ScrollOfInvigoration>(),
+		ModelDB.Perk<FireKnightPerks.ReplaceOneMinusOneWithOnePlusOneStrengthenAlly>(),
+		ModelDB.Perk<FireKnightPerks.ReplaceOneMinusOneWithOnePlusOneStrengthenAlly>(),
+
+		ModelDB.Perk<FireKnightPerks.ReplaceOneMinusOneWithOnePlusZeroHealOneRangeOneRolling>(),
+		ModelDB.Perk<FireKnightPerks.ReplaceOneMinusOneWithOnePlusZeroHealOneRangeOneRolling>(),
+
+		ModelDB.Perk<FireKnightPerks.ReplaceTwoPlusZeroWithTwoPlusZeroIfYouAreOnLadderPlusTwoInstead>(),
+		ModelDB.Perk<FireKnightPerks.ReplaceTwoPlusZeroWithTwoPlusZeroIfYouAreOnLadderPlusTwoInstead>(),
+
+		ModelDB.Perk<FireKnightPerks.ReplacePlusZeroWithOnePlusOneFire>(),
+
+		ModelDB.Perk<FireKnightPerks.ReplaceOnePlusZeroWithOnePlusOneWound>(),
+
+		ModelDB.Perk<FireKnightPerks.ReplaceOnePlusOneWithOnePlusTwoWound>(),
+
+		ModelDB.Perk<FireKnightPerks.AddOnePlusTwoFire>(),
+
+		ModelDB.Perk<FireKnightPerks.AddOnePlusOneStrengthenAlly>(),
+
+		ModelDB.Perk<FireKnightPerks.AddTwoPlusZeroWoundRolling>(),
+
+		ModelDB.Perk<FireKnightPerks.IgnoreScenarioEffectsAddOnePlusZeroFireRolling>(),
+
+		ModelDB.Perk<FireKnightPerks.IgnoreItemMinusOneEffectsAddOnePlusZeroFireRolling>(),
+
+		ModelDB.Perk<FireKnightPerks.FearlessLeader>()
+	];
+
+	public List<ItemModel> AllItems { get; } =
+	[
+		ModelDB.Item<FireKnightEmberCladding>(),
+		ModelDB.Item<FireKnightRescueShield>(),
+		ModelDB.Item<FireKnightRescueAxe>(),
+		ModelDB.Item<FireKnightPikeHook>(),
+		ModelDB.Item<FireKnightFireproofHelm>(),
+		ModelDB.Item<FireKnightKindledTonic>(),
+		ModelDB.Item<FireKnightExplosiveTonic>(),
+		ModelDB.Item<FireKnightScrollOfCharisma>(),
+		ModelDB.Item<FireKnightScrollOfProtection>(),
+		ModelDB.Item<FireKnightScrollOfInvigoration>(),
 	];
 }

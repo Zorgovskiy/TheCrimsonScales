@@ -45,8 +45,8 @@ public partial class MenuPopup : Popup<MenuPopup.Request>
 	{
 		base.OnOpen();
 
-		_undoTurnButton.GetParent<Control>().SetVisible(GameController.Instance != null && GameController.Instance.CanUndo(UndoType.Turn));
-		_undoRoundButton.GetParent<Control>().SetVisible(GameController.Instance != null && GameController.Instance.CanUndo(UndoType.Round));
+		_undoTurnButton.GetParent<Control>().SetVisible(GameController.Instance != null && GameController.Instance.UndoManager.CanUndoTurn);
+		_undoRoundButton.GetParent<Control>().SetVisible(GameController.Instance != null && GameController.Instance.UndoManager.CanUndoRound);
 		_resignButton.GetParent<Control>().SetVisible(GameController.Instance != null);
 		_winButton.GetParent<Control>().SetVisible(GameController.Instance != null);
 		_copyToClipboardButton.GetParent<Control>().SetVisible(GameController.Instance != null);
@@ -68,12 +68,13 @@ public partial class MenuPopup : Popup<MenuPopup.Request>
 	{
 		Close();
 
-		GameController.Instance.Undo(UndoType.Turn);
+		GameController.Instance.UndoManager.UndoTurn();
 	}
 
 	private void OnUndoRoundPressed()
 	{
-		AppController.Instance.PopupManager.OpenPopupOnTop(new TextPopup.Request("Win", "Are you sure you undo to the start of the past round?",
+		AppController.Instance.PopupManager.OpenPopupOnTop(new TextPopup.Request("Undo Round",
+			"Are you sure you undo to the start of the past round?",
 			new TextButton.Parameters("Cancel", () =>
 			{
 			}),
@@ -81,7 +82,7 @@ public partial class MenuPopup : Popup<MenuPopup.Request>
 			{
 				Close();
 
-				GameController.Instance.Undo(UndoType.Round);
+				GameController.Instance.UndoManager.UndoRound();
 			}, TextButton.ColorType.Red)
 		));
 	}
@@ -90,10 +91,10 @@ public partial class MenuPopup : Popup<MenuPopup.Request>
 	{
 		Close();
 
-		Formatting oldFormatting = SaveFile.JsonSerializerSettings.Formatting;
-		SaveFile.JsonSerializerSettings.Formatting = Formatting.Indented;
-		string json = JsonConvert.SerializeObject(GameController.Instance.SavedCampaign, SaveFile.JsonSerializerSettings);
-		SaveFile.JsonSerializerSettings.Formatting = oldFormatting;
+		Formatting oldFormatting = SaveManager.JsonSerializerSettings.Formatting;
+		SaveManager.JsonSerializerSettings.Formatting = Formatting.Indented;
+		string json = JsonConvert.SerializeObject(GameController.Instance.SavedCampaign, SaveManager.JsonSerializerSettings);
+		SaveManager.JsonSerializerSettings.Formatting = oldFormatting;
 		//GD.Print(json);
 		DisplayServer.ClipboardSet(json);
 	}

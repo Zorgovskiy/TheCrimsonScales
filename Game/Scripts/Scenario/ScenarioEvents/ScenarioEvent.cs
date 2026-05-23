@@ -8,7 +8,7 @@ public abstract class ScenarioEvent<T> : ScenarioEvent
 {
 	public new class Subscription : ScenarioEvent.Subscription
 	{
-		private readonly List<CanApplyFunction> _extraCanApplyFunctions = new List<CanApplyFunction>();
+		private CanApplyFunction _extraCanApplyFunction = null;
 		private bool _hasBeenAppliedDuringSubscription;
 
 		public CanApplyFunction CanApplyFunction { get; }
@@ -40,73 +40,50 @@ public abstract class ScenarioEvent<T> : ScenarioEvent
 				effectInfoViewParameters ?? new TextEffectInfoView.Parameters("TODO"));
 		}
 
-		public static Subscription ConsumeElement(Element element,
-			CanApplyFunction canApplyFunction = null, ApplyFunction applyFunction = null, EffectType effectType = EffectType.Selectable,
+		public static Subscription ConsumeElement(List<CardElementConsumption> elements, CanApplyFunction canApplyFunction = null,
+			ApplyFunction applyFunction = null,
+			EffectType effectType = EffectType.Selectable,
 			int order = 0, bool canApplyMultipleTimesDuringSubscription = false, bool canApplyMultipleTimesInEffectCollection = false,
-			EffectButtonParameters effectButtonParameters = null, EffectInfoViewParameters effectInfoViewParameters = null)
+			EffectButtonParameters effectButtonParameters = null, EffectInfoViewParameters effectInfoViewParameters = null,
+			Figure potentialConsumer = null)
 		{
 			//TODO: Make sure this works for items that make you skip an element consumption (perhaps after clicking, a new prompt opens up to select what to use)
 			return new Subscription(parameters =>
 				{
-					if(GameController.Instance.ElementManager.GetState(element) == ElementState.Inert)
+					if(parameters is ParametersBaseWithAbilityState parametersBase)
 					{
-						return false;
+						potentialConsumer ??= parametersBase.BaseAbilityState.Performer;
 					}
 
-					return canApplyFunction == null || canApplyFunction.Invoke(parameters);
+					return AbilityCmd.CanConsumeElements(elements, potentialConsumer) &&
+					       (canApplyFunction == null || canApplyFunction.Invoke(parameters));
 				},
 				async parameters =>
 				{
-					await AbilityCmd.TryConsumeElement(element);
+					Figure potentialConsumer = null;
+					if(parameters is ParametersBaseWithAbilityState parametersBase)
+					{
+						potentialConsumer = parametersBase.BaseAbilityState.Performer;
+					}
+
+					await AbilityCmd.ConsumeElements(potentialConsumer, elements);
 					if(applyFunction != null)
 					{
-						// if(parameters is ParametersBaseWithAbilityState parametersBaseWithAbilityState)
-						// {
-						// 	parametersBaseWithAbilityState.BaseAbilityState.SetElementConsumed(element);
-						// }
-						await applyFunction.Invoke(parameters);
-					}
-				}, effectType, order, canApplyMultipleTimesDuringSubscription, canApplyMultipleTimesInEffectCollection,
-				effectButtonParameters ?? new ConsumeElementEffectButton.Parameters(element),
-				effectInfoViewParameters ?? new TextEffectInfoView.Parameters("TODO"));
-		}
-
-		public static Subscription ConsumeElements(List<Element> elements,
-			CanApplyFunction canApplyFunction = null, ApplyFunction applyFunction = null, EffectType effectType = EffectType.Selectable,
-			int order = 0, bool canApplyMultipleTimesDuringSubscription = false, bool canApplyMultipleTimesInEffectCollection = false,
-			EffectButtonParameters effectButtonParameters = null, EffectInfoViewParameters effectInfoViewParameters = null)
-		{
-			//TODO: Make sure this works for items that make you skip an element consumption (perhaps after clicking, a new prompt opens up to select what to use)
-			return new Subscription(parameters =>
-				{
-					foreach(Element element in elements)
-					{
-						if(GameController.Instance.ElementManager.GetState(element) == ElementState.Inert)
-						{
-							return false;
-						}
-					}
-
-					return canApplyFunction == null || canApplyFunction.Invoke(parameters);
-				},
-				async parameters =>
-				{
-					foreach(Element element in elements)
-					{
-						await AbilityCmd.TryConsumeElement(element);
-					}
-
-					if(applyFunction != null)
-					{
-						// if(parameters is ParametersBaseWithAbilityState parametersBaseWithAbilityState)
-						// {
-						// 	parametersBaseWithAbilityState.BaseAbilityState.SetElementConsumed(element);
-						// }
 						await applyFunction.Invoke(parameters);
 					}
 				}, effectType, order, canApplyMultipleTimesDuringSubscription, canApplyMultipleTimesInEffectCollection,
 				effectButtonParameters ?? new ConsumeElementEffectButton.Parameters(elements),
 				effectInfoViewParameters ?? new TextEffectInfoView.Parameters("TODO"));
+		}
+
+		public static Subscription ConsumeElement(Element element, CanApplyFunction canApplyFunction = null,
+			ApplyFunction applyFunction = null,
+			EffectType effectType = EffectType.Selectable,
+			int order = 0, bool canApplyMultipleTimesDuringSubscription = false, bool canApplyMultipleTimesInEffectCollection = false,
+			EffectButtonParameters effectButtonParameters = null, EffectInfoViewParameters effectInfoViewParameters = null)
+		{
+			return ConsumeElement([CardElementConsumption.Consume(element)], canApplyFunction, applyFunction, effectType, order,
+				canApplyMultipleTimesDuringSubscription, canApplyMultipleTimesInEffectCollection, effectButtonParameters, effectInfoViewParameters);
 		}
 
 		public override bool CanApply(ParametersBase parameters)
@@ -122,12 +99,10 @@ public abstract class ScenarioEvent<T> : ScenarioEvent
 			}
 
 			T castParameters = (T)parameters;
-			foreach(CanApplyFunction extraCanApplyFunction in _extraCanApplyFunctions)
+
+			if(_extraCanApplyFunction != null && !_extraCanApplyFunction(castParameters))
 			{
-				if(!extraCanApplyFunction(castParameters))
-				{
-					return false;
-				}
+				return false;
 			}
 
 			return CanApplyFunction == null || CanApplyFunction.Invoke(castParameters);
@@ -143,15 +118,15 @@ public abstract class ScenarioEvent<T> : ScenarioEvent
 			}
 		}
 
-		public void AddExtraCanApplyFunction(CanApplyFunction canApplyFunction)
+		public void SetExtraCanApplyFunction(CanApplyFunction canApplyFunction)
 		{
-			_extraCanApplyFunctions.Add(canApplyFunction);
+			_extraCanApplyFunction = canApplyFunction;
 		}
 
 		public void ClearSubscriptionAppliedAndExtraCanApplyFunctions()
 		{
 			_hasBeenAppliedDuringSubscription = false;
-			_extraCanApplyFunctions.Clear();
+			_extraCanApplyFunction = null;
 		}
 	}
 
@@ -186,10 +161,14 @@ public abstract class ScenarioEvent<T> : ScenarioEvent
 	{
 		EffectCollection collection = CreateEffectCollection(parameters);
 
-		// Then, show a prompt with any potential remaining effect choices
-		await PromptManager.Prompt(new ScenarioEventPrompt(collection, () => hintText), authority);
+		await CreatePrompt(collection, authority, hintText);
 
 		return parameters;
+	}
+
+	public async GDTask CreatePrompt(EffectCollection collection, Figure authority, string hintText = "Select effects to use")
+	{
+		await PromptManager.Prompt(new ScenarioEventPrompt(collection, () => hintText), authority);
 	}
 
 	public void Subscribe(Figure subscriberA, object subscriberB,
@@ -279,8 +258,9 @@ public abstract class ScenarioEvent<T> : ScenarioEvent
 		{
 			foreach(Subscription subscription in subscriptions)
 			{
-				//CanApplyFunction oldCanApplyFunction = subscription.CanApplyFunction;
-				subscription.AddExtraCanApplyFunction(parameters =>
+				subscription.ClearSubscriptionAppliedAndExtraCanApplyFunctions();
+
+				subscription.SetExtraCanApplyFunction(parameters =>
 				{
 					if(parameters is not ParametersBaseWithAbilityState parametersBaseWithAbilityState)
 					{
@@ -288,35 +268,18 @@ public abstract class ScenarioEvent<T> : ScenarioEvent
 						return false;
 					}
 
+					if(parametersBaseWithAbilityState.BaseAbilityState != abilityState)
+					{
+						return false;
+					}
+
 					return true;
 				});
-				// subscription.CanApplyFunction = parameters =>
-				// {
-				// 	if(parameters is not ParametersBaseWithAbilityState parametersBaseWithAbilityState)
-				// 	{
-				// 		Log.Error("Trying to subscribe a list for a specific ability state, but the event does not support an ability state");
-				// 		return false;
-				// 	}
-				//
-				// 	return
-				// 		(abilityState == null || parametersBaseWithAbilityState.BaseAbilityState == abilityState) &&
-				// 		(oldCanApplyFunction == null || oldCanApplyFunction.Invoke(parameters));
-				// };
 
 				Subscribe(ScenarioEvents.GetSubscriberPair(abilityState, subscriberB), subscription, false);
 			}
 		}
 	}
-
-	// public void Subscribe(IEventSubscriber subscriber, IEnumerable<Subscription> subscriptions)
-	// {
-	//
-	// 	foreach(var subscription in subscriptions)
-	// 	{
-	// 		
-	// 	}
-	// 	Subscribe(ScenarioEvents.GetSubscriberPair(abilityState, subscriberB), subscription, false);
-	// }
 
 	public void Subscribe(IEventSubscriber subscriber, Subscription subscription, bool checkDuplicates = true)
 	{
@@ -454,7 +417,7 @@ public abstract class ScenarioEvent
 		public T AbilityState { get; }
 
 		public override AbilityState BaseAbilityState => AbilityState;
-		public Figure Authority => AbilityState.Performer;
+		public Figure Authority { get; private set; }
 		public Figure Performer => AbilityState.Performer;
 
 		public ParametersBase(T abilityState)
@@ -466,6 +429,12 @@ public abstract class ScenarioEvent
 			}
 
 			AbilityState = abilityState;
+			Authority = AbilityState.Authority;
+		}
+
+		public void SetAuthority(Figure figure)
+		{
+			Authority = figure;
 		}
 	}
 

@@ -31,7 +31,7 @@ public class CultistAbilityCard0 : CultistAbilityCard
 		new MonsterAbilityCardAbility(OtherActiveAbility.Builder()
 			.WithOnActivate(async state =>
 			{
-				ScenarioEvents.FigureKilledEvent.Subscribe(state, this,
+				ScenarioEvents.BeforeFigureKilledEvent.Subscribe(state, this,
 					parameters => parameters.Figure == monster,
 					async parameters =>
 					{
@@ -44,7 +44,7 @@ public class CultistAbilityCard0 : CultistAbilityCard
 				ScenarioCheckEvents.FigureInfoItemExtraEffectsCheckEvent.Subscribe(state, this,
 					parameters => parameters.Figure == monster,
 					parameters => parameters.Add(
-						new FigureInfoTextExtraEffect.Parameters(
+						new InfoTextExtraEffect.Parameters(textParameters =>
 							$"On death, this monster performs {Icons.Inline(Icons.Attack)}+2, {Icons.Inline(Icons.Targets)} all adjacent enemies"))
 				);
 
@@ -52,7 +52,7 @@ public class CultistAbilityCard0 : CultistAbilityCard
 			})
 			.WithOnDeactivate(async state =>
 			{
-				ScenarioEvents.FigureKilledEvent.Unsubscribe(state, this);
+				ScenarioEvents.BeforeFigureKilledEvent.Unsubscribe(state, this);
 				ScenarioCheckEvents.FigureInfoItemExtraEffectsCheckEvent.Unsubscribe(state, this);
 
 				await GDTask.CompletedTask;
@@ -73,7 +73,7 @@ public class CultistAbilityCard1 : CultistAbilityCard
 		new MonsterAbilityCardAbility(OtherActiveAbility.Builder()
 			.WithOnActivate(async state =>
 			{
-				ScenarioEvents.FigureKilledEvent.Subscribe(state, this,
+				ScenarioEvents.BeforeFigureKilledEvent.Subscribe(state, this,
 					parameters => parameters.Figure == monster,
 					async parameters =>
 					{
@@ -86,7 +86,7 @@ public class CultistAbilityCard1 : CultistAbilityCard
 				ScenarioCheckEvents.FigureInfoItemExtraEffectsCheckEvent.Subscribe(state, this,
 					parameters => parameters.Figure == monster,
 					parameters => parameters.Add(
-						new FigureInfoTextExtraEffect.Parameters(
+						new InfoTextExtraEffect.Parameters(textParameters =>
 							$"On death, this monster performs {Icons.Inline(Icons.Attack)}+2, {Icons.Inline(Icons.Targets)} all adjacent enemies"))
 				);
 
@@ -94,7 +94,7 @@ public class CultistAbilityCard1 : CultistAbilityCard
 			})
 			.WithOnDeactivate(async state =>
 			{
-				ScenarioEvents.FigureKilledEvent.Unsubscribe(state, this);
+				ScenarioEvents.BeforeFigureKilledEvent.Unsubscribe(state, this);
 				ScenarioCheckEvents.FigureInfoItemExtraEffectsCheckEvent.Unsubscribe(state, this);
 
 				await GDTask.CompletedTask;
@@ -153,11 +153,10 @@ public class CultistAbilityCard5 : CultistAbilityCard
 			.WithMonsterType(MonsterType.Normal)
 			.Build()),
 
-		new MonsterAbilityCardAbility(OtherAbility.Builder()
-			.WithPerformAbility(async state =>
-			{
-				await AbilityCmd.SufferDamage(null, state.Performer, 2);
-			})
+		new MonsterAbilityCardAbility(SufferDamageAbility.Builder()
+			.WithDamage(2)
+			.WithTarget(Target.Self)
+			.WithMandatory(true)
 			.Build())
 	];
 }
@@ -175,11 +174,10 @@ public class CultistAbilityCard6 : CultistAbilityCard
 			.WithMonsterType(MonsterType.Normal)
 			.Build()),
 
-		new MonsterAbilityCardAbility(OtherAbility.Builder()
-			.WithPerformAbility(async state =>
-			{
-				await AbilityCmd.SufferDamage(null, state.Performer, 2);
-			})
+		new MonsterAbilityCardAbility(SufferDamageAbility.Builder()
+			.WithDamage(2)
+			.WithTarget(Target.Self)
+			.WithMandatory(true)
 			.Build())
 	];
 }

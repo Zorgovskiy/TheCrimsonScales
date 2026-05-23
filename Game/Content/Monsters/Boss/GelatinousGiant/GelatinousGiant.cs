@@ -1,100 +1,40 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Fractural.Tasks;
 
-public class GelatinousGiant : MonsterModel, IBossMonsterModel
+public class GelatinousGiant : BloodOoze, IBossMonsterModel
 {
 	public override MonsterStats[] BossLevelStats =>
-	[
-		new MonsterStats()
-		{
-			Health = 8 * CharacterCount,
-			Move = 1,
-			Attack = 2,
-			Range = 3,
-			Traits = [new AllDamageImmunityTrait(), new AllNegativeConditionImmunityTrait()]
-		},
-		new MonsterStats()
-		{
-			Health = 9 * CharacterCount,
-			Move = 1,
-			Attack = 2,
-			Range = 3,
-			Traits = [new ShieldTrait(1), new AllDamageImmunityTrait(), new AllNegativeConditionImmunityTrait()]
-		},
-		new MonsterStats()
-		{
-			Health = 11 * CharacterCount,
-			Move = 1,
-			Attack = 3,
-			Range = 3,
-			Traits = [new ShieldTrait(1), new AllDamageImmunityTrait(), new AllNegativeConditionImmunityTrait()]
-		},
-		new MonsterStats()
-		{
-			Health = 11 * CharacterCount,
-			Move = 2,
-			Attack = 3,
-			Range = 4,
-			Traits =
-			[
-				new ShieldTrait(1), new ApplyConditionTrait(Conditions.Poison1), new AllDamageImmunityTrait(), new AllNegativeConditionImmunityTrait()
-			]
-		},
-		new MonsterStats()
-		{
-			Health = 13 * CharacterCount,
-			Move = 2,
-			Attack = 4,
-			Range = 4,
-			Traits =
-			[
-				new ShieldTrait(1), new ApplyConditionTrait(Conditions.Poison1), new AllDamageImmunityTrait(), new AllNegativeConditionImmunityTrait()
-			]
-		},
-		new MonsterStats()
-		{
-			Health = 15 * CharacterCount,
-			Move = 3,
-			Attack = 4,
-			Range = 4,
-			Traits =
-			[
-				new ShieldTrait(1), new ApplyConditionTrait(Conditions.Poison1), new AllDamageImmunityTrait(), new AllNegativeConditionImmunityTrait()
-			]
-		},
-		new MonsterStats()
-		{
-			Health = 16 * CharacterCount,
-			Move = 3,
-			Attack = 4,
-			Range = 4,
-			Traits =
-			[
-				new ShieldTrait(2), new ApplyConditionTrait(Conditions.Poison1), new AllDamageImmunityTrait(), new AllNegativeConditionImmunityTrait()
-			]
-		},
-		new MonsterStats()
-		{
-			Health = 18 * CharacterCount,
-			Move = 3,
-			Attack = 5,
-			Range = 4,
-			Traits =
-			[
-				new ShieldTrait(2), new ApplyConditionTrait(Conditions.Poison1), new AllDamageImmunityTrait(), new AllNegativeConditionImmunityTrait()
-			]
-		},
-	];
+		base.EliteLevelStats
+			.Select(stats => stats with
+			{
+				Health = stats.Health * CharacterCount,
+				Traits = (stats.Traits ?? [])
+				.Append(new AllDamageImmunityTrait())
+				.Append(new AllNegativeConditionImmunityTrait())
+				.ToArray()
+			})
+			.ToArray();
 
 	public override string Name => "Gelatinous Giant";
-
-	public override string AssetPath => "res://Content/Monsters/Ooze";
-
-	public override int MaxStandeeCount => 1;
+	public override MonsterModel ParentMonsterModel => ModelDB.Monster<BloodOoze>();
 
 	public override IEnumerable<MonsterAbilityCardModel> Deck => BossAbilityCard.Deck;
 
 	// IBossMonsterModel
+	public string GetSpecial1Description(Monster monster, RichTextParameters richTextParameters) =>
+		$"""
+		 {Icons.Inline(Icons.Move, richTextParameters)}{monster.Stats.Move}.
+		 Grant all Blood Oozes:
+		 {Icons.Inline(Icons.Attack, richTextParameters)}{monster.Stats.Attack - 1}, {Icons.Inline(Icons.Targets, richTextParameters)}1 adjacent enemy.
+		 """;
+
+	public string GetSpecial2Description(Monster monster, RichTextParameters richTextParameters) =>
+		$"""
+		 {Icons.Inline(Icons.Attack, richTextParameters)}{monster.Stats.Attack - 1}, {Icons.Inline(Icons.Targets, richTextParameters)}all enemies within {Icons.Inline(Icons.Range, richTextParameters)}3.
+		 All normal Blood Oozes suffer {Icons.Inline(Icons.Damage, richTextParameters)}1 and all elite Blood oozes suffer {Icons.Inline(Icons.Damage, richTextParameters)}2. Increase the Gelatinous Giant's current and maximum hit point value by X, where X is the total damage suffered by Blood Oozes this way.
+		 """;
+
 	public IEnumerable<MonsterAbilityCardAbility> GetSpecial1Abilities(Monster monster) =>
 	[
 		new MonsterAbilityCardAbility(MonsterAbilityCardModel.MoveAbility(monster, +0)),
@@ -102,7 +42,7 @@ public class GelatinousGiant : MonsterModel, IBossMonsterModel
 		new MonsterAbilityCardAbility(GrantAbility.Builder()
 			.WithGetAbilities(grantAbilityState =>
 			[
-				MonsterAbilityCardModel.AttackAbility((Monster)grantAbilityState.Target, extraDamage: -1),
+				MonsterAbilityCardModel.AttackAbility((Monster)grantAbilityState.Target, extraDamage: -1, range: 1, rangeType: RangeType.Melee),
 			])
 			.WithTarget(Target.Allies | Target.TargetAll)
 			.WithCustomGetTargets((state, list) =>
@@ -135,7 +75,7 @@ public class GelatinousGiant : MonsterModel, IBossMonsterModel
 
 					foreach(Figure figure in monsterGroup)
 					{
-						damageSuffered += await AbilityCmd.SufferDamage(null, figure, damage);
+						damageSuffered += await AbilityCmd.SufferDamage(state, figure, damage);
 					}
 				}
 
@@ -146,6 +86,8 @@ public class GelatinousGiant : MonsterModel, IBossMonsterModel
 
 					state.SetPerformed();
 				}
+
+				await GDTask.CompletedTask;
 			})
 			.Build())
 	];

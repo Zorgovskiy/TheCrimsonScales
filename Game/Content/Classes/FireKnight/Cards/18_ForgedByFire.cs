@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Fractural.Tasks;
+using Godot;
 
 public class ForgedByFire : FireKnightLevelUpCardModel<ForgedByFire.CardTop, ForgedByFire.CardBottom>
 {
@@ -11,10 +12,10 @@ public class ForgedByFire : FireKnightLevelUpCardModel<ForgedByFire.CardTop, For
 
 	public class CardTop : FireKnightCardSide
 	{
-		protected override IEnumerable<AbilityCardAbility> GetAbilities() =>
+		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 			new AbilityCardAbility(HealAbility.Builder()
-				.WithHealValue(3)
+				.WithHealValue(3, new HealDiamondPlus(this, new Vector2(0.4511919f, 0.19764012f)))
 				.WithTargets(2)
 				.WithRange(2)
 				.WithDuringHealSubscription(
@@ -44,22 +45,24 @@ public class ForgedByFire : FireKnightLevelUpCardModel<ForgedByFire.CardTop, For
 
 	public class CardBottom : FireKnightCardSide
 	{
-		protected override IEnumerable<AbilityCardAbility> GetAbilities() =>
+		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(MoveAbility.Builder().WithDistance(5).Build()),
+			new AbilityCardAbility(MoveAbility.Builder()
+				.WithDistance(5, new MoveCircle(this, new Vector2(0.6200888f, 0.61651915f)))
+				.Build()),
 
 			new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>
 				{
 					int itemCount = 2;
 
-					FireKnight fireKnight = (FireKnight)AbilityCard.OriginalOwner;
+					FireKnight fireKnight = GetOriginalOwner(state);
 					FireKnightModel fireKnightModel = (FireKnightModel)fireKnight.ClassModel;
 					List<ItemModel> remainingItemModels = fireKnightModel.AllItems.ToList();
 
 					for(int i = 0; i < itemCount; i++)
 					{
-						ItemModel itemModel = await AbilityCmd.SelectItem(state.Performer, remainingItemModels, "Select an item to give");
+						ItemModel itemModel = await AbilityCmd.SelectItem(state.Performer, remainingItemModels, hintText: "Select an item to give");
 
 						if(itemModel == null)
 						{
@@ -82,7 +85,7 @@ public class ForgedByFire : FireKnightLevelUpCardModel<ForgedByFire.CardTop, For
 								}
 
 								list.AddRange(RangeHelper.GetFiguresInRange(state.Performer.Hex, 1));
-							}, hintText: $"Select an ally to give {itemModel.Name} to"
+							}, hintText: () => $"Select an ally to give {itemModel.Name} to"
 						);
 
 						if(figure == null)
@@ -132,14 +135,21 @@ public class ForgedByFire : FireKnightLevelUpCardModel<ForgedByFire.CardTop, For
 							.Any(figure => state.Performer.AlliedWith(figure)),
 						async parameters =>
 						{
-							FireKnight fireKnight = (FireKnight)AbilityCard.OriginalOwner;
+							FireKnight fireKnight = GetOriginalOwner(state);
 
 							if(await AbilityCmd.AskConsumeElement(state.Performer, Element.Fire,
+								   hintText:
 								   $"Consume {Icons.Inline(Icons.GetElement(Element.Fire))} to give an adjacent ally a {Icons.Inline(fireKnight.ClassModel.IconPath)} item."))
 							{
 								FireKnightModel fireKnightModel = (FireKnightModel)fireKnight.ClassModel;
 								List<ItemModel> remainingItemModels = fireKnightModel.AllItems.ToList();
-								ItemModel itemModel = await AbilityCmd.SelectItem(state.Performer, remainingItemModels, "Select an item to give");
+								ItemModel itemModel = await AbilityCmd.SelectItem(state.Performer, remainingItemModels,
+									hintText: "Select an item to give");
+
+								if(itemModel == null)
+								{
+									return;
+								}
 
 								Figure figure = await AbilityCmd.SelectFigure(state,
 									list =>
@@ -154,7 +164,7 @@ public class ForgedByFire : FireKnightLevelUpCardModel<ForgedByFire.CardTop, For
 												list.RemoveAt(itemIndex);
 											}
 										}
-									}, hintText: $"Select an ally to give {itemModel.Name} to"
+									}, hintText: () => $"Select an ally to give {itemModel.Name} to"
 								);
 
 								if(figure == null)
@@ -179,8 +189,8 @@ public class ForgedByFire : FireKnightLevelUpCardModel<ForgedByFire.CardTop, For
 				.Build())
 		];
 
-		protected override int XP => 2;
-		protected override bool Persistent => true;
-		protected override bool Loss => true;
+		public override int XP => 2;
+		public override bool Persistent => true;
+		public override bool Loss => true;
 	}
 }

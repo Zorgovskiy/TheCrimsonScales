@@ -15,9 +15,9 @@ public partial class FireKnight : Character
 
 	public bool PlacedLadder => Ladder.Hex != null;
 
-	public override void Spawn(SavedCharacter savedCharacter, int index)
+	public override async GDTask Spawn(SavedCharacter savedCharacter, int index)
 	{
-		base.Spawn(savedCharacter, index);
+		await base.Spawn(savedCharacter, index);
 
 		_fireKnightModel = (FireKnightModel)savedCharacter.ClassModel;
 
@@ -80,7 +80,8 @@ public partial class FireKnight : Character
 		character.AddItem(item);
 	}
 
-	protected void SubscribeLadderAction(Func<Character, bool> canApply, Func<GDTask> apply, IconEffectButton.Parameters effectButtonParameters, TextEffectInfoView.Parameters effectInfoViewParameters)
+	protected void SubscribeLadderAction(Func<Character, bool> canApply, Func<GDTask> apply, IconEffectButton.Parameters effectButtonParameters,
+		TextEffectInfoView.Parameters effectInfoViewParameters)
 	{
 		object subscriber = new object();
 
@@ -108,7 +109,7 @@ public partial class FireKnight : Character
 			effectButtonParameters: effectButtonParameters,
 			effectInfoViewParameters: effectInfoViewParameters);
 
-		ScenarioEvents.LongRestCardSelectionEvent.Subscribe(this, subscriber,
+		ScenarioEvents.LongRestStartedEvent.Subscribe(this, subscriber,
 			canApplyParameters => canApply(canApplyParameters.Character),
 			async applyParameters =>
 			{
@@ -157,12 +158,13 @@ public partial class FireKnight : Character
 	{
 		foreach(Hex hex in RangeHelper.GetHexesInRange(Hex, 1, false))
 		{
-			if(!hex.IsUnoccupied())
+			if(hex.IsOccupied())
 			{
 				continue;
 			}
 
-			if(hex.Neighbours.Count < 6 || hex.HasHexObjectOfType<Obstacle>() || hex.HasHexObjectOfType<HazardousTerrain>() || hex.HasHexObjectOfType<Trap>())
+			if(hex.Neighbours.Count < 6 || hex.HasHexObjectOfType<Obstacle>() || hex.HasHexObjectOfType<HazardousTerrain>() ||
+			   hex.HasHexObjectOfType<Trap>())
 			{
 				yield return hex;
 			}

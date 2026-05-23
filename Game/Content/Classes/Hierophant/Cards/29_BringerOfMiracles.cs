@@ -1,0 +1,175 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using Fractural.Tasks;
+
+public class BringerOfMiracles : HierophantLevelUpCardModel<BringerOfMiracles.CardTop, BringerOfMiracles.CardBottom>
+{
+	public override string Name => "Bringer of Miracles";
+	public override int Level => 9;
+	public override int Initiative => 36;
+	protected override int AtlasIndex => 15 - 15;
+
+	public class CardTop : HierophantCardSide
+	{
+		protected override List<AbilityCardAbility> GetAbilities() =>
+		[
+			new AbilityCardAbility(HealAbility.Builder()
+				.WithHealValue(3)
+				.WithRange(3)
+				.WithAbilityStartedSubscription(
+					ScenarioEvents.AbilityStarted.Subscription.ConsumeElement(Element.Light,
+						applyFunction: async applyParameters =>
+						{
+							((HealAbility.State)applyParameters.AbilityState).AbilityAddCondition(Conditions.Strengthen);
+							await AbilityCmd.GainXP(applyParameters.AbilityState.Performer, 1);
+						},
+						effectInfoViewParameters: new TextEffectInfoView.Parameters($"{Icons.Inline(Icons.GetCondition(Conditions.Strengthen))}")
+					)
+				)
+				.Build()),
+
+			new AbilityCardAbility(OtherActiveAbility.Builder()
+				.WithOnActivate(async state =>
+				{
+					Figure healTarget = state.ActionState.GetAbilityState<HealAbility.State>(0).Target;
+
+					await AbilityCmd.AddCharacterToken(state, healTarget,
+						textParameters =>
+							$"The next time this figure performs an attack this round, they treat any {Icons.Inline(Icons.GetAMDValue("null"), textParameters, true)} drawn as {Icons.Inline(Icons.GetAMDValue("2x"), textParameters, true)} instead, and perform {Icons.Inline(Icons.Heal, textParameters)}X, self, where X is the amount of {Icons.Inline(Icons.Damage, textParameters)} dealt.");
+
+					ScenarioEvents.AMDCardDrawnEvent.Subscribe(state, this,
+						canApplyParameters => canApplyParameters.AbilityState.Performer == healTarget && canApplyParameters.Type == AMDCardType.Null,
+						async applyParameters =>
+						{
+							applyParameters.SetType(AMDCardType.Crit);
+
+							await GDTask.CompletedTask;
+						});
+
+					ScenarioEvents.AfterAttackPerformedEvent.Subscribe(state, this,
+						parameters => parameters.Performer == healTarget,
+						async parameters =>
+						{
+							ActionState actionState = new(healTarget, [
+								HealAbility.Builder()
+									.WithHealValue(0)
+									.WithTarget(Target.Self)
+									.WithOnAbilityStarted(async state =>
+									{
+										state.AbilityAdjustHealValue(parameters.AbilityState.DamageDealt);
+										await GDTask.CompletedTask;
+									})
+									.Build()
+							]);
+							await actionState.Perform();
+							await state.ActionState.RequestDiscardOrLose();
+						});
+					await GDTask.CompletedTask;
+				})
+				.WithOnDeactivate(async state =>
+				{
+					Figure healTarget = state.ActionState.GetAbilityState<HealAbility.State>(0).Target;
+
+					await AbilityCmd.RemoveCharacterToken(state, healTarget);
+
+					ScenarioEvents.AfterAttackPerformedEvent.Unsubscribe(state, this);
+					ScenarioEvents.AMDCardDrawnEvent.Unsubscribe(state, this);
+					await GDTask.CompletedTask;
+				})
+				.Build())
+		];
+
+		public override bool Round => true;
+	}
+
+	public class CardBottom : HierophantCardSide
+	{
+		protected override List<AbilityCardAbility> GetAbilities() =>
+		[
+			new AbilityCardAbility(OtherActiveAbility.Builder()
+				.WithOnActivate(async state =>
+				{
+					for(int i = state.Performer.AMDCardDeck.DrawPile.Count - 1; i >= 0; i--)
+					{
+						if(state.Performer.AMDCardDeck.DrawPile[i].Model is BlessAMDCard)
+						{
+							state.Performer.AMDCardDeck.DrawPile[i].Drawn();
+							state.Performer.AMDCardDeck.DrawPile.RemoveAt(i);
+						}
+					}
+
+					await AbilityCmd.AddCondition(state, state.Performer, Conditions.Bless);
+
+					ScenarioEvents.InflictConditionEvent.Subscribe(state, this,
+						parameters =>
+							parameters.Target == state.Performer &&
+							parameters.ConditionModel?.ImmunityCompareBaseConditions != null &&
+							Conditions.Bless.ImmunityCompareBaseConditions != null &&
+							parameters.ConditionModel.ImmunityCompareBaseConditions
+								.Any(condition => Conditions.Bless.ImmunityCompareBaseConditions.Contains(condition)),
+						async parameters =>
+						{
+							parameters.SetPrevented(true);
+
+							await GDTask.CompletedTask;
+						}
+					);
+
+					ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Subscribe(state, this,
+						parameters => parameters.Figure == state.Performer,
+						parameters =>
+						{
+							parameters.AddImmunity(Conditions.Bless);
+						}
+					);
+
+					ScenarioEvents.DuringAttackEvent.Subscribe(state, this,
+						parameters => parameters.Performer == state.Performer,
+						async parameters =>
+						{
+							parameters.AbilityState.SingleTargetSetHasAdvantage();
+							await GDTask.CompletedTask;
+						}
+					);
+
+					bool blessDrawn = false;
+
+					ScenarioEvents.AMDCardDrawnEvent.Subscribe(state, this,
+						parameters => parameters.AMDCard.Model == ModelDB.AMDCard<BlessAMDCard>(),
+						async parameters =>
+						{
+							blessDrawn = true;
+
+							await GDTask.CompletedTask;
+						}
+					);
+
+					ScenarioEvents.RoundEndedEvent.Subscribe(state, this,
+						parameters => blessDrawn, // state.Performer.AMDCardDeck.DiscardPile.Any(card => card.Model is BlessAMDCard),
+						async parameters =>
+						{
+							GameController.Instance.AMDManager.Bless(state.Performer);
+
+							await GDTask.CompletedTask;
+						}
+					);
+				})
+				.WithOnDeactivate(async state =>
+				{
+					ScenarioEvents.InflictConditionEvent.Unsubscribe(state, this);
+					ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Unsubscribe(state, this);
+					ScenarioEvents.DuringAttackEvent.Unsubscribe(state, this);
+					ScenarioEvents.AMDCardDrawnEvent.Unsubscribe(state, this);
+					ScenarioEvents.RoundEndedEvent.Unsubscribe(state, this);
+
+					await GDTask.CompletedTask;
+				})
+				.Build())
+		];
+
+		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light)];
+		public override int XP => 2;
+		public override bool Persistent => true;
+		public override bool Loss => true;
+	}
+}

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 public partial class Hex : Node2D
@@ -11,6 +12,8 @@ public partial class Hex : Node2D
 
 	public List<Hex> Neighbours { get; } = new List<Hex>();
 	public List<HexObject> HexObjects { get; } = new List<HexObject>();
+
+	public Room Room => GameController.Instance.Map.Rooms.FirstOrDefault(room => room.MapTiles.Contains(MapTile));
 
 	public event Action<Hex> HexObjectsChangedEvent;
 
@@ -89,19 +92,40 @@ public partial class Hex : Node2D
 		}
 	}
 
+	public IEnumerable<Figure> GetFigures(bool includeNonFigures = false)
+	{
+		for(int i = HexObjects.Count - 1; i >= 0; i--)
+		{
+			HexObject hexObject = HexObjects[i];
+			if(hexObject is Figure figure)
+			{
+				if(includeNonFigures || figure.IsFigure)
+				{
+					yield return figure;
+				}
+			}
+		}
+	}
+
 	public bool IsEmpty()
 	{
 		foreach(HexObject hexObject in HexObjects)
 		{
+			if(hexObject is Figure figure)
+			{
+				if(figure.IsFigure)
+				{
+					return false;
+				}
+			}
+
 			switch(hexObject)
 			{
-				case Figure:
 				case Obstacle:
 				case DifficultTerrain:
 				case HazardousTerrain:
 				case Trap:
 				case Door:
-				case PressurePlate:
 					return false;
 			}
 		}
@@ -115,12 +139,12 @@ public partial class Hex : Node2D
 		{
 			switch(hexObject)
 			{
+				case Objective:
 				case Obstacle:
 				case DifficultTerrain:
 				case HazardousTerrain:
 				case Trap:
 				case Door:
-				case PressurePlate:
 					return false;
 			}
 		}
@@ -140,6 +164,11 @@ public partial class Hex : Node2D
 		}
 
 		return true;
+	}
+
+	public bool IsOccupied()
+	{
+		return !IsUnoccupied();
 	}
 
 	private void SortHexObjects()

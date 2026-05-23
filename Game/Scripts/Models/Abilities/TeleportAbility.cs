@@ -1,4 +1,6 @@
-﻿using Fractural.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using Fractural.Tasks;
 using GTweens.Builders;
 using GTweens.Easings;
 
@@ -20,6 +22,8 @@ public class TeleportAbility : Ability<TeleportAbility.State>
 	}
 
 	public int Distance { get; private set; }
+	public Action<State, List<Hex>> CustomGetHexes { get; set; }
+	public Func<State, Hex, bool> FilterHexes { get; set; }
 
 	/// <summary>
 	/// A builder extending <see cref="Ability{T}.AbstractBuilder{TBuilder, TAbility}"/> with setter methods
@@ -35,11 +39,24 @@ public class TeleportAbility : Ability<TeleportAbility.State>
 		public interface IDistanceStep
 		{
 			TBuilder WithDistance(int distance);
+			TBuilder WithCustomGetHexes(Action<State, List<Hex>> getHexes);
 		}
 
 		public TBuilder WithDistance(int distance)
 		{
 			Obj.Distance = distance;
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithCustomGetHexes(Action<State, List<Hex>> getHexes)
+		{
+			Obj.CustomGetHexes = getHexes;
+			return (TBuilder)this;
+		}
+
+		public TBuilder WithFilterHexes(Func<State, Hex, bool> filterHexes)
+		{
+			Obj.FilterHexes = filterHexes;
 			return (TBuilder)this;
 		}
 	}
@@ -85,8 +102,8 @@ public class TeleportAbility : Ability<TeleportAbility.State>
 			// Character teleporting
 			TeleportPrompt.Answer teleportAnswer =
 				await PromptManager.Prompt(
-					new TeleportPrompt(abilityState, performer, null,
-						() => $"Select a destination for {Icons.HintText(Icons.Teleport)}{abilityState.Distance}"),
+					new TeleportPrompt(abilityState, performer, null, customHexes: CustomGetHexes, filterHexes: FilterHexes,
+						getHintText: () => $"Select a destination for {Icons.HintText(Icons.Teleport)}" + (CustomGetHexes == null ? $"{abilityState.Distance}" : "")),
 					abilityState.Authority);
 
 			if(!teleportAnswer.Skipped)
@@ -96,7 +113,17 @@ public class TeleportAbility : Ability<TeleportAbility.State>
 		}
 		else
 		{
-			// Monster teleporting is not implemented (yet)
+			// TODO: Not a real monster movement, focus and movement AI not included, works with custom hexes
+			MonsterTeleportPrompt.Answer monsterTeleportAnswer =
+				await PromptManager.Prompt(
+					new MonsterTeleportPrompt(abilityState, performer, null, customHexes: CustomGetHexes, filterHexes: FilterHexes,
+						getHintText: () => $"Select a destination for {Icons.HintText(Icons.Teleport)}" + (CustomGetHexes == null ? $"{abilityState.Distance}" : "")),
+					abilityState.Authority);
+
+			if(!monsterTeleportAnswer.Skipped)
+			{
+				destination = GameController.Instance.Map.GetHex(monsterTeleportAnswer.DestinationCoords);
+			}
 		}
 
 		if(destination == null)
@@ -104,53 +131,6 @@ public class TeleportAbility : Ability<TeleportAbility.State>
 			return;
 		}
 
-		abilityState.SetPerformed();
-
-		ScreenDistortion screenDistortion = GameController.Instance.ScreenDistortion;
-		screenDistortion.Open(GameController.Instance.CharacterManager.GetCharacter(0));
-
-		const float animationSpeed = 1.4f;
-		const float radius = 0.7f;
-
-		screenDistortion.SetPower(1f);
-		screenDistortion.SetRadius(0.4f * radius);
-
-		AppController.Instance.AudioController.Play("res://Audio/SFX/WHOOSH_Steam_Fast_01_mono.wav", 0.9f, 1.1f, delay: 0.0f);
-
-		if(!GameController.FastForward)
-		{
-			// Disappear
-			await GTweenSequenceBuilder.New()
-				.Append(screenDistortion.TweenPower(1.1f, 0.2f / animationSpeed).SetEasing(Easing.OutCubic))
-				.Join(screenDistortion.TweenRadius(0.4f * radius, 0.2f / animationSpeed).SetEasing(Easing.OutCubic))
-				.Append(screenDistortion.TweenPower(0.4f, 0.5f / animationSpeed).SetEasing(Easing.OutCubic))
-				.Join(screenDistortion.TweenRadius(0.3f * radius, 0.5f / animationSpeed).SetEasing(Easing.OutCubic))
-				.Join(performer.TweenScale(0f, 0.5f / animationSpeed).SetEasing(Easing.Linear))
-				.Append(screenDistortion.TweenPower(1f, 0.5f / animationSpeed).SetEasing(Easing.OutBack))
-				.Join(screenDistortion.TweenRadius(0.4f * radius, 0.2f / animationSpeed).SetEasing(Easing.OutCubic))
-				.Build().PlayFastForwardableAsync();
-		}
-
-		performer.SetOriginHexAndRotation(destination);
-
-		AppController.Instance.AudioController.Play("res://Audio/SFX/WHOOSH_Steam_Fast_01_mono.wav", 0.9f, 1.1f, delay: 0.0f);
-
-		if(!GameController.FastForward)
-		{
-			// Appear
-			await GTweenSequenceBuilder.New()
-				.Append(screenDistortion.TweenPower(1.1f, 0.2f / animationSpeed).SetEasing(Easing.OutCubic))
-				.Join(screenDistortion.TweenRadius(0.4f * radius, 0.2f / animationSpeed).SetEasing(Easing.OutCubic))
-				.Append(screenDistortion.TweenPower(0.4f, 0.5f / animationSpeed).SetEasing(Easing.OutCubic))
-				.Join(screenDistortion.TweenRadius(0.3f * radius, 0.5f / animationSpeed).SetEasing(Easing.OutCubic))
-				.Append(screenDistortion.TweenPower(1f, 0.5f / animationSpeed).SetEasing(Easing.OutBack))
-				.Join(screenDistortion.TweenRadius(0.4f * radius, 0.2f / animationSpeed).SetEasing(Easing.OutCubic))
-				.Join(performer.TweenScale(1f, 0.2f / animationSpeed).SetEasing(Easing.OutCubic))
-				.Build().PlayFastForwardableAsync();
-		}
-
-		screenDistortion.Close();
-
-		await AbilityCmd.EnterHex(abilityState, performer, abilityState.Authority, destination, true);
+		await AbilityCmd.Teleport(abilityState, performer, destination);
 	}
 }

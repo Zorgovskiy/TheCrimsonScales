@@ -53,10 +53,29 @@ public partial class MonsterSpawner : Node2D
 		}
 	}
 
+	[Export]
+	public int AdjustMonsterLevel = 0;
+	[Export]
+	public Alignment Alignment = Alignment.Monsters;
+
+	public bool Revealed { get; private set; }
+
 	public async GDTask SpawnMonster()
 	{
 		QueueFree();
 
+		MonsterType monsterType = GetMonsterType();
+
+		MonsterModel monsterModel = ModelDB.GetById<MonsterModel>(new ModelId(_monsterModelId));
+
+		await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, Map.GlobalPositionToCoords(GlobalPosition), false,
+			GameController.Instance.SavedScenario.ScenarioLevel + AdjustMonsterLevel, Alignment);
+
+		Revealed = true;
+	}
+
+	public MonsterType GetMonsterType()
+	{
 		MonsterType monsterType;
 		int characterCount = Mathf.Max(GameController.Instance.SavedCampaign.Characters.Count, 2);
 		switch(characterCount)
@@ -71,12 +90,10 @@ public partial class MonsterSpawner : Node2D
 				monsterType = _monsterType4Characters;
 				break;
 			default:
-				return;
+				return MonsterType.None;
 		}
 
-		MonsterModel monsterModel = ModelDB.GetById<MonsterModel>(new ModelId(_monsterModelId));
-
-		await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, Map.GlobalPositionToCoords(GlobalPosition), false);
+		return monsterType;
 	}
 
 	private void MarkDirty()
@@ -96,7 +113,7 @@ public partial class MonsterSpawner : Node2D
 		if(texture != null)
 		{
 			float textureWidth = texture.GetWidth();
-			sprite.Scale = (330f / textureWidth) * Vector2.One;
+			sprite.Scale = (250f / textureWidth) * Vector2.One;
 		}
 
 		GetNode<MonsterSpawnerIndicator>("Indicators/2Characters").UpdateVisuals(MonsterType2Characters);
