@@ -55,10 +55,18 @@ public partial class Door : OverlayTile, IEventSubscriber
 		);
 	}
 
+	public async GDTask Lock()
+	{
+		Locked = true;
+		await _lock.TweenScale(0f, 0.3f).SetEasing(Easing.OutBack).PlayFastForwardableAsync();
+
+		await GDTask.CompletedTask;
+	}
+
 	public async GDTask Unlock()
 	{
 		Locked = false;
-		await _lock.TweenScale(0f, 0.3f).SetEasing(Easing.OutBack).PlayFastForwardableAsync();
+		await _lock.TweenScale(1.0f, 0.3f).SetEasing(Easing.InBack).PlayFastForwardableAsync();
 
 		await GDTask.CompletedTask;
 	}
