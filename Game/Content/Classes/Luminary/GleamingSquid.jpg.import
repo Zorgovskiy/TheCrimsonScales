@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cfveh0u3e46ps"
-path="res://.godot/imported/GleamingSquid.png-100533b2b9cc7c004afde0257bc45af4.ctex"
+uid="uid://8c6nf38yll76"
+path="res://.godot/imported/GleamingSquid.jpg-300b703b06ee8690975eef8aec4f5b56.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Content/Classes/Luminary/GleamingSquid.png"
-dest_files=["res://.godot/imported/GleamingSquid.png-100533b2b9cc7c004afde0257bc45af4.ctex"]
+source_file="res://Content/Classes/Luminary/GleamingSquid.jpg"
+dest_files=["res://.godot/imported/GleamingSquid.jpg-300b703b06ee8690975eef8aec4f5b56.ctex"]
 
 [params]
 
