@@ -23,13 +23,13 @@ public class ConditionImmunityTrait : FigureTrait
 	{
 		await base.Activate(figure);
 
-		AbilityCmd.AddConditionImmunity(ScenarioEvents.GetSubscriberPair(this, figure), _conditionModel, figure);
+		AbilityCmd.AddConditionImmunity(_conditionModel, figure, this);
 	}
 
 	public override async GDTask Deactivate(Figure figure)
 	{
 		await base.Deactivate(figure);
 
-		AbilityCmd.RemoveConditionImmunity(ScenarioEvents.GetSubscriberPair(this, figure));
+		AbilityCmd.RemoveConditionImmunity(figure, this);
 	}
 }

@@ -1907,18 +1907,18 @@ public static class AbilityCmd
 		hex1.AddNeighbour(hex2);
 		hex2.AddNeighbour(hex1);
 	}
-	
-	public static void AddConditionImmunity(IEventSubscriber subscriber, ConditionModel condition, Figure figure = null, Func<Figure, bool> customCanApply = null)
+
+	public static void AddConditionImmunity(ConditionModel condition, Figure figure, object subscriber, Func<Figure, bool> customCanApply = null)
 	{
-		AddConditionsImmunity(subscriber, [condition], figure, customCanApply);
+		AddConditionsImmunity([condition], figure, subscriber, customCanApply);
 	}
 
-	public static void AddConditionsImmunity(IEventSubscriber subscriber, List<ConditionModel> conditions, Figure figure = null, Func<Figure, bool> customCanApply = null)
+	public static void AddConditionsImmunity(List<ConditionModel> conditions, Figure figure, object subscriber, Func<Figure, bool> customCanApply = null)
 	{
-		ScenarioEvents.InflictConditionEvent.Subscribe(subscriber,
+		ScenarioEvents.InflictConditionEvent.Subscribe(figure, subscriber,
 			parameters =>
-				customCanApply?.Invoke(figure) ?? true && 
-				figure != null ? parameters.Target == figure : parameters.Target is Character &&
+				customCanApply?.Invoke(parameters.Target) ?? true &&
+				parameters.Target == figure &&
 				conditions.Any(condition => CheckImmunity(parameters.ConditionModel, condition)),
 			async parameters =>
 			{
@@ -1928,10 +1928,10 @@ public static class AbilityCmd
 			}
 		);
 
-		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Subscribe(subscriber,
-			parameters => 
-				customCanApply?.Invoke(figure) ?? true && 
-				figure != null ? parameters.Figure == figure : parameters.Figure is Character,
+		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Subscribe(figure, conditions.First(),
+			parameters =>
+				customCanApply?.Invoke(parameters.Figure) ?? true &&
+				parameters.Figure == figure,
 			parameters =>
 			{
 				conditions.ForEach(condition => parameters.AddImmunity(condition));
@@ -1939,13 +1939,14 @@ public static class AbilityCmd
 		);
 	}
 
-	public static void AddAllNegativeConditionImmunity(IEventSubscriber subscriber, Figure figure = null, Func<Figure, bool> customCanApply = null)
+	public static void AddAllNegativeConditionImmunity(Figure figure, object subscriber, Func<Figure, bool> customCanApply = null)
 	{
-		ScenarioEvents.InflictConditionEvent.Subscribe(subscriber, parameters =>
+		ScenarioEvents.InflictConditionEvent.Subscribe(figure, subscriber,
+			parameters =>
 			{
-				return 
-					customCanApply?.Invoke(figure) ?? true &&
-					figure != null ? parameters.Target == figure : parameters.Target is Character &&
+				return
+					customCanApply?.Invoke(parameters.Target) ?? true &&
+					parameters.Target == figure &&
 					parameters.ConditionModel?.ImmunityCompareBaseConditions != null &&
 					parameters.ConditionModel.ImmunityCompareBaseConditions
 						.Any(c1 => Conditions.NegativeBaseConditionModels.Contains(c1));
@@ -1958,9 +1959,10 @@ public static class AbilityCmd
 			}
 		);
 
-		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Subscribe(subscriber,
-			parameters => customCanApply?.Invoke(figure) ?? true && 
-				figure != null ? parameters.Figure == figure : parameters.Figure is Character,
+		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Subscribe(figure, subscriber,
+			parameters =>
+				customCanApply?.Invoke(parameters.Figure) ?? true &&
+				parameters.Figure == figure,
 			parameters =>
 			{
 				Conditions.NegativeBaseConditionModels.ForEach(condition => parameters.AddImmunity(condition));
@@ -1968,9 +1970,9 @@ public static class AbilityCmd
 		);
 	}
 
-	public static void RemoveConditionImmunity(IEventSubscriber subscriber)
+	public static void RemoveConditionImmunity(Figure figure, object subscriber)
 	{
-		ScenarioEvents.InflictConditionEvent.Unsubscribe(subscriber);
-		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Unsubscribe(subscriber);
+		ScenarioEvents.InflictConditionEvent.Unsubscribe(figure, subscriber);
+		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Unsubscribe(figure, subscriber);
 	}
 }

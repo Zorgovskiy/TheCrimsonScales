@@ -22,7 +22,7 @@ public class AshsteelGauntlets : CS2Item
 
 		ConditionModel conditionModel = Conditions.Disarm;
 
-		AbilityCmd.AddConditionImmunity(ScenarioEvents.GetSubscriberPair(this, _subscriber), Conditions.Disarm, Owner);
+		AbilityCmd.AddConditionImmunity(Conditions.Disarm, Owner, this);
 
 		base.Init(owner);
 	}

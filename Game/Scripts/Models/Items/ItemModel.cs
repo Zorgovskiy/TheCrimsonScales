@@ -170,7 +170,7 @@ public abstract class ItemModel : AbstractModel<ItemModel>, IActionSource
 		ScenarioEvents.FigureTurnEndedEvent.Unsubscribe(this, _subscriber);
 		ScenarioEvents.DuringHealEvent.Unsubscribe(this, _subscriber);
 		ScenarioEvents.FigureKilledEvent.Unsubscribe(this, _subscriber);
-		AbilityCmd.RemoveConditionImmunity(ScenarioEvents.GetSubscriberPair(this, _subscriber));
+		AbilityCmd.RemoveConditionImmunity(Owner, _subscriber);
 	}
 
 	protected async GDTask Use(Func<Character, GDTask> apply)
@@ -488,21 +488,19 @@ public abstract class ItemModel : AbstractModel<ItemModel>, IActionSource
 			effectInfoViewParameters: _effectInfoViewParameters);
 	}
 
-	protected void SubscribeConditionImmunity(ConditionModel conditionModel,
-		int order = 0, bool canApplyMultipleTimesDuringAbility = false)
+	protected void SubscribeConditionImmunity(ConditionModel conditionModel)
 	{
-		AbilityCmd.AddConditionImmunity(ScenarioEvents.GetSubscriberPair(this, _subscriber), conditionModel, Owner);
+		AbilityCmd.AddConditionImmunity(conditionModel, Owner, _subscriber);
 	}
 
-	protected void SubscribeConditionsImmunity(List<ConditionModel> conditionModels,
-		int order = 0, bool canApplyMultipleTimesDuringAbility = false)
+	protected void SubscribeConditionsImmunity(List<ConditionModel> conditionModels)
 	{
-		AbilityCmd.AddConditionsImmunity(ScenarioEvents.GetSubscriberPair(this, _subscriber), conditionModels, Owner);
+		AbilityCmd.AddConditionsImmunity(conditionModels, Owner, _subscriber);
 	}
 
 	protected ActionState GetActionState(Figure performer, Ability[] abilities)
 	{
-		ActionState actionState = new ActionState(this, performer, abilities, //null, 
+		ActionState actionState = new ActionState(this, performer, abilities, //null,
 			onFirstActivateAbilityActivated: OnFirstActivateAbilityActivated, onDiscardOrLoseRequested: OnDiscardOrLoseRequested);
 
 		return actionState;

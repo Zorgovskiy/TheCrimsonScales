@@ -6,13 +6,13 @@ public class AllNegativeConditionImmunityTrait : FigureTrait, IEventSubscriber
 	{
 		await base.Activate(figure);
 
-		AbilityCmd.AddAllNegativeConditionImmunity(this, figure);
+		AbilityCmd.AddAllNegativeConditionImmunity(figure, this);
 	}
 
 	public override async GDTask Deactivate(Figure figure)
 	{
 		await base.Deactivate(figure);
 
-		AbilityCmd.RemoveConditionImmunity(this);
+		AbilityCmd.RemoveConditionImmunity(figure, this);
 	}
 }

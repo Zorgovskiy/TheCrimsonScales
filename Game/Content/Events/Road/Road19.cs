@@ -119,7 +119,7 @@ public class Road19 : RoadEventModel<Road19.ChoiceA, Road19.ChoiceB>
 		{
 			base.OnTotemPlaced(obstacle);
 
-			AbilityCmd.AddAllNegativeConditionImmunity(this, customCanApply: figure => RangeHelper.Distance(figure.Hex, obstacle.Hex) <= 1);
+			AbilityCmd.AddAllNegativeConditionImmunity(null, this, customCanApply: figure => RangeHelper.Distance(figure.Hex, obstacle.Hex) <= 1);
 
 			ScenarioEvents.FigureEnteredHexEvent.Subscribe(this,
 				parameters => parameters.Figure is Character,
@@ -135,7 +135,7 @@ public class Road19 : RoadEventModel<Road19.ChoiceA, Road19.ChoiceB>
 		{
 			base.OnTotemDestroyed(obstacle);
 
-			AbilityCmd.RemoveConditionImmunity(this);
+			AbilityCmd.RemoveConditionImmunity(null, this);
 			ScenarioEvents.FigureEnteredHexEvent.Unsubscribe(this);
 		}
 	}

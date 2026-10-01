@@ -53,13 +53,13 @@ public class Floodlight : LuminaryCardModel<Floodlight.CardTop, Floodlight.CardB
 			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async state =>
 				{
-					AbilityCmd.AddConditionImmunity(ScenarioEvents.GetSubscriberPair(this, state.Performer), Conditions.Immobilize, state.Performer);
+					AbilityCmd.AddConditionImmunity(Conditions.Immobilize, state.Performer, state);
 
 					await GDTask.CompletedTask;
 				})
 				.WithOnDeactivate(async state =>
 				{
-					AbilityCmd.RemoveConditionImmunity(ScenarioEvents.GetSubscriberPair(this, state.Performer));
+					AbilityCmd.RemoveConditionImmunity(state.Performer, state);
 
 					await GDTask.CompletedTask;
 				})
