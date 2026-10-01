@@ -217,8 +217,29 @@ public class Road19 : RoadEventModel<Road19.ChoiceA, Road19.ChoiceB>
 			{
 				return
 				[
-					new LoseCollectiveGoldReward(10),
-					new ChoiceBTotemReward()
+					new LoseCollectiveGoldEventReward(10),
+					new TotemEventReward(
+						obstacle =>
+						{
+							AbilityCmd.AddAllNegativeConditionImmunity(this, customCanApply: figure => RangeHelper.Distance(figure.Hex, obstacle.Hex) <= 1);
+
+							ScenarioEvents.FigureEnteredHexEvent.Subscribe(this,
+								parameters => parameters.Figure is Character,
+								async parameters =>
+								{
+									ScenarioCheckEvents.ImmunitiesVisualCheckEvent.FireChangedEvent();
+									await GDTask.CompletedTask;
+								}
+							);
+						},
+						obstacle =>
+						{
+							AbilityCmd.RemoveConditionImmunity(this);
+						},
+						"Camel",
+						color =>
+							$"All characters adjacent to this obstacle are immune to negative conditions."
+					)
 				];
 			}
 			else

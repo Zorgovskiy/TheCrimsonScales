@@ -95,7 +95,16 @@ public class City26 : CityEventModel<City26.ChoiceA, City26.ChoiceB>
 
 		public override List<SavedReward> GetRewards(SavedEventState state) =>
 		[
-			new ChoiceBOnScenarioStartedReward()
+			new OnScenarioStartedEventReward(
+				async () =>
+				{
+					AbilityCmd.AddConditionImmunity(this, Conditions.Muddle);
+
+					await GDTask.CompletedTask;
+				},
+				color =>
+					$"During the next scenario, all characters are immune to {Icons.Inline(Icons.GetCondition(Conditions.Muddle))}."
+			)
 		];
 	}
 }
