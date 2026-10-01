@@ -119,33 +119,7 @@ public class Road19 : RoadEventModel<Road19.ChoiceA, Road19.ChoiceB>
 		{
 			base.OnTotemPlaced(obstacle);
 
-			ScenarioEvents.InflictConditionEvent.Subscribe(this,
-				parameters =>
-					parameters.Target is Character &&
-					RangeHelper.Distance(parameters.Target.Hex, obstacle.Hex) <= 1 &&
-					parameters.ConditionModel?.ImmunityCompareBaseConditions != null &&
-					parameters.ConditionModel.ImmunityCompareBaseConditions
-						.Any(c1 => Conditions.NegativeBaseConditionModels.Contains(c1)),
-				async parameters =>
-				{
-					parameters.SetPrevented(true);
-
-					await GDTask.CompletedTask;
-				}
-			);
-
-			ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Subscribe(this,
-				parameters =>
-					parameters.Figure is Character &&
-					RangeHelper.Distance(parameters.Figure.Hex, obstacle.Hex) <= 1,
-				parameters =>
-				{
-					foreach(ConditionModel conditionModel in Conditions.NegativeBaseConditionModels)
-					{
-						parameters.AddImmunity(conditionModel);
-					}
-				}
-			);
+			AbilityCmd.AddAllNegativeConditionImmunity(this, customCanApply: figure => RangeHelper.Distance(figure.Hex, obstacle.Hex) <= 1);
 
 			ScenarioEvents.FigureEnteredHexEvent.Subscribe(this,
 				parameters => parameters.Figure is Character,
@@ -161,8 +135,7 @@ public class Road19 : RoadEventModel<Road19.ChoiceA, Road19.ChoiceB>
 		{
 			base.OnTotemDestroyed(obstacle);
 
-			ScenarioEvents.InflictConditionEvent.Unsubscribe(this);
-			ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Unsubscribe(this);
+			AbilityCmd.RemoveConditionImmunity(this);
 			ScenarioEvents.FigureEnteredHexEvent.Unsubscribe(this);
 		}
 	}
@@ -217,29 +190,7 @@ public class Road19 : RoadEventModel<Road19.ChoiceA, Road19.ChoiceB>
 			{
 				return
 				[
-					new LoseCollectiveGoldEventReward(10),
-					new TotemEventReward(
-						obstacle =>
-						{
-							AbilityCmd.AddAllNegativeConditionImmunity(this, customCanApply: figure => RangeHelper.Distance(figure.Hex, obstacle.Hex) <= 1);
-
-							ScenarioEvents.FigureEnteredHexEvent.Subscribe(this,
-								parameters => parameters.Figure is Character,
-								async parameters =>
-								{
-									ScenarioCheckEvents.ImmunitiesVisualCheckEvent.FireChangedEvent();
-									await GDTask.CompletedTask;
-								}
-							);
-						},
-						obstacle =>
-						{
-							AbilityCmd.RemoveConditionImmunity(this);
-						},
-						"Camel",
-						color =>
-							$"All characters adjacent to this obstacle are immune to negative conditions."
-					)
+					new ChoiceBTotemReward()
 				];
 			}
 			else
