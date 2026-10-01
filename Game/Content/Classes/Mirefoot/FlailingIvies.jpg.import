@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bbhygy722humr"
-path="res://.godot/imported/FlailingIvies.png-aeb7c9bafd38dab68b0ecfde63fe8398.ctex"
+uid="uid://crcdr56uj3ut0"
+path="res://.godot/imported/FlailingIvies.jpg-4bdd8211d515a0768ea1b2b6de9469a4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Content/Classes/Mirefoot/FlailingIvies.png"
-dest_files=["res://.godot/imported/FlailingIvies.png-aeb7c9bafd38dab68b0ecfde63fe8398.ctex"]
+source_file="res://Content/Classes/Mirefoot/FlailingIvies.jpg"
+dest_files=["res://.godot/imported/FlailingIvies.jpg-4bdd8211d515a0768ea1b2b6de9469a4.ctex"]
 
 [params]
 

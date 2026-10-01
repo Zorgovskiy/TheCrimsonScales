@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bgvh1ktg3t0k"
-path="res://.godot/imported/CryptNettle.png-1b186f8db1d7329a98935f706d26d187.ctex"
+uid="uid://fx70uu232fla"
+path="res://.godot/imported/CryptNettle.jpg-8799b38fc8285d92f991371d82f5aebf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Content/Classes/Mirefoot/CryptNettle.png"
-dest_files=["res://.godot/imported/CryptNettle.png-1b186f8db1d7329a98935f706d26d187.ctex"]
+source_file="res://Content/Classes/Mirefoot/CryptNettle.jpg"
+dest_files=["res://.godot/imported/CryptNettle.jpg-8799b38fc8285d92f991371d82f5aebf.ctex"]
 
 [params]
 
