@@ -115,11 +115,13 @@ public class Road19 : RoadEventModel<Road19.ChoiceA, Road19.ChoiceB>
 		protected override string GetDescriptionLabelText(RichTextParameters textParameters) =>
 			$"All characters adjacent to this obstacle are immune to negative conditions.";
 
+		Figure _figure = GameController.Instance.CharacterManager.Characters.First();
+
 		protected override void OnTotemPlaced(Obstacle obstacle)
 		{
 			base.OnTotemPlaced(obstacle);
 
-			AbilityCmd.AddAllNegativeConditionImmunity(null, this, customCanApply: figure => figure is Character && RangeHelper.Distance(figure.Hex, obstacle.Hex) <= 1);
+			AbilityCmd.AddAllNegativeConditionImmunity(_figure, this, customCanApply: figure => figure is Character && RangeHelper.Distance(figure.Hex, obstacle.Hex) <= 1);
 
 			ScenarioEvents.FigureEnteredHexEvent.Subscribe(this,
 				parameters => parameters.Figure is Character,
@@ -135,7 +137,7 @@ public class Road19 : RoadEventModel<Road19.ChoiceA, Road19.ChoiceB>
 		{
 			base.OnTotemDestroyed(obstacle);
 
-			AbilityCmd.RemoveConditionImmunity(null, this);
+			AbilityCmd.RemoveConditionImmunity(_figure, this);
 			ScenarioEvents.FigureEnteredHexEvent.Unsubscribe(this);
 		}
 	}
