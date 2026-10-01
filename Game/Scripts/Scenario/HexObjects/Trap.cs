@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Fractural.Tasks;
 using Godot;
 
-public partial class Trap : OverlayTile, IEventSubscriber
+public partial class Trap : OverlayTile
 {
 	[Export]
 	public bool ScaledDamage { get; set; }
@@ -50,7 +49,7 @@ public partial class Trap : OverlayTile, IEventSubscriber
 	public override async GDTask Init(Hex originHex, int rotationIndex = 0, bool hexCanBeNull = false)
 	{
 		await base.Init(originHex, rotationIndex, hexCanBeNull);
-		
+
 		UpdateVisuals();
 	}
 

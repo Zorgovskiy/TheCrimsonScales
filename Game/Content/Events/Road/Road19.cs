@@ -190,6 +190,7 @@ public class Road19 : RoadEventModel<Road19.ChoiceA, Road19.ChoiceB>
 			{
 				return
 				[
+					new LoseCollectiveGoldReward(10),
 					new ChoiceBTotemReward()
 				];
 			}
