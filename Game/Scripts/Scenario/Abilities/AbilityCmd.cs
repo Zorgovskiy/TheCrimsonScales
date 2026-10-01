@@ -1915,17 +1915,21 @@ public static class AbilityCmd
 
 	public static void AddConditionsImmunity(List<ConditionModel> conditions, Figure figure, object subscriber, Func<Figure, bool> customCanApply = null)
 	{
-		ScenarioEvents.InflictConditionEvent.Subscribe(figure, subscriber,
+		ScenarioEvents.InflictConditionsEvent.Subscribe(figure, subscriber,
 			parameters =>
 				customCanApply?.Invoke(parameters.Target) ?? true &&
-				parameters.Target == figure &&
-				conditions.Any(condition => CheckImmunity(parameters.ConditionModel, condition)),
+				parameters.Target == figure,
 			async parameters =>
 			{
-				parameters.SetPrevented(true);
+				List<ConditionModel> preventedConditions = parameters.ConditionModels.FindAll(inflictedCondition => conditions.Any(condition => CheckImmunity(inflictedCondition, condition)));
+				if(preventedConditions.Count > 0)
+				{
+					parameters.PreventConditions(preventedConditions);
+				}
 
 				await GDTask.CompletedTask;
-			}
+			},
+			order: -1
 		);
 
 		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Subscribe(figure, conditions.First(),
@@ -1941,22 +1945,24 @@ public static class AbilityCmd
 
 	public static void AddAllNegativeConditionImmunity(Figure figure, object subscriber, Func<Figure, bool> customCanApply = null)
 	{
-		ScenarioEvents.InflictConditionEvent.Subscribe(figure, subscriber,
+		ScenarioEvents.InflictConditionsEvent.Subscribe(figure, subscriber,
 			parameters =>
-			{
-				return
-					customCanApply?.Invoke(parameters.Target) ?? true &&
-					parameters.Target == figure &&
-					parameters.ConditionModel?.ImmunityCompareBaseConditions != null &&
-					parameters.ConditionModel.ImmunityCompareBaseConditions
-						.Any(c1 => Conditions.NegativeBaseConditionModels.Contains(c1));
-			},
+				customCanApply?.Invoke(parameters.Target) ?? true &&
+				parameters.Target == figure,
 			async parameters =>
 			{
-				parameters.SetPrevented(true);
+				List<ConditionModel> preventedConditions = parameters.ConditionModels.FindAll(
+					inflictedCondition => inflictedCondition?.ImmunityCompareBaseConditions != null &&
+					inflictedCondition.ImmunityCompareBaseConditions
+						.Any(c1 => Conditions.NegativeBaseConditionModels.Contains(c1)));
+				if(preventedConditions.Count > 0)
+				{
+					parameters.PreventConditions(preventedConditions);
+				}
 
 				await GDTask.CompletedTask;
-			}
+			},
+			order: -1
 		);
 
 		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Subscribe(figure, subscriber,
