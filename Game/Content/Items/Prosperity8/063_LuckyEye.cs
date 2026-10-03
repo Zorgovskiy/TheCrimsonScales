@@ -9,7 +9,7 @@ public class LuckyEye : Prosperity1Item
 	public override ItemType ItemType => ItemType.Small;
 	public override ItemUseType ItemUseType => ItemUseType.Consume;
 
-	protected override int AtlasIndex => 22;
+	protected override int AtlasIndex => 12;
 
 	protected override void Subscribe()
 	{

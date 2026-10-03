@@ -38,7 +38,7 @@ public class InnerReflection : HierophantCardModel<InnerReflection.CardTop, Inne
 						{
 							foreach(Figure otherFigure in RangeHelper.GetFiguresInRange(state.Performer.Hex, 2))
 							{
-								if(state.Performer.AlliedWith(otherFigure) && otherFigure is Character)
+								if(state.Performer.AlliedWith(otherFigure) && otherFigure is Character && !targetedFigures.Contains(otherFigure))
 								{
 									list.Add(otherFigure);
 								}

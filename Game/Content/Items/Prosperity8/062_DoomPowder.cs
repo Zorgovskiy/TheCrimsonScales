@@ -9,7 +9,7 @@ public class DoomPowder : Prosperity2Item
 	public override ItemType ItemType => ItemType.Small;
 	public override ItemUseType ItemUseType => ItemUseType.Consume;
 
-	protected override int AtlasIndex => 14;
+	protected override int AtlasIndex => 10;
 
 	protected override void Subscribe()
 	{
