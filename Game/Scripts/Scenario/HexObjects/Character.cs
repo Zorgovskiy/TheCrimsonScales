@@ -238,7 +238,7 @@ public partial class Character : Figure
 			return new Initiative()
 			{
 				MainInitiative = 99,
-				SortingInitiative = 99 * 10000000 + 99999
+				SortingInitiative = 99 * 10000000 + 99999 + Index * 100
 			};
 		}
 

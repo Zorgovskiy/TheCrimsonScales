@@ -382,14 +382,17 @@ public class AttackAbility : TargetedAbility<AttackAbility.State, SingleTargetSt
 
 	protected override async GDTask AfterEffects(State abilityState, Figure target)
 	{
-		ScenarioEvents.Retaliate.Parameters retaliateParameters =
-			await ScenarioEvents.RetaliateEvent.CreatePrompt(
-				new ScenarioEvents.Retaliate.Parameters(abilityState, target), abilityState);
-
-		if(!retaliateParameters.RetaliateBlocked && retaliateParameters.Retaliate > 0)
+		if(!target.IsDead)
 		{
-			await AbilityCmd.SufferDamage(abilityState.Performer, retaliateParameters.Retaliate,
-				potentialDamageDealer: retaliateParameters.RetaliatingFigure);
+			ScenarioEvents.Retaliate.Parameters retaliateParameters =
+				await ScenarioEvents.RetaliateEvent.CreatePrompt(
+					new ScenarioEvents.Retaliate.Parameters(abilityState, target), abilityState);
+
+			if(!retaliateParameters.RetaliateBlocked && retaliateParameters.Retaliate > 0)
+			{
+				await AbilityCmd.SufferDamage(abilityState.Performer, retaliateParameters.Retaliate,
+					potentialDamageDealer: retaliateParameters.RetaliatingFigure);
+			}
 		}
 
 		await ScenarioEvents.AfterAttackPerformedEvent.CreatePrompt(

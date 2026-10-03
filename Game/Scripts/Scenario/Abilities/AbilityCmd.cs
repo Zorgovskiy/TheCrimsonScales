@@ -181,6 +181,11 @@ public static class AbilityCmd
 	{
 		potentialAbilityState?.SetPerformed();
 
+		if(target.IsDead)
+		{
+			return;
+		}
+
 		ScenarioEvents.BeforeFigureKilled.Parameters beforeFigureKilledParameters =
 			await ScenarioEvents.BeforeFigureKilledEvent.CreatePrompt(
 				new ScenarioEvents.BeforeFigureKilled.Parameters(potentialAbilityState, target), potentialKiller);

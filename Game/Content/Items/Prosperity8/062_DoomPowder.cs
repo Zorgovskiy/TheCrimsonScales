@@ -1,6 +1,6 @@
 using Fractural.Tasks;
 
-public class DoomPowder : Prosperity2Item
+public class DoomPowder : Prosperity8Item
 {
 	public override string Name => "Doom Powder";
 	public override int ItemNumber => 62;

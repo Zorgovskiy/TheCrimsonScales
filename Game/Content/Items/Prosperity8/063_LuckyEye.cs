@@ -1,6 +1,6 @@
 using System.Linq;
 
-public class LuckyEye : Prosperity1Item
+public class LuckyEye : Prosperity8Item
 {
 	public override string Name => "Lucky Eye";
 	public override int ItemNumber => 63;
