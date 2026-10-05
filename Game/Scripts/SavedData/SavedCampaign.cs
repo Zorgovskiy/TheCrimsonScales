@@ -272,7 +272,10 @@ public class SavedCampaign
 		ReturnCards(savedCharacter);
 
 		// Return personal quest
-		SavedPersonalQuests.AddPersonalQuest(savedCharacter.SavedPersonalQuest.Model);
+		if(savedCharacter.SavedPersonalQuest != null)
+		{
+			SavedPersonalQuests.AddPersonalQuest(savedCharacter.SavedPersonalQuest.Model);
+		}
 
 		Characters.Remove(savedCharacter);
 

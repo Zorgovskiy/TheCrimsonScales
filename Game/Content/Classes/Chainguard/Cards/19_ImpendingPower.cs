@@ -118,13 +118,14 @@ public class ImpendingPower : ChainguardLevelUpCardModel<ImpendingPower.CardTop,
 				.WithOnActivate(async state =>
 				{
 					ScenarioEvents.AbilityStartedEvent.Subscribe(state, this,
-						canApply: parameters => parameters.Performer == state.Performer &&
-						                        parameters.AbilityState is CreateTrapAbility.State &&
-						                        ((CreateTrapAbility.State)parameters.AbilityState).AbilityRange == 1,
+						canApply: parameters =>
+							parameters.Performer == state.Performer &&
+							parameters.AbilityState is CreateTrapAbility.State &&
+							((CreateTrapAbility.State)parameters.AbilityState).AbilityRange == 1,
 						async parameters =>
 						{
 							((CreateTrapAbility.State)parameters.AbilityState).AbilityAdjustRange(1);
-							ScenarioEvents.AbilityStartedEvent.Unsubscribe(state.Performer, this);
+							ScenarioEvents.AbilityStartedEvent.Unsubscribe(state, this);
 
 							await GDTask.CompletedTask;
 						}
@@ -133,7 +134,7 @@ public class ImpendingPower : ChainguardLevelUpCardModel<ImpendingPower.CardTop,
 				})
 				.WithOnDeactivate(async state =>
 				{
-					ScenarioEvents.AbilityStartedEvent.Unsubscribe(state.Performer, this);
+					ScenarioEvents.AbilityStartedEvent.Unsubscribe(state, this);
 
 					await GDTask.CompletedTask;
 				})
@@ -143,7 +144,10 @@ public class ImpendingPower : ChainguardLevelUpCardModel<ImpendingPower.CardTop,
 				.WithOnActivate(async state =>
 				{
 					ScenarioEvents.TrapTriggeredEvent.Subscribe(state, this,
-						canApply: canApplyParameters => state.Performer == canApplyParameters.PotentialAbilityState?.Authority,
+						canApply: canApplyParameters =>
+							state.Performer == canApplyParameters.PotentialAbilityState?.Authority &&
+							state.Performer!.TakingTurn &&
+							state.Performer.EnemiesWith(canApplyParameters.Figure),
 						async applyParameters =>
 						{
 							await AbilityCmd.SufferDamage(state, applyParameters.Figure, 2);
