@@ -30,7 +30,7 @@ public class City57 : CityEventModel<City57.ChoiceA, City57.ChoiceB>
 		{
 			AnAdderDivides personalQuest = ModelDB.PersonalQuest<AnAdderDivides>();
 
-			List<SavedCharacter> allCharacters = savedCampaign.AllCharacters.ToList();
+			List<SavedCharacter> allCharacters = savedCampaign.AllNonRetiredCharacters.ToList();
 			foreach(SavedCharacter savedCharacter in allCharacters)
 			{
 				if(savedCharacter.SavedPersonalQuest?.Model == personalQuest)
