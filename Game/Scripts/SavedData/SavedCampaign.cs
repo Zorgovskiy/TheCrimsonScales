@@ -115,6 +115,20 @@ public class SavedCampaign
 		}
 	}
 
+	// Collection of ALL characters, even retired and benched ones
+	public IEnumerable<SavedCharacter> AllNonRetiredCharacters
+	{
+		get
+		{
+			foreach(SavedCharacter character in Characters)
+			{
+				yield return character;
+			}
+
+			//TODO: Benched characters
+		}
+	}
+
 	public ScenarioModel CompletedScenarioModel => ModelDB.GetById<ScenarioModel>(CompletedScenarioModelId);
 
 	public event Action CharactersChangedEvent;
