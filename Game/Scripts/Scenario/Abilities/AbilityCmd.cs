@@ -447,9 +447,9 @@ public static class AbilityCmd
 		}
 	}
 
-	public static async GDTask<DifficultTerrain> CreateDifficultTerrain(Hex hex, PackedScene scene)
+	public static async GDTask<DifficultTerrain> CreateDifficultTerrain(Hex hex, PackedScene scene, bool forceSpawn = false)
 	{
-		return await CreateOverlayTile<DifficultTerrain>(hex, scene);
+		return await CreateOverlayTile<DifficultTerrain>(hex, scene, forceSpawn);
 	}
 
 	public static async GDTask<Obstacle> CreateObstacle(Hex hex, string assetPath)
@@ -502,12 +502,12 @@ public static class AbilityCmd
 		return await GameController.Instance.Map.CreateMonster(monsterModel, monsterType, hex.Coords, false, monsterLevel, alignment);
 	}
 
-	public static async GDTask<T> CreateOverlayTile<T>(Hex hex, PackedScene scene, Action<OverlayTile> onInstantiate = null)
+	public static async GDTask<T> CreateOverlayTile<T>(Hex hex, PackedScene scene, bool forceSpawn = false, Action<OverlayTile> onInstantiate = null)
 		where T : OverlayTile
 	{
-		if(!hex.IsFeatureless())
+		if(!forceSpawn && !hex.IsFeatureless())
 		{
-			Log.Error("Trying to create an overlay tile in a hex that already has a feature!");
+			Log.Warning("Trying to create an overlay tile in a hex that already has a feature!");
 			return null;
 		}
 
@@ -594,7 +594,7 @@ public static class AbilityCmd
 	{
 		PackedScene scene = SceneLoader.LoadPackedScene(assetPath ?? "res://Content/OverlayTiles/Traps/BearTrap1H.tscn");
 
-		return await CreateOverlayTile<Trap>(hex, scene, trap => ((Trap)trap).SetTrapValues(damage, conditions ?? []));
+		return await CreateOverlayTile<Trap>(hex, scene, onInstantiate: trap => ((Trap)trap).SetTrapValues(damage, conditions ?? []));
 	}
 
 	public static GDTask<List<Hex>> SelectHexes(AbilityState state, Action<List<Hex>> getValidHexes, int minSelectionCount, int maxSelectionCount,
