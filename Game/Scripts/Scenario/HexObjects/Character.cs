@@ -6,6 +6,12 @@ using Godot;
 
 public partial class Character : Figure
 {
+	public class LongRestActionSource : IActionSource
+	{
+	}
+
+	public readonly LongRestActionSource _longRestActionSource = new LongRestActionSource();
+
 	private Sprite2D _staticSprite;
 	private AnimatedSpriteSheet2D _animatedSprite;
 
