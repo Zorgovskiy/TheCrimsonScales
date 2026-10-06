@@ -51,6 +51,11 @@ public class TargetSelectionPrompt(
 		HashSet<Hex> hexes = _validTargets.SelectMany(figure => figure.Hexes).ToHashSet();
 		foreach(Hex hex in hexes)
 		{
+			if(hex == null)
+			{
+				continue;
+			}
+
 			GameController.Instance.HexIndicatorManager.SetIndicator(hex,
 				_selectedFigure?.Hexes.Contains(hex) ?? false ? HexIndicatorType.Selected : HexIndicatorType.Normal,
 				OnIndicatorPressed);
