@@ -70,8 +70,8 @@ public class BloodRite : RuinmawCardModel<BloodRite.CardTop, BloodRite.CardBotto
 			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async state =>
 				{
-					AbilityCmd.AddAllNegativeConditionImmunity(state.Performer, state,
-						figure => figure is Ruinmaw ruinmaw && ruinmaw.Sated);
+					AbilityCmd.AddAllNegativeConditionImmunity(ScenarioEvents.GetSubscriberPair(state, this),
+						customCanApply:	figure => figure is Ruinmaw ruinmaw && ruinmaw.Sated);
 
 					if(state.Performer is Ruinmaw ruinmaw)
 					{
@@ -82,7 +82,7 @@ public class BloodRite : RuinmawCardModel<BloodRite.CardTop, BloodRite.CardBotto
 				})
 				.WithOnDeactivate(async state =>
 				{
-					AbilityCmd.RemoveConditionImmunity(state.Performer, state);
+					AbilityCmd.RemoveConditionImmunity(ScenarioEvents.GetSubscriberPair(state, this));
 
 					if(state.Performer is Ruinmaw ruinmaw)
 					{
