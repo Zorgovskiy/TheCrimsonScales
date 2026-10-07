@@ -115,8 +115,6 @@ public class Road19 : RoadEventModel<Road19.ChoiceA, Road19.ChoiceB>
 		protected override string GetDescriptionLabelText(RichTextParameters textParameters) =>
 			$"All characters adjacent to this obstacle are immune to negative conditions.";
 
-		Figure _figure = GameController.Instance.CharacterManager.Characters.First();
-
 		protected override void OnTotemPlaced(Obstacle obstacle)
 		{
 			base.OnTotemPlaced(obstacle);
