@@ -14,19 +14,6 @@ public class AshsteelGauntlets : CS2Item
 
 	protected override int AtlasIndex => 38;
 
-	private object _subscriber;
-
-	public override void Init(Character owner)
-	{
-		_subscriber = new object();
-
-		ConditionModel conditionModel = Conditions.Disarm;
-
-		AbilityCmd.AddConditionImmunity(Conditions.Disarm, Owner, this);
-
-		base.Init(owner);
-	}
-
 	protected override void Subscribe()
 	{
 		base.Subscribe();
@@ -47,5 +34,7 @@ public class AshsteelGauntlets : CS2Item
 				});
 			}
 		);
+
+		SubscribeConditionImmunity(Conditions.Disarm);
 	}
 }

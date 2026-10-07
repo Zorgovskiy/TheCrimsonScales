@@ -1,6 +1,6 @@
 ﻿using Fractural.Tasks;
 
-public class ConditionImmunityTrait : FigureTrait
+public class ConditionImmunityTrait : FigureTrait, IEventSubscriber
 {
 	private ConditionModel _conditionModel;
 
@@ -23,13 +23,13 @@ public class ConditionImmunityTrait : FigureTrait
 	{
 		await base.Activate(figure);
 
-		AbilityCmd.AddConditionImmunity(_conditionModel, figure, this);
+		AbilityCmd.AddConditionImmunity(_conditionModel, this, figure);
 	}
 
 	public override async GDTask Deactivate(Figure figure)
 	{
 		await base.Deactivate(figure);
 
-		AbilityCmd.RemoveConditionImmunity(figure, this);
+		AbilityCmd.RemoveConditionImmunity(this);
 	}
 }

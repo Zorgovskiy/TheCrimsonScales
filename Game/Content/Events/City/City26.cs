@@ -62,7 +62,7 @@ public class City26 : CityEventModel<City26.ChoiceA, City26.ChoiceB>
 		{
 			await base.OnScenarioSetupPhaseCompleted();
 
-			AbilityCmd.AddConditionImmunity(Conditions.Muddle, GameController.Instance.CharacterManager.Characters.First(), this, customCanApply: figure => figure is Character);
+			AbilityCmd.AddConditionImmunity(Conditions.Muddle, this, customCanApply: figure => figure is Character);
 		}
 	}
 

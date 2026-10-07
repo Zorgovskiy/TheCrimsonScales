@@ -100,7 +100,7 @@ public class BringerOfMiracles : HierophantLevelUpCardModel<BringerOfMiracles.Ca
 
 					await AbilityCmd.AddCondition(state, state.Performer, Conditions.Bless);
 
-					AbilityCmd.AddConditionImmunity(Conditions.Bless, state.Performer, state);
+					AbilityCmd.AddConditionImmunity(Conditions.Bless, ScenarioEvents.GetSubscriberPair(state, this), state.Performer);
 
 					ScenarioEvents.DuringAttackEvent.Subscribe(state, this,
 						parameters => parameters.Performer == state.Performer,
@@ -135,7 +135,7 @@ public class BringerOfMiracles : HierophantLevelUpCardModel<BringerOfMiracles.Ca
 				})
 				.WithOnDeactivate(async state =>
 				{
-					AbilityCmd.RemoveConditionImmunity(state.Performer, state);
+					AbilityCmd.RemoveConditionImmunity(ScenarioEvents.GetSubscriberPair(state, this));
 					ScenarioEvents.DuringAttackEvent.Unsubscribe(state, this);
 					ScenarioEvents.AMDCardDrawnEvent.Unsubscribe(state, this);
 					ScenarioEvents.RoundEndedEvent.Unsubscribe(state, this);

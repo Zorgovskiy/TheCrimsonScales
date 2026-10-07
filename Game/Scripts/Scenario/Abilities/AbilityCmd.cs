@@ -1908,14 +1908,19 @@ public static class AbilityCmd
 		hex2.AddNeighbour(hex1);
 	}
 
-	public static void AddConditionImmunity(ConditionModel condition, Figure figure, object subscriber, Func<Figure, bool> customCanApply = null)
+	public static void AddConditionImmunity(ConditionModel condition, IEventSubscriber eventSubscriber, Figure figure = null, Func<Figure, bool> customCanApply = null)
 	{
-		AddConditionsImmunity([condition], figure, subscriber, customCanApply);
+		AddConditionsImmunity([condition], eventSubscriber, figure, customCanApply);
 	}
 
-	public static void AddConditionsImmunity(List<ConditionModel> conditions, Figure figure, object subscriber, Func<Figure, bool> customCanApply = null)
+	public static void AddConditionsImmunity(List<ConditionModel> conditions, IEventSubscriber eventSubscriber, Figure figure = null, Func<Figure, bool> customCanApply = null)
 	{
-		ScenarioEvents.InflictConditionsEvent.Subscribe(figure, subscriber,
+		if(figure == null && customCanApply == null)
+		{
+			return;
+		}
+
+		ScenarioEvents.InflictConditionsEvent.Subscribe(eventSubscriber,
 			parameters =>
 				customCanApply?.Invoke(parameters.Target) ?? true &&
 				parameters.Target == figure,
@@ -1932,7 +1937,7 @@ public static class AbilityCmd
 			order: -1
 		);
 
-		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Subscribe(figure, conditions.First(),
+		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Subscribe(eventSubscriber,
 			parameters =>
 				customCanApply?.Invoke(parameters.Figure) ?? true &&
 				parameters.Figure == figure,
@@ -1943,9 +1948,14 @@ public static class AbilityCmd
 		);
 	}
 
-	public static void AddAllNegativeConditionImmunity(Figure figure, object subscriber, Func<Figure, bool> customCanApply = null)
+	public static void AddAllNegativeConditionImmunity(IEventSubscriber eventSubscriber, Figure figure = null, Func<Figure, bool> customCanApply = null)
 	{
-		ScenarioEvents.InflictConditionsEvent.Subscribe(figure, subscriber,
+		if(figure == null && customCanApply == null)
+		{
+			return;
+		}
+
+		ScenarioEvents.InflictConditionsEvent.Subscribe(eventSubscriber,
 			parameters =>
 				customCanApply?.Invoke(parameters.Target) ?? true &&
 				parameters.Target == figure,
@@ -1965,7 +1975,7 @@ public static class AbilityCmd
 			order: -1
 		);
 
-		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Subscribe(figure, subscriber,
+		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Subscribe(eventSubscriber,
 			parameters =>
 				customCanApply?.Invoke(parameters.Figure) ?? true &&
 				parameters.Figure == figure,
@@ -1976,9 +1986,9 @@ public static class AbilityCmd
 		);
 	}
 
-	public static void RemoveConditionImmunity(Figure figure, object subscriber)
+	public static void RemoveConditionImmunity(IEventSubscriber eventSubscriber)
 	{
-		ScenarioEvents.InflictConditionEvent.Unsubscribe(figure, subscriber);
-		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Unsubscribe(figure, subscriber);
+		ScenarioEvents.InflictConditionEvent.Unsubscribe(eventSubscriber);
+		ScenarioCheckEvents.ImmunitiesVisualCheckEvent.Unsubscribe(eventSubscriber);
 	}
 }
