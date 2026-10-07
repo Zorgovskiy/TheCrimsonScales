@@ -79,6 +79,10 @@ skip_ai_decision={
 
 pointing/emulate_touch_from_mouse=true
 
+[internationalization]
+
+rendering/icon="res://cs-crimson-scales-icon.png"
+
 [layer_names]
 
 3d_render/layer_11="UnlockCharacterView"
