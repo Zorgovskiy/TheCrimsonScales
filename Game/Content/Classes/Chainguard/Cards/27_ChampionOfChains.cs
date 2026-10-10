@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Fractural.Tasks;
 
 public class ChampionOfChains : ChainguardLevelUpCardModel<ChampionOfChains.CardTop, ChampionOfChains.CardBottom>
@@ -63,18 +64,40 @@ public class ChampionOfChains : ChainguardLevelUpCardModel<ChampionOfChains.Card
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					Figure figure = await AbilityCmd.SelectFigure(state,
+						list =>
+						{
+							list.AddRange(RangeHelper.GetFiguresInRange(state.Performer.Hex, 3, includeOrigin: false)
+								.Where(figure => figure.EnemiesWith(state.Performer)));
+						}, hintText: () => $"Designate an enemy within {Icons.Inline(Icons.Range)}3.");
+
+					if(figure != null)
+					{
+						await AbilityCmd.AddCondition(state, figure, Chainguard.Shackle);
+						state.SetCustomValue(this, "DesignatedEnemy", figure);
+						state.SetPerformed();
+					}
+				})
+				.Build()),
+
 			new AbilityCardAbility(SwingAbility.Builder()
 				.WithSwing(6)
 				.WithRange(3)
-				.WithConditions(Chainguard.Shackle)
+				.WithCustomGetTargets((state, figures) =>
+				{
+					figures.Add(state.ActionState.GetAbilityState<OtherAbility.State>(0).GetCustomValue<Figure>(this, "DesignatedEnemy"));
+				})
+				.WithConditionalAbilityCheck(state => AbilityCmd.HasPerformedAbility(state, 0))
 				.Build()),
 
 			new AbilityCardAbility(PushAbility.Builder()
 				.WithPush(4)
 				.WithCustomGetTargets((state, figures) =>
 				{
-					SwingAbility.State swingAbilityState = state.ActionState.GetAbilityState<SwingAbility.State>(0);
-					figures.AddRange(swingAbilityState.UniqueTargetedFigures);
+					figures.Add(state.ActionState.GetAbilityState<OtherAbility.State>(0).GetCustomValue<Figure>(this, "DesignatedEnemy"));
 				})
 				.WithConditionalAbilityCheck(state => AbilityCmd.HasPerformedAbility(state, 0))
 				.Build()),
@@ -83,12 +106,16 @@ public class ChampionOfChains : ChainguardLevelUpCardModel<ChampionOfChains.Card
 				.WithSwing(0)
 				.WithCustomGetTargets((state, figures) =>
 				{
-					SwingAbility.State swingState = state.ActionState.GetAbilityState<SwingAbility.State>(0);
-					figures.AddRange(swingState.UniqueTargetedFigures);
+					figures.Add(state.ActionState.GetAbilityState<OtherAbility.State>(0).GetCustomValue<Figure>(this, "DesignatedEnemy"));
 				})
 				.WithOnAbilityStarted(async state =>
 				{
-					SwingAbility.State swingState = state.ActionState.GetAbilityState<SwingAbility.State>(0);
+					if(!await AbilityCmd.HasPerformedAbility(state, 0))
+					{
+						return;
+					}
+
+					SwingAbility.State swingState = state.ActionState.GetAbilityState<SwingAbility.State>(1);
 					int remainingSwing = swingState.AbilitySwing - swingState.SingleTargetState.ForcedMovementHexes.Count;
 					state.AbilityAdjustSwing(remainingSwing);
 
@@ -108,15 +135,16 @@ public class ChampionOfChains : ChainguardLevelUpCardModel<ChampionOfChains.Card
 							}
 						);
 					}
-
-					await GDTask.CompletedTask;
 				})
 				.WithConditionalAbilityCheck(async state =>
 				{
-					SwingAbility.State swingState = state.ActionState.GetAbilityState<SwingAbility.State>(0);
-					int remainingSwing = swingState.AbilitySwing - swingState.SingleTargetState.ForcedMovementHexes.Count;
+					if(!await AbilityCmd.HasPerformedAbility(state, 0))
+					{
+						return false;
+					}
 
-					await GDTask.CompletedTask;
+					SwingAbility.State swingState = state.ActionState.GetAbilityState<SwingAbility.State>(1);
+					int remainingSwing = swingState.AbilitySwing - swingState.SingleTargetState.ForcedMovementHexes.Count;
 
 					return swingState.Performed && remainingSwing > 0;
 				})
