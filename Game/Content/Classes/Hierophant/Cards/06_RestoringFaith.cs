@@ -36,6 +36,7 @@ public class RestoringFaith : HierophantCardModel<RestoringFaith.CardTop, Restor
 						return state.ActionState.GetAbilityState<HealAbility.State>(0).Performed;
 					}
 				)
+				.WithAutoConfirmIfOneTarget(true)
 				.Build())
 		];
 	}
