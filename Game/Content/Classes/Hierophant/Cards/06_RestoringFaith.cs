@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Fractural.Tasks;
 using Godot;
 
@@ -108,6 +109,11 @@ public class RestoringFaith : HierophantCardModel<RestoringFaith.CardTop, Restor
 						}
 					}
 				})
+				.WithConditionalAbilityCheck(async state => GameController.Instance.CharacterManager.Characters.Except([state.Performer])
+					.Any(figure => figure is Character character && !character.IsDead && character.Cards
+						.Any(card => card.CardState == CardState.Persistent && card.Top.Model is HierophantPrayerCardSide && card.ActiveActionStates
+							.Any(actionState => actionState.AbilityStates
+								.Any(abilityState => abilityState is UseSlotAbility.State useSlotAbilityState && useSlotAbilityState.UseSlotIndex > 0)))))
 				.Build())
 		];
 	}
