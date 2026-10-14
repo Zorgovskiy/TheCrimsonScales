@@ -147,10 +147,10 @@ public partial class ScenarioCheckEvents
 
 	public class CanPassEnemyCheck : ScenarioCheckEvent<CanPassEnemyCheck.Parameters>
 	{
-		public class Parameters(AbilityState abilityState, Figure figure, Figure enemyFigure)
+		public class Parameters(AbilityState potentialAbilityState, Figure figure, Figure enemyFigure)
 			: ParametersBase
 		{
-			public AbilityState AbilityState { get; } = abilityState;
+			public AbilityState PotentialAbilityState { get; } = potentialAbilityState;
 			public Figure Figure { get; } = figure;
 			public Figure EnemyFigure { get; } = enemyFigure;
 
@@ -159,6 +159,11 @@ public partial class ScenarioCheckEvents
 			public void SetCanPass()
 			{
 				CanPass = true;
+			}
+
+			public void SetCannotPass()
+			{
+				CanPass = false;
 			}
 		}
 	}
