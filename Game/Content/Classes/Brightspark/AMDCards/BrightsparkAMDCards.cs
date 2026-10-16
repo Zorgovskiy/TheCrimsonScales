@@ -34,7 +34,7 @@ public class BrightsparkAMDCards
 						return;
 					}
 
-					AbilityCard selectedCard = await AbilityCmd.SelectAbilityCard(potentialDeckOwner, CardState.Discarded, mandatory: false, canSelectFunc: abilityCard => abilityCard == card, hintText: "Card randomly recovered from the discard pile");
+					AbilityCard selectedCard = await AbilityCmd.SelectAbilityCard(potentialDeckOwner, CardState.Discarded, mandatory: false, canSelectFunc: abilityCard => abilityCard == card, hintText: "Card randomly recovered from the discard pile", autoSelectIfAllCanBeSelected: true);
 					if(selectedCard == null)
 					{
 						return;
